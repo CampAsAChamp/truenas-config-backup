@@ -4,9 +4,6 @@ Living checklist for this repo. Update as items ship.
 
 ## Remaining
 
-### Release & CI
-- [ ] Publish `0.1.0` to GHCR so installs pull a real image (push local commits, then `git tag 0.1.0 && git push origin 0.1.0`)
-
 ### Real-world validation
 - [ ] End-to-end install from custom catalog on a live TrueNAS SCALE box
 - [ ] Verify scheduled backup, manual run-now, dashboard download/delete
@@ -39,6 +36,7 @@ Living checklist for this repo. Update as items ship.
 
 ### Release & CI
 - [x] GitHub Actions workflow: build and push image to GHCR on version tag
+- [x] Publish `0.1.0` to GHCR (`ghcr.io/campasachamp/truenas-config-backup:0.1.0`)
 - [x] Tag/release process documented (bump `app_version` in `app.yaml`, image tag in `ix_values.yaml`, git tag)
 
 ### Architecture decisions
