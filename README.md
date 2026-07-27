@@ -93,7 +93,8 @@ SSLCertVerificationError: certificate verify failed: unable to get local issuer 
 ```
 
 The Dockerfile installs `docker/certs/zscaler-root-ca.pem` into the image trust store before
-running pip. Copy your Zscaler root CA to that path if the file is missing:
+running pip when that file is present. The cert is gitignored (not needed for CI or public
+builds). Copy your Zscaler root CA to that path for local builds on a corporate network:
 
 ```bash
 cp ~/.ssl/zscaler-ca.pem docker/certs/zscaler-root-ca.pem

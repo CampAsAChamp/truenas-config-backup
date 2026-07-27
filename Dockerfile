@@ -1,11 +1,14 @@
 FROM python:3.12.8-slim
 
-# Trust Zscaler (or similar) during pip on corporate networks.
-COPY docker/certs/zscaler-root-ca.pem /usr/local/share/ca-certificates/zscaler-root-ca.crt
+# Optional Zscaler (or similar) CA for pip on corporate networks (gitignored; see README).
+COPY docker/certs/ /tmp/certs/
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates \
-    && update-ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+    && if [ -f /tmp/certs/zscaler-root-ca.pem ]; then \
+         cp /tmp/certs/zscaler-root-ca.pem /usr/local/share/ca-certificates/zscaler-root-ca.crt \
+         && update-ca-certificates; \
+       fi \
+    && rm -rf /var/lib/apt/lists/* /tmp/certs
 
 WORKDIR /srv
 
