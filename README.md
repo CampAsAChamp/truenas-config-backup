@@ -21,6 +21,7 @@ Note: TrueNAS SCALE 25.04 deprecated the old synchronous REST config-save endpoi
 
 ```
 app/                              FastAPI backend (the container's application code)
+tests/                            pytest unit and integration tests for app/
 Dockerfile, requirements.txt      Container build
 ix-dev/community/truenas-config-backup/
                                   TrueNAS catalog app definition (app.yaml, questions.yaml,
@@ -57,6 +58,23 @@ Then visit `http://localhost:8080`.
 | `RETENTION_COUNT` | `8` | Number of backups to keep before pruning |
 | `INCLUDE_SECRET_SEED` | `true` | Include the password secret seed in the backup |
 | `WEB_PORT` | `8080` | Port the dashboard listens on |
+
+## Testing
+
+Use the project venv so pytest picks up `pytest-cov` (system `pip3`/`pytest` often won't):
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate   # prompt should show (.venv)
+pip install -r requirements.txt -r requirements-dev.txt
+python -m pytest --cov=app
+```
+
+Confirm you're in the venv: `which python` should point at `.venv/bin/python`.
+
+Tests live under `tests/` and cover history logging, backup management, the TrueNAS
+WebSocket client (mocked), and FastAPI routes. GitHub Actions runs the same suite
+on push and pull request (`.github/workflows/test-app.yml`).
 
 ## Building the container
 

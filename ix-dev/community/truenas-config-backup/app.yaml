@@ -7,7 +7,7 @@ description: Scheduled backups of your TrueNAS system configuration, downloaded 
   the API.
 home: https://github.com/CampAsAChamp/truenas-config-backup
 host_mounts: []
-icon: https://media.sys.truenas.net/apps/truenas-config-backup/icons/icon.png
+icon: https://raw.githubusercontent.com/CampAsAChamp/truenas-config-backup/main/ix-dev/community/truenas-config-backup/icon.svg
 keywords:
 - backup
 - config

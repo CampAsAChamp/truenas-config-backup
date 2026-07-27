@@ -15,10 +15,6 @@ Living checklist for this repo. Update as items ship.
 - [ ] Test app upgrade (version bump) — confirm `/config` history and settings survive
 - [ ] Confirm behavior on target SCALE version(s) (25.04+)
 
-### Quality
-- [ ] Unit/integration tests for `app/` (no tests yet)
-- [ ] App icon — `app.yaml` references a TrueNAS CDN URL that does not exist yet; add a real icon or host one in-repo
-
 ## Done
 
 ### Backend (`app/`)
@@ -28,6 +24,7 @@ Living checklist for this repo. Update as items ship.
 - [x] Retention pruning, run-history jsonl log, web dashboard
 - [x] Configurable paths via env (`BACKUP_DIR`, `CONFIG_DIR`)
 - [x] `GET /healthz` for container health checks
+- [x] Unit/integration tests for `app/` (`tests/`, pytest, CI workflow)
 
 ### Container
 - [x] Dockerfile + `requirements.txt`
@@ -40,6 +37,7 @@ Living checklist for this repo. Update as items ship.
 - [x] Pinned image tag in `ix_values.yaml` (`ghcr.io/campasachamp/truenas-config-backup:0.1.0`)
 - [x] Vendored `truenas/apps` library + local render/validate via `.github/scripts/ci.py`
 - [x] Root README with local run, build, validate, and custom-catalog install steps
+- [x] App icon in-repo (`icon.svg`) with GitHub raw URL in `app.yaml` / `item.yaml`
 
 ### Architecture decisions
 - [x] Connection via API key + URL (not middleware socket mount)

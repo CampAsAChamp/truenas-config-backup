@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="TrueNAS Config Backup">
+  <rect width="128" height="128" rx="24" fill="#0095D5"/>
+  <ellipse cx="64" cy="52" rx="36" ry="14" fill="#0077AA"/>
+  <rect x="28" y="52" width="72" height="36" rx="4" fill="#FFFFFF"/>
+  <ellipse cx="64" cy="88" rx="36" ry="14" fill="#E8EEF2"/>
+  <rect x="40" y="62" width="48" height="6" rx="2" fill="#0095D5" opacity="0.6"/>
+  <rect x="40" y="72" width="36" height="6" rx="2" fill="#0095D5" opacity="0.4"/>
+  <path d="M88 96 L88 108 L76 108" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M76 108 L96 88" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
