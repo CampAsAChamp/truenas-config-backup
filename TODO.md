@@ -32,13 +32,12 @@ Living checklist for this repo. Update as items ship.
 ### Container
 - [x] Dockerfile + `requirements.txt`
 - [x] Zscaler root CA support for builds behind corporate TLS inspection
-- [x] `scripts/podman-build.sh` helper
 
 ### Catalog app (`ix-dev/community/truenas-config-backup/`)
 - [x] `app.yaml`, `ix_values.yaml`, `questions.yaml`, `item.yaml`
 - [x] Jinja2 compose template with storage/port helpers
 - [x] Catalog README (`ix-dev/community/truenas-config-backup/README.md`)
-- [x] Pinned image tag in `ix_values.yaml` (`ghcr.io/nschneider/truenas-config-backup:0.1.0`)
+- [x] Pinned image tag in `ix_values.yaml` (`ghcr.io/campasachamp/truenas-config-backup:0.1.0`)
 - [x] Vendored `truenas/apps` library + local render/validate via `.github/scripts/ci.py`
 - [x] Root README with local run, build, validate, and custom-catalog install steps
 
