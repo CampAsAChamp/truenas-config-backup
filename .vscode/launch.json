@@ -1,0 +1,81 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run app",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "app.main:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8080",
+        "--reload"
+      ],
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env.local",
+      "env": {
+        "BACKUP_DIR": "${workspaceFolder}/local-data/backups",
+        "CONFIG_DIR": "${workspaceFolder}/local-data/config",
+        "TRUENAS_VERIFY_SSL": "false"
+      },
+      "preLaunchTask": "Prepare local data dirs",
+      "justMyCode": true
+    },
+    {
+      "name": "Debug app (no reload)",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "app.main:app",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8080"
+      ],
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env.local",
+      "env": {
+        "BACKUP_DIR": "${workspaceFolder}/local-data/backups",
+        "CONFIG_DIR": "${workspaceFolder}/local-data/config",
+        "TRUENAS_VERIFY_SSL": "false"
+      },
+      "preLaunchTask": "Prepare local data dirs",
+      "justMyCode": true
+    },
+    {
+      "name": "Debug all tests",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "-v",
+        "--cov=app",
+        "--cov-report=term-missing"
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "justMyCode": true
+    },
+    {
+      "name": "Debug current test file",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "${relativeFile}",
+        "-v"
+      ],
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "justMyCode": true
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Prepare local data dirs",
+      "type": "shell",
+      "command": "mkdir -p local-data/backups local-data/config",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Install dependencies",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/pip install -r requirements.txt -r requirements-dev.txt",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run tests",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/python -m pytest --cov=app --cov-report=term-missing",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run tests (current file)",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/python -m pytest ${relativeFile} -v",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Render catalog compose",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/python .github/scripts/ci.py --app truenas-config-backup --train community --test-file basic-values.yaml --render-only=true",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build container (local tag)",
+      "type": "shell",
+      "command": "podman build -t ghcr.io/campasachamp/truenas-config-backup:local .",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run container (local tag)",
+      "type": "shell",
+      "command": "podman run --rm -p 8080:8080 --env-file .env.local -e TRUENAS_VERIFY_SSL=false -v ${workspaceFolder}/local-data/backups:/backups -v ${workspaceFolder}/local-data/config:/config ghcr.io/campasachamp/truenas-config-backup:local",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": [
+        "Prepare local data dirs",
+        "Build container (local tag)"
+      ],
+      "dependsOrder": "sequence",
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run container (GHCR 0.1.0)",
+      "type": "shell",
+      "command": "podman run --rm -p 8080:8080 --env-file .env.local -e TRUENAS_VERIFY_SSL=false -v ${workspaceFolder}/local-data/backups:/backups -v ${workspaceFolder}/local-data/config:/config ghcr.io/campasachamp/truenas-config-backup:0.1.0",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": [
+        "Prepare local data dirs"
+      ],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
