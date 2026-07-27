@@ -2,15 +2,13 @@
 
 Living checklist for this repo. Update as items ship.
 
-## Remaining
+## Done
 
 ### Real-world validation
-- [ ] End-to-end install via Custom App on a live TrueNAS SCALE box
-- [ ] Verify scheduled backup, manual run-now, dashboard download/delete
-- [ ] Test app upgrade (version bump) — confirm `/config` history and settings survive
-- [ ] Confirm behavior on target SCALE version(s) (25.04+)
-
-## Done
+- [x] End-to-end install via Custom App on a live TrueNAS SCALE box
+- [x] Verify scheduled backup, manual run-now, dashboard download/delete
+- [x] Test app upgrade (version bump) — confirm `/config` history and settings survive
+- [x] Confirm behavior on target SCALE version(s) (25.04+)
 
 ### Backend (`app/`)
 - [x] Scheduled backups via APScheduler (cron + run-now)
