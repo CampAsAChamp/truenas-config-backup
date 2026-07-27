@@ -1,5 +1,7 @@
 FROM python:3.12.8-slim
 
+LABEL org.opencontainers.image.source=https://github.com/CampAsAChamp/truenas-config-backup
+
 # Optional Zscaler (or similar) CA for pip on corporate networks (gitignored; see README).
 COPY docker/certs/ /tmp/certs/
 RUN apt-get update \
