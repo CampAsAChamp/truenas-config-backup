@@ -1,0 +1,59 @@
+name: Publish image
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - run: pytest --cov=app --cov-report=term-missing
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify catalog versions match git tag
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          app_version=$(grep '^app_version:' ix-dev/community/truenas-config-backup/app.yaml | awk '{print $2}')
+          image_tag=$(grep 'tag:' ix-dev/community/truenas-config-backup/ix_values.yaml | head -1 | awk '{print $2}')
+          if [ "$app_version" != "$TAG" ]; then
+            echo "app.yaml app_version ($app_version) does not match tag ($TAG)"
+            exit 1
+          fi
+          if [ "$image_tag" != "$TAG" ]; then
+            echo "ix_values.yaml image tag ($image_tag) does not match tag ($TAG)"
+            exit 1
+          fi
+          echo "Catalog versions match tag $TAG"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ghcr.io/campasachamp/truenas-config-backup:${{ github.ref_name }}

@@ -102,6 +102,36 @@ cp ~/.ssl/zscaler-ca.pem docker/certs/zscaler-root-ca.pem
 Podman's VM (libkrun on Apple Silicon) already pulls the base image from Docker Hub; the cert
 file is only needed for HTTPS inside the build (pypi.org).
 
+## Releasing
+
+Releases are semver git tags (bare, no `v` prefix, e.g. `0.2.0`). Pushing a tag triggers
+[`.github/workflows/publish-image.yml`](.github/workflows/publish-image.yml), which runs tests,
+checks that catalog versions match the tag, builds the container, and pushes to GHCR.
+
+Checklist for each release:
+
+1. **Bump versions** (all must match the new semver):
+   - `app_version` in [`ix-dev/community/truenas-config-backup/app.yaml`](ix-dev/community/truenas-config-backup/app.yaml)
+   - `images.image.tag` in [`ix-dev/community/truenas-config-backup/ix_values.yaml`](ix-dev/community/truenas-config-backup/ix_values.yaml)
+2. **Re-render compose** (updates the checked-in rendered template):
+   ```bash
+   python .github/scripts/ci.py --app truenas-config-backup --train community \
+     --test-file basic-values.yaml --render-only=true
+   ```
+3. **Run tests locally:** `python -m pytest --cov=app`
+4. **Commit and push** to `main` (e.g. `Release 0.2.0`)
+5. **Tag and push:**
+   ```bash
+   git tag 0.2.0
+   git push origin 0.2.0
+   ```
+6. **Verify CI** publishes `ghcr.io/campasachamp/truenas-config-backup:0.2.0`
+7. **Custom catalog users:** refresh the catalog in TrueNAS (Apps → Manage Catalogs) to pick up
+   the new `app_version`
+
+The GHCR package must stay **public** so TrueNAS can pull the image without authentication.
+CI fails if the git tag does not match `app_version` and the image tag in `ix_values.yaml`.
+
 ## Validating the catalog app definition
 
 The catalog app under `ix-dev/community/truenas-config-backup/` follows the
