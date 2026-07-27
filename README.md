@@ -59,6 +59,21 @@ Then visit `http://localhost:8080`.
 | `INCLUDE_SECRET_SEED` | `true` | Include the password secret seed in the backup |
 | `WEB_PORT` | `8080` | Port the dashboard listens on |
 
+### HTTPS required for API keys
+
+`TRUENAS_URL` must use **`https://`**, even on a local network. TrueNAS requires TLS for
+API key authentication and **automatically revokes** any key used over plain HTTP (`http://`
+or `ws://`). If that happens, create a new API key in **My API Keys** and update the app
+configuration — the revoked key cannot be reused until it is renewed in the TrueNAS UI.
+
+Home-lab setups usually run TrueNAS with a self-signed certificate. That is fine: leave
+**Verify SSL Certificate** disabled (`TRUENAS_VERIFY_SSL=false`). The connection is still
+encrypted; certificate verification is simply skipped.
+
+When the app runs as a catalog container on the same TrueNAS box, `https://127.0.0.1` may not
+reach the host middleware depending on container networking. If backups fail to connect, try the
+host's LAN IP instead (e.g. `https://192.168.1.50`).
+
 ## Testing
 
 Use the project venv so pytest picks up `pytest-cov` (system `pip3`/`pytest` often won't):

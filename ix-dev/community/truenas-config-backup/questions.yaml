@@ -18,8 +18,10 @@ questions:
         - variable: truenas_url
           label: TrueNAS URL
           description: |
-            The base URL of the TrueNAS system to back up, e.g. https://127.0.0.1
-            for the same box this app runs on, or a remote TrueNAS box's URL.
+            The base URL of the TrueNAS system to back up. Must use https:// (even on
+            a local network) — http:// causes TrueNAS to revoke the API key. Examples:
+            https://127.0.0.1 for the same box, or https://192.168.1.50 for the host
+            LAN IP if the container cannot reach loopback.
           schema:
             type: string
             required: true
@@ -27,8 +29,9 @@ questions:
         - variable: api_key
           label: API Key
           description: |
-            A TrueNAS API key for the target system. Recommended to scope it to
-            config.save only (least privilege).
+            A TrueNAS API key for the target system (My API Keys in the TrueNAS UI).
+            Recommended to scope it to config.save only (least privilege). If a key
+            was revoked after an http:// connection attempt, create a new key here.
           schema:
             type: string
             required: true
@@ -36,8 +39,9 @@ questions:
         - variable: verify_ssl
           label: Verify SSL Certificate
           description: |
-            Disable this if the target TrueNAS uses a self-signed certificate
-            (common for home-lab setups).
+            Disable this if the target TrueNAS uses a self-signed certificate (common
+            for home-lab setups). The connection is still encrypted; only certificate
+            verification is skipped.
           schema:
             type: boolean
             default: false
