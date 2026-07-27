@@ -8,7 +8,7 @@ Install on TrueNAS SCALE 24.10+ via **Custom App** (native Docker).
 
 - Calls `config.save` over the TrueNAS JSON-RPC WebSocket API (via `core.download`)
   to produce a config backup tar, authenticating with an API key.
-- Runs on a cron schedule (APScheduler) and supports an on-demand "run now".
+- Runs on an optional cron schedule (APScheduler) when `CRON_SCHEDULE` is set, and supports an on-demand "run now".
 - Prunes old backups down to a configurable retention count.
 - Logs every run (success/failure) to a jsonl history file.
 - Serves a dashboard to view/download/delete backups and see run history.
@@ -54,7 +54,7 @@ Then visit `http://localhost:8080`.
 | `TRUENAS_VERIFY_SSL` | `false` | Verify the TrueNAS TLS certificate |
 | `BACKUP_DIR` | `/backups` | Where downloaded backup tars are stored |
 | `CONFIG_DIR` | `/config` | Where the run-history log is stored |
-| `CRON_SCHEDULE` | `0 3 * * 0` | Cron expression for the scheduled backup |
+| `CRON_SCHEDULE` | *(none)* | Optional cron expression for scheduled backups; omit for manual-only |
 | `RETENTION_COUNT` | `8` | Number of backups to keep before pruning |
 | `INCLUDE_SECRET_SEED` | `true` | Include the password secret seed in the backup |
 | `WEB_PORT` | `8080` | Port the dashboard listens on |
@@ -209,7 +209,7 @@ services:
       TRUENAS_URL: "https://127.0.0.1"
       TRUENAS_API_KEY: "your-api-key"
       TRUENAS_VERIFY_SSL: "false"
-      CRON_SCHEDULE: "0 3 * * 0"
+      # CRON_SCHEDULE: "0 3 * * 0"   # optional; omit for manual-only backups
       RETENTION_COUNT: "8"
       INCLUDE_SECRET_SEED: "true"
       BACKUP_DIR: /backups

@@ -12,6 +12,9 @@ _scheduler = BackgroundScheduler()
 
 
 def start() -> None:
+    if not config.CRON_SCHEDULE:
+        logger.info("scheduler disabled (CRON_SCHEDULE not set)")
+        return
     trigger = CronTrigger.from_crontab(config.CRON_SCHEDULE)
     _scheduler.add_job(run_backup, trigger=trigger, id="scheduled_backup", replace_existing=True)
     _scheduler.start()

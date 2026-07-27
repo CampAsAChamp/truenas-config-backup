@@ -13,7 +13,7 @@
     <dl>
       <dt>TrueNAS URL</dt><dd>{{ settings.truenas_url }}</dd>
       <dt>Verify SSL</dt><dd>{{ settings.verify_ssl }}</dd>
-      <dt>Cron schedule</dt><dd>{{ settings.cron_schedule }}</dd>
+      <dt>Cron schedule</dt><dd>{{ settings.cron_schedule or "none (manual only)" }}</dd>
       <dt>Retention count</dt><dd>{{ settings.retention_count }}</dd>
       <dt>Include secret seed</dt><dd>{{ settings.include_secret_seed }}</dd>
       <dt>Next scheduled run</dt><dd>{{ next_run or "not scheduled" }}</dd>

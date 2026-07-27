@@ -48,12 +48,13 @@ questions:
         - variable: cron_schedule
           label: Backup Schedule (cron)
           description: |
-            Standard 5-field cron syntax, e.g. "0 3 * * 0" for weekly at 3am
-            Sunday. See crontab.guru for help building an expression.
+            Optional. Standard 5-field cron syntax, e.g. "0 3 * * 0" for weekly at
+            3am Sunday. Leave empty for manual-only backups (use Run backup now on
+            the dashboard). See crontab.guru for help building an expression.
           schema:
             type: string
-            required: true
-            default: "0 3 * * 0"
+            required: false
+            default: ""
         - variable: retention_count
           label: Retention Count
           description: Number of past backups to keep before pruning the oldest.

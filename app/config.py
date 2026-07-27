@@ -15,7 +15,7 @@ TRUENAS_VERIFY_SSL = _bool_env("TRUENAS_VERIFY_SSL", False)
 BACKUP_DIR = os.environ.get("BACKUP_DIR", "/backups")
 CONFIG_DIR = os.environ.get("CONFIG_DIR", "/config")
 
-CRON_SCHEDULE = os.environ.get("CRON_SCHEDULE", "0 3 * * 0")
+CRON_SCHEDULE = os.environ.get("CRON_SCHEDULE", "").strip()
 RETENTION_COUNT = int(os.environ.get("RETENTION_COUNT", "8"))
 INCLUDE_SECRET_SEED = _bool_env("INCLUDE_SECRET_SEED", True)
 

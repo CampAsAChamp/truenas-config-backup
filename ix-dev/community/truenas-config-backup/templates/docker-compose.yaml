@@ -10,7 +10,9 @@
 {% do c1.environment.add_env("TRUENAS_URL", values.backup_config.truenas_url) %}
 {% do c1.environment.add_env("TRUENAS_API_KEY", values.backup_config.api_key) %}
 {% do c1.environment.add_env("TRUENAS_VERIFY_SSL", values.backup_config.verify_ssl) %}
+{% if values.backup_config.cron_schedule %}
 {% do c1.environment.add_env("CRON_SCHEDULE", values.backup_config.cron_schedule) %}
+{% endif %}
 {% do c1.environment.add_env("RETENTION_COUNT", values.backup_config.retention_count) %}
 {% do c1.environment.add_env("INCLUDE_SECRET_SEED", values.backup_config.include_secret_seed) %}
 {% do c1.environment.add_env("BACKUP_DIR", values.consts.backups_dir_path) %}
