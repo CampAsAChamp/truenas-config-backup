@@ -7,10 +7,25 @@ on:
 
 permissions:
   contents: write
+  packages: write
 
 jobs:
-  release:
+  test:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+      - run: pytest --cov=app --cov-report=term-missing
+
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,6 +39,59 @@ jobs:
       - run: npm ci
 
       - name: Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+
+  publish:
+    needs: release
+    if: needs.release.outputs.new_release_published == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      TAG: ${{ needs.release.outputs.new_release_version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.release.outputs.new_release_version }}
+
+      - name: Verify catalog versions match release
+        run: |
+          set -euo pipefail
+          version_file=$(tr -d '[:space:]' < VERSION)
+          app_version=$(grep '^app_version:' ix-dev/community/truenas-config-backup/app.yaml | awk '{print $2}')
+          image_tag=$(grep 'tag:' ix-dev/community/truenas-config-backup/ix_values.yaml | head -1 | awk '{print $2}')
+          if [ "$version_file" != "$TAG" ]; then
+            echo "VERSION ($version_file) does not match release ($TAG)"
+            exit 1
+          fi
+          if [ "$app_version" != "$TAG" ]; then
+            echo "app.yaml app_version ($app_version) does not match release ($TAG)"
+            exit 1
+          fi
+          if [ "$image_tag" != "$TAG" ]; then
+            echo "ix_values.yaml image tag ($image_tag) does not match release ($TAG)"
+            exit 1
+          fi
+          echo "Catalog versions match release $TAG"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          provenance: false
+          tags: |
+            ghcr.io/campasachamp/truenas-config-backup:${{ env.TAG }}
+            ghcr.io/campasachamp/truenas-config-backup:latest

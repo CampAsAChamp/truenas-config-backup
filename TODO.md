@@ -5,7 +5,7 @@ Living checklist for this repo. Update as items ship.
 ## Remaining
 
 ### Real-world validation
-- [ ] End-to-end install from custom catalog on a live TrueNAS SCALE box
+- [ ] End-to-end install via Custom App on a live TrueNAS SCALE box
 - [ ] Verify scheduled backup, manual run-now, dashboard download/delete
 - [ ] Test app upgrade (version bump) — confirm `/config` history and settings survive
 - [ ] Confirm behavior on target SCALE version(s) (25.04+)
@@ -31,17 +31,17 @@ Living checklist for this repo. Update as items ship.
 - [x] Catalog README (`ix-dev/community/truenas-config-backup/README.md`)
 - [x] Pinned image tag in `ix_values.yaml` (`ghcr.io/campasachamp/truenas-config-backup:0.1.0`)
 - [x] Vendored `truenas/apps` library + local render/validate via `.github/scripts/ci.py`
-- [x] Root README with local run, build, validate, and custom-catalog install steps
+- [x] Root README with local run, build, validate, and Custom App install steps
 - [x] App icon in-repo (`icon.svg`) with GitHub raw URL in `app.yaml` / `item.yaml`
 
 ### Release & CI
-- [x] GitHub Actions workflow: build and push image to GHCR on version tag
-- [x] Publish `0.1.0` to GHCR (`ghcr.io/campasachamp/truenas-config-backup:0.1.0`)
-- [x] Tag/release process automated (semantic-release on push to `main`; publish on tag)
+- [x] GitHub Actions workflow: build and push image to GHCR on release (same workflow as semantic-release; tag hook alone does not fire because GITHUB_TOKEN suppresses downstream workflows)
+- [x] Manual re-publish via workflow_dispatch in publish-image.yml
+- [ ] Backfill GHCR image for `0.1.1` (run Publish image workflow manually after merge)
 
 ### Architecture decisions
 - [x] Connection via API key + URL (not middleware socket mount)
-- [x] Self-hosted custom catalog as the primary distribution path
+- [x] Custom App (compose YAML) as the primary distribution path for SCALE 24.10+
 
 
 ## Maybe later

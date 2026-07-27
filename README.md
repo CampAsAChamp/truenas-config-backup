@@ -2,7 +2,7 @@
 
 Scheduled backups of a TrueNAS system's configuration, downloaded via the TrueNAS
 API, with retention pruning, run-history logging, and a small web dashboard.
-Ships as an installable TrueNAS SCALE catalog app.
+Install on TrueNAS SCALE 24.10+ via **Custom App** (native Docker).
 
 ## What it does
 
@@ -24,11 +24,11 @@ app/                              FastAPI backend (the container's application c
 tests/                            pytest unit and integration tests for app/
 Dockerfile, requirements.txt      Container build
 ix-dev/community/truenas-config-backup/
-                                  TrueNAS catalog app definition (app.yaml, questions.yaml,
-                                  ix_values.yaml, Jinja2 compose template) — installable via
-                                  Apps → Manage Catalogs in TrueNAS SCALE
+                                  TrueNAS apps-format definition (app.yaml, questions.yaml,
+                                  ix_values.yaml, Jinja2 compose template) — used to render
+                                  and validate the Custom App compose locally (see below)
 .github/scripts/, library/        Vendored truenas/apps tooling used to render/validate the
-                                  catalog app definition locally (see below)
+                                  app definition locally (see below)
 ```
 
 ## Running the backend locally
@@ -70,8 +70,8 @@ Home-lab setups usually run TrueNAS with a self-signed certificate. That is fine
 **Verify SSL Certificate** disabled (`TRUENAS_VERIFY_SSL=false`). The connection is still
 encrypted; certificate verification is simply skipped.
 
-When the app runs as a catalog container on the same TrueNAS box, `https://127.0.0.1` may not
-reach the host middleware depending on container networking. If backups fail to connect, try the
+When the app runs in a container on the same TrueNAS box, `https://127.0.0.1` may not reach
+the host middleware depending on container networking. If backups fail to connect, try the
 host's LAN IP instead (e.g. `https://192.168.1.50`).
 
 ## Testing
@@ -133,9 +133,12 @@ Push to `main` — no manual version bumps, git tags, or release PRs.
    - updates [`VERSION`](VERSION), [`package.json`](package.json), catalog files, and
      [`CHANGELOG.md`](CHANGELOG.md)
    - commits, tags (bare semver, e.g. `0.2.0`, no `v` prefix), and creates a GitHub Release
-4. The tag push triggers [`.github/workflows/publish-image.yml`](.github/workflows/publish-image.yml),
-   which runs tests, verifies all version fields match the tag, builds the container, and pushes
-   to GHCR as `:0.2.0` and `:latest`.
+4. When a release is created, the same workflow builds the container and pushes it to
+   GHCR as `:0.2.0` and `:latest`.
+
+Tag pushes from semantic-release use `GITHUB_TOKEN`, which does **not** trigger other
+workflows on GitHub — so image publish runs in `release.yml`, not via a separate tag hook.
+Use **Actions → Publish image → Run workflow** to re-publish an existing tag manually.
 
 Commits that do not use conventional prefixes (`chore:`, `docs:`, etc. without `fix`/`feat`) do
 **not** trigger a release.
@@ -153,8 +156,8 @@ BREAKING CHANGE: removed legacy env var FOO
 ### After a release
 
 - **Verify CI** published `ghcr.io/campasachamp/truenas-config-backup:<version>` and updated `:latest`
-- **Custom catalog users:** refresh the catalog in TrueNAS (Apps → Manage Catalogs) to pick up
-  the new `app_version`
+- **Custom App users:** edit the deployed app and update the image tag to the new version
+  (or re-deploy the compose YAML with the updated tag)
 
 The GHCR package must stay **public** so TrueNAS can pull the image without authentication.
 CI fails if the git tag does not match `VERSION`, `app_version`, and the image tag in `ix_values.yaml`.
@@ -175,6 +178,59 @@ python .github/scripts/ci.py --app truenas-config-backup --train community \
 
 ## Installing on TrueNAS SCALE
 
-This app isn't in the official catalog. To use it, add this repository as a
-custom catalog: **Apps → Discover Apps → Manage Catalogs → Add Catalog**, then
-point it at this repo's URL. The app will then appear under Discover Apps.
+This app isn't in the official iX catalog. On SCALE 24.10+ (Electric Eel and
+later), third-party app catalogs are no longer supported — deploy it as a
+**Custom App** instead.
+
+### Custom App (wizard)
+
+1. **Apps → Discover Apps → Custom App**.
+2. Set the container image to `ghcr.io/campasachamp/truenas-config-backup:0.1.0`
+   (check [releases](https://github.com/CampAsAChamp/truenas-config-backup/releases)
+   for the latest version).
+3. Add host-path volumes for backup storage and run history, mounted at `/backups`
+   and `/config` respectively (e.g. datasets under your apps pool).
+4. Set the environment variables from the [configuration table](#configuration-env-vars)
+   above — at minimum `TRUENAS_URL` and `TRUENAS_API_KEY`.
+5. Publish port **8080** (or match `WEB_PORT` if you change it) to reach the
+   dashboard.
+
+### Custom App (compose YAML)
+
+Paste something like the following into **Install via YAML**, adjusting paths,
+port, and secrets for your system:
+
+```yaml
+services:
+  truenas-config-backup:
+    image: ghcr.io/campasachamp/truenas-config-backup:0.1.0
+    user: "568:568"
+    environment:
+      TRUENAS_URL: "https://127.0.0.1"
+      TRUENAS_API_KEY: "your-api-key"
+      TRUENAS_VERIFY_SSL: "false"
+      CRON_SCHEDULE: "0 3 * * 0"
+      RETENTION_COUNT: "8"
+      INCLUDE_SECRET_SEED: "true"
+      BACKUP_DIR: /backups
+      CONFIG_DIR: /config
+      WEB_PORT: "8080"
+    volumes:
+      - /mnt/tank/apps/truenas-config-backup/backups:/backups
+      - /mnt/tank/apps/truenas-config-backup/config:/config
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+```
+
+If `https://127.0.0.1` fails from inside the container, change `TRUENAS_URL` to
+the host's LAN IP (see [HTTPS required for API keys](#https-required-for-api-keys)).
+
+### Upgrading
+
+Edit the deployed Custom App and bump the image tag to the new release. The
+`/config` volume preserves run history across upgrades.

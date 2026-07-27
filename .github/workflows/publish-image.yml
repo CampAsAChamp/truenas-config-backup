@@ -1,6 +1,14 @@
+# Manual re-publish only. Automated releases build and push from release.yml because
+# tag pushes created by GITHUB_TOKEN do not trigger other workflows.
 name: Publish image
 
 on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Semver tag to build and publish (e.g. 0.1.1)
+        required: true
+        type: string
   push:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+"
@@ -28,10 +36,12 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.version) || github.ref }}
 
       - name: Verify catalog versions match git tag
         env:
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
         run: |
           set -euo pipefail
           version_file=$(tr -d '[:space:]' < VERSION)
@@ -66,5 +76,5 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ghcr.io/campasachamp/truenas-config-backup:${{ github.ref_name }}
+            ghcr.io/campasachamp/truenas-config-backup:${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
             ghcr.io/campasachamp/truenas-config-backup:latest
