@@ -2,6 +2,9 @@ images:
   image:
     repository: ghcr.io/nschneider/truenas-config-backup
     tag: 0.1.0
+  container_utils_image:
+    repository: ixsystems/container-utils
+    tag: 1.0.2
 
 consts:
   app_container_name: truenas-config-backup

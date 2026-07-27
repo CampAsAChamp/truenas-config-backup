@@ -1,0 +1,199 @@
+configs:
+  permissions_actions_data:
+    content: '[{"read_only": false, "mount_path": "/mnt/permission/backups", "is_temporary":
+      false, "identifier": "backups", "recursive": false, "mode": "check", "uid":
+      568, "gid": 568, "chmod": null}, {"read_only": false, "mount_path": "/mnt/permission/config",
+      "is_temporary": false, "identifier": "config", "recursive": false, "mode": "check",
+      "uid": 568, "gid": 568, "chmod": null}]'
+services:
+  permissions:
+    cap_add:
+    - CHOWN
+    - DAC_OVERRIDE
+    - FOWNER
+    cap_drop:
+    - ALL
+    configs:
+    - mode: 320
+      source: permissions_actions_data
+      target: /script/actions.json
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1024M
+    entrypoint:
+    - python3
+    - /script/permissions.py
+    environment:
+      NVIDIA_VISIBLE_DEVICES: void
+      TZ: Etc/UTC
+      UMASK: '002'
+      UMASK_SET: '002'
+    group_add:
+    - 568
+    healthcheck:
+      disable: true
+    image: ixsystems/container-utils:1.0.2
+    network_mode: none
+    platform: linux/amd64
+    privileged: false
+    restart: on-failure:1
+    security_opt:
+    - no-new-privileges=true
+    stdin_open: false
+    tty: false
+    user: 0:0
+    volumes:
+    - bind:
+        create_host_path: true
+        propagation: rprivate
+      read_only: false
+      source: /opt/tests/mnt/truenas-config-backup/backups
+      target: /mnt/permission/backups
+      type: bind
+    - bind:
+        create_host_path: true
+        propagation: rprivate
+      read_only: false
+      source: /opt/tests/mnt/truenas-config-backup/config
+      target: /mnt/permission/config
+      type: bind
+  truenas-config-backup:
+    cap_drop:
+    - ALL
+    depends_on:
+      permissions:
+        condition: service_completed_successfully
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+    environment:
+      BACKUP_DIR: /backups
+      CONFIG_DIR: /config
+      CRON_SCHEDULE: 0 3 * * 0
+      INCLUDE_SECRET_SEED: 'true'
+      NVIDIA_VISIBLE_DEVICES: void
+      RETENTION_COUNT: '8'
+      TRUENAS_API_KEY: test-api-key
+      TRUENAS_URL: https://127.0.0.1
+      TRUENAS_VERIFY_SSL: 'false'
+      TZ: Etc/UTC
+      UMASK: '002'
+      UMASK_SET: '002'
+      WEB_PORT: '30330'
+    group_add:
+    - 568
+    healthcheck:
+      interval: 30s
+      retries: 5
+      start_interval: 2s
+      start_period: 15s
+      test:
+      - CMD
+      - curl
+      - --request
+      - GET
+      - --silent
+      - --output
+      - /dev/null
+      - --show-error
+      - --fail
+      - http://127.0.0.1:30330/healthz
+      timeout: 5s
+    image: ghcr.io/nschneider/truenas-config-backup:0.1.0
+    platform: linux/amd64
+    ports:
+    - mode: ingress
+      protocol: tcp
+      published: 30330
+      target: 30330
+    privileged: false
+    restart: unless-stopped
+    security_opt:
+    - no-new-privileges=true
+    stdin_open: false
+    tty: false
+    user: 568:568
+    volumes:
+    - bind:
+        create_host_path: true
+        propagation: rprivate
+      read_only: false
+      source: /opt/tests/mnt/truenas-config-backup/backups
+      target: /backups
+      type: bind
+    - bind:
+        create_host_path: true
+        propagation: rprivate
+      read_only: false
+      source: /opt/tests/mnt/truenas-config-backup/config
+      target: /config
+      type: bind
+volumes: {}
+x-action-required: false
+x-notes: '# <app_name>
+
+
+  ## Security
+
+
+  **Read the following security precautions to ensure that you wish to continue using
+  this application.**
+
+
+  ---
+
+
+  ### Container: [truenas-config-backup]
+
+
+  #### Running user/group(s)
+
+
+  - User: 568
+
+  - Group: 568
+
+  - Supplementary Groups: apps
+
+
+  ---
+
+
+  ### Container: [permissions]
+
+
+  **This container is short-lived.**
+
+
+  #### Running user/group(s)
+
+
+  - User: root
+
+  - Group: root
+
+  - Supplementary Groups: apps
+
+
+  ---
+
+
+  ## Bug Reports and Feature Requests
+
+
+  If you find a bug in this app or have an idea for a new feature, please file an
+  issue at
+
+  https://github.com/truenas/apps
+
+  '
+x-portals:
+- host: 0.0.0.0
+  name: Web UI
+  path: /
+  port: 30330
+  scheme: http
