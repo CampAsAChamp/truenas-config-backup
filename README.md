@@ -60,9 +60,29 @@ Then visit `http://localhost:8080`.
 
 ## Building the container
 
+Build with Podman from the repo root:
+
 ```bash
-docker build -t truenas-config-backup .
+podman build -t ghcr.io/campasachamp/truenas-config-backup:0.1.0 .
 ```
+
+### Behind Zscaler
+
+On a corporate network, `pip install` during the build can fail with:
+
+```text
+SSLCertVerificationError: certificate verify failed: unable to get local issuer certificate
+```
+
+The Dockerfile installs `docker/certs/zscaler-root-ca.pem` into the image trust store before
+running pip. Copy your Zscaler root CA to that path if the file is missing:
+
+```bash
+cp ~/.ssl/zscaler-ca.pem docker/certs/zscaler-root-ca.pem
+```
+
+Podman's VM (libkrun on Apple Silicon) already pulls the base image from Docker Hub; the cert
+file is only needed for HTTPS inside the build (pypi.org).
 
 ## Validating the catalog app definition
 

@@ -7,3 +7,6 @@ __pycache__/
 .ruff_cache/
 *.log
 .DS_Store
+
+docker/certs/*
+!docker/certs/.gitkeep
