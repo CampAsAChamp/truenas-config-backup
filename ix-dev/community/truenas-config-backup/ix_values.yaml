@@ -1,0 +1,11 @@
+images:
+  image:
+    repository: ghcr.io/nschneider/truenas-config-backup
+    tag: 0.1.0
+
+consts:
+  app_container_name: truenas-config-backup
+  perms_container_name: permissions
+
+  backups_dir_path: /backups
+  config_dir_path: /config

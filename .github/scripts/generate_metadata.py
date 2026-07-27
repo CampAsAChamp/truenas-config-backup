@@ -1,0 +1,1238 @@
+#!/usr/bin/env python3
+"""
+TrueNAS Apps Capability Manager
+
+This script analyzes Docker Compose configurations for TrueNAS apps and updates
+their metadata with capability requirements extracted from rendered templates.
+"""
+
+# /// script
+# requires-python = ">=3.11"
+# dependencies = [
+#     "pyyaml",
+# ]
+# ///
+
+import os
+import re
+import sys
+import yaml
+import logging
+import argparse
+import subprocess
+from pathlib import Path
+from typing import Any, Dict, List, Set, Optional, Tuple
+from dataclasses import dataclass
+
+
+# Global configuration
+class Config:
+    CONTAINER_IMAGE = "ghcr.io/truenas/apps_validation:latest"
+    PLATFORM = "linux/amd64"
+
+    RE_VAR_NAME = r"^[a-z0-9_]+$"
+
+    # Directory structure
+    APPS_ROOT_DIR = "ix-dev"
+    TEST_VALUES_DIR = "templates/test_values"
+    RENDERED_COMPOSE_PATH = "templates/rendered/docker-compose.yaml"
+
+    # File names
+    APP_METADATA_FILE = "app.yaml"
+    APP_VALUES_FILE = "ix_values.yaml"
+    QUESTIONS_FILE = "questions.yaml"
+
+    # Special apps excluded from test train
+    EXCLUDED_TEST_APPS = {"other-nginx", "nginx"}
+
+
+# Setup logging
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class DockerCapability:
+    """Represents a Docker capability with its human-readable description."""
+
+    name: str
+    description: str
+
+    def to_dict(self) -> Dict[str, str]:
+        return {"description": self.description, "name": self.name}
+
+
+@dataclass
+class AppAnalysisResult:
+    """Results from analyzing an app's Docker compose configurations."""
+
+    capabilities: List[DockerCapability]
+    service_names: List[str]
+    app_version: str
+    service_users: Dict[str, Tuple[int, int]]  # Maps service name to (uid, gid)
+
+
+@dataclass
+class AppManifest:
+    """Represents an app's basic information and test configurations."""
+
+    path: Path
+    name: str
+    train: str
+    test_value_files: List[str]
+
+
+class DockerCapabilityRegistry:
+    """Registry of Docker capabilities with their descriptions."""
+
+    _CAPABILITY_DESCRIPTIONS = {
+        "AUDIT_CONTROL": "able to control audit subsystem configuration",
+        "AUDIT_READ": "able to read audit log entries",
+        "AUDIT_WRITE": "able to write records to audit log",
+        "BLOCK_SUSPEND": "able to block system suspend operations",
+        "BPF": "able to use Berkeley Packet Filter programs",
+        "CHECKPOINT_RESTORE": "able to use checkpoint/restore functionality",
+        "CHOWN": "able to change file ownership arbitrarily",
+        "DAC_OVERRIDE": "able to bypass file permission checks",
+        "DAC_READ_SEARCH": "able to bypass read/execute permission checks",
+        "FOWNER": "able to bypass permission checks for file operations",
+        "FSETID": "able to preserve set-user-ID and set-group-ID bits",
+        "IPC_LOCK": "able to lock memory segments in RAM",
+        "IPC_OWNER": "able to bypass permission checks for IPC operations",
+        "KILL": "able to send signals to any process",
+        "LEASE": "able to establish file leases",
+        "LINUX_IMMUTABLE": "able to set immutable and append-only file attributes",
+        "MAC_ADMIN": "able to configure Mandatory Access Control",
+        "MAC_OVERRIDE": "able to override Mandatory Access Control restrictions",
+        "MKNOD": "able to create special files using mknod()",
+        "NET_ADMIN": "able to perform network administration tasks",
+        "NET_BIND_SERVICE": "able to bind to privileged ports (< 1024)",
+        "NET_BROADCAST": "able to make socket broadcasts",
+        "NET_RAW": "able to use raw and packet sockets",
+        "PERFMON": "able to access performance monitoring interfaces",
+        "SETFCAP": "able to set file capabilities on other files",
+        "SETGID": "able to change group ID of processes",
+        "SETPCAP": "able to transfer capabilities between processes",
+        "SETUID": "able to change user ID of processes",
+        "SYS_ADMIN": "able to perform system administration operations",
+        "SYS_BOOT": "able to reboot and load/unload kernel modules",
+        "SYS_CHROOT": "able to use chroot() system call",
+        "SYS_MODULE": "able to load and unload kernel modules",
+        "SYS_NICE": "able to modify process scheduling priority",
+        "SYS_PACCT": "able to configure process accounting",
+        "SYS_PTRACE": "able to trace and control other processes",
+        "SYS_RAWIO": "able to perform raw I/O operations",
+        "SYS_RESOURCE": "able to override resource limits",
+        "SYS_TIME": "able to set system clock and real-time clock",
+        "SYS_TTY_CONFIG": "able to configure TTY devices",
+        "SYSLOG": "able to perform privileged syslog operations",
+        "WAKE_ALARM": "able to trigger system wake alarms",
+    }
+
+    _RENAME_MAPPINGS = {
+        "dssystem": "DS System",
+        "npm": "Nginx Proxy Manager",
+        "npmplus": "Nginx Proxy Manager Plus",
+        "omada": "Omada Controller",
+        "lms": "Lyrion Media Server",
+    }
+
+    _USER_MAPPINGS = {
+        4: "sync",
+        5: "games",
+        6: "man",
+        100: "_apt",
+        102: "systemd-network",
+        103: "systemd-resolve",
+        104: "messagebus",
+        105: "avahi",
+        106: "_rpc",
+        107: "statd",
+        108: "consul",
+        109: "nvpd",
+        110: "nslcd",
+        111: "sshd",
+        112: "systemd-coredump",
+        113: "Debian-snmp",
+        114: "ntp",
+        115: "Debian-exim",
+        116: "tftp",
+        117: "sssd",
+        118: "tcpdump",
+        120: "proftpd",
+        121: "ftp",
+        122: "nut",
+        123: "dnsmasq",
+        124: "ladvd",
+        125: "nova",
+        126: "haproxy",
+        127: "uuidd",
+        128: "ntpsec",
+        129: "tss",
+        130: "iperf3",
+        131: "_chrony",
+        999: "netdata",
+        65534: "nobody",
+    }
+
+    _GROUP_MAPPINGS = {
+        4: "adm",
+        5: "tty",
+        6: "disk",
+        12: "man",
+        14: "ftp",
+        15: "kmem",
+        20: "dialout",
+        21: "fax",
+        22: "voice",
+        24: "cdrom",
+        25: "floppy",
+        26: "tape",
+        27: "sudo",
+        29: "audio",
+        30: "dip",
+        37: "operator",
+        40: "src",
+        42: "shadow",
+        43: "utmp",
+        44: "video",
+        45: "sasl",
+        46: "plugdev",
+        50: "staff",
+        60: "games",
+        100: "users",
+        102: "systemd-journal",
+        103: "systemd-network",
+        104: "systemd-resolve",
+        105: "input",
+        106: "kvm",
+        107: "render",
+        108: "crontab",
+        109: "netdev",
+        110: "ssh",
+        111: "messagebus",
+        112: "avahi",
+        113: "consul",
+        114: "nvpd",
+        115: "nslcd",
+        116: "systemd-coredump",
+        117: "Debian-snmp",
+        118: "ssl-cert",
+        119: "ntp",
+        120: "Debian-exim",
+        121: "tftp",
+        122: "sssd",
+        123: "tcpdump",
+        124: "rdma",
+        126: "nut",
+        127: "ladvd",
+        128: "libvirt",
+        129: "nova",
+        130: "haproxy",
+        131: "uuidd",
+        132: "i2c",
+        133: "sgx",
+        134: "_ssh",
+        135: "ntpsec",
+        136: "tss",
+        137: "iperf3",
+        138: "_chrony",
+        544: "builtin_administrators",
+        545: "builtin_users",
+        546: "builtin_guests",
+        951: "truenas_readonly_administrators",
+        952: "truenas_sharing_administrators",
+        995: "incus-admin",
+        996: "incus",
+        997: "netdata",
+        999: "docker",
+        65534: "nogroup",
+    }
+
+    _COMMON_UID_GID_MAPPINGS = {
+        0: "root",
+        1: "daemon",
+        2: "bin",
+        3: "sys",
+        7: "lp",
+        8: "mail",
+        9: "news",
+        10: "uucp",
+        13: "proxy",
+        33: "www-data",
+        34: "backup",
+        38: "list",
+        39: "irc",
+        41: "gnats",
+        101: "systemd-timesync",
+        568: "apps",
+        666: "webdav",
+        950: "truenas_admin",
+        986: "libvirt-qemu",
+        998: "polkitd",
+    }
+
+    @staticmethod
+    def service_name_to_title(service_name: str) -> str:
+        """Convert a service name to a human-readable title."""
+        return service_name.replace("-", " ").replace("_", " ").title()
+
+    @staticmethod
+    def hash_service_name(service_name: str) -> str:
+        """Hash a service name to a short, unique identifier."""
+        return service_name.lower().replace("_", "").replace("-", "").replace(" ", "")
+
+    @classmethod
+    def uid_to_user_name(cls, uid: int) -> str:
+        """Convert a UID to a human-readable user name."""
+        if uid in cls._COMMON_UID_GID_MAPPINGS:
+            return f"Host user is [{cls._COMMON_UID_GID_MAPPINGS[uid]}]"
+        elif uid in cls._USER_MAPPINGS:
+            return f"Host user is [{cls._USER_MAPPINGS[uid]}]"
+        else:
+            # log warning
+            logger.warning(f"Unknown UID: {uid}")
+            return f"Host user is [unknown ({uid})]"
+
+    @classmethod
+    def gid_to_group_name(cls, gid: int) -> str:
+        """Convert a GID to a human-readable group name."""
+        if gid in cls._COMMON_UID_GID_MAPPINGS:
+            return f"Host group is [{cls._COMMON_UID_GID_MAPPINGS[gid]}]"
+        elif gid in cls._GROUP_MAPPINGS:
+            return f"Host group is [{cls._GROUP_MAPPINGS[gid]}]"
+        else:
+            # log warning
+            logger.warning(f"Unknown GID: {gid}")
+            return f"Host group is [unknown ({gid})]"
+
+    @classmethod
+    def create_capability_description(cls, capability_name: str, service_names: List[str], title: str) -> str:
+        """Create a human-readable description for a capability and its services."""
+        if capability_name not in cls._CAPABILITY_DESCRIPTIONS:
+            raise ValueError(f"Unknown capability: {capability_name}")
+
+        if not service_names:
+            raise ValueError(f"No services provided for capability: {capability_name}")
+        clean_service_names = set()
+        for name in service_names:
+            parts = name.split("-")
+            if parts[-1].isnumeric():
+                name = "-".join(parts[:-1])
+            clean_service_names.add(name)
+
+        formatted_services = []
+        for name in clean_service_names:
+            if cls.hash_service_name(name) == cls.hash_service_name(title):
+                formatted_services.append(title)
+            elif name.lower() in cls._RENAME_MAPPINGS:
+                formatted_services.append(cls._RENAME_MAPPINGS[name.lower()])
+            else:
+                formatted_services.append(cls.service_name_to_title(name))
+
+        base_description = cls._CAPABILITY_DESCRIPTIONS[capability_name]
+
+        if len(formatted_services) == 1:
+            return f"{formatted_services[0]} is {base_description}"
+        else:
+            return f"{', '.join(sorted(formatted_services))} are {base_description}"
+
+
+class FileSystemCache:
+    """Simple file system cache to avoid repeated file reads."""
+
+    def __init__(self):
+        self._yaml_cache = {}
+
+    def read_yaml_file(self, file_path: Path) -> Dict:
+        """Read and cache YAML file contents."""
+        # Convert to string for hashing
+        file_key = str(file_path)
+
+        # Check if file is cached and still valid
+        if file_key in self._yaml_cache:
+            cached_data, cached_mtime = self._yaml_cache[file_key]
+            try:
+                current_mtime = file_path.stat().st_mtime
+                if current_mtime == cached_mtime:
+                    return cached_data
+            except OSError:
+                # File might have been deleted, remove from cache
+                del self._yaml_cache[file_key]
+
+        # Read and cache the file
+        try:
+            with open(file_path, "r") as f:
+                data = yaml.safe_load(f)
+
+            # Ensure we have a dict
+            if not isinstance(data, dict):
+                raise ValueError(f"YAML file {file_path} must contain a dictionary at root level, got {type(data)}")
+
+            # Cache with modification time
+            mtime = file_path.stat().st_mtime
+            self._yaml_cache[file_key] = (data, mtime)
+            return data
+
+        except (IOError, yaml.YAMLError) as e:
+            raise RuntimeError(f"Failed to read YAML file {file_path}") from e
+
+    def write_yaml_file(self, file_path: Path, data: Dict) -> None:
+        """Write YAML data to file and invalidate cache."""
+        try:
+            with open(file_path, "w") as f:
+                yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+
+            # Remove from cache since file was modified
+            file_key = str(file_path)
+            if file_key in self._yaml_cache:
+                del self._yaml_cache[file_key]
+
+        except IOError as e:
+            raise RuntimeError(f"Failed to write YAML file {file_path}") from e
+
+    def clear_cache(self) -> None:
+        """Clear all cached data."""
+        self._yaml_cache.clear()
+
+
+class AppDiscoveryService:
+    """Service for discovering and validating TrueNAS apps."""
+
+    def __init__(self, apps_root_dir: str = Config.APPS_ROOT_DIR):
+        self.apps_root_path = Path(apps_root_dir)
+
+    def discover_all_apps(self) -> List[AppManifest]:
+        """Discover all valid apps across all trains."""
+        if not self.apps_root_path.exists():
+            logger.error(f"Apps root directory {self.apps_root_path} does not exist")
+            return []
+
+        all_apps = []
+        for train_path in self.apps_root_path.iterdir():
+            if not train_path.is_dir():
+                continue
+
+            train_name = train_path.name
+            logger.info(f"Scanning train: {train_name}")
+
+            train_apps = self._discover_apps_in_train(train_path, train_name)
+            all_apps.extend(train_apps)
+
+        logger.info(f"Discovered {len(all_apps)} apps total")
+        return all_apps
+
+    def discover_single_app(self, train_name: str, app_name: str) -> Optional[AppManifest]:
+        """Discover a specific app by train and name."""
+        app_path = self.apps_root_path / train_name / app_name
+        return self._create_app_manifest(app_path, train_name)
+
+    def _discover_apps_in_train(self, train_path: Path, train_name: str) -> List[AppManifest]:
+        """Discover all apps within a specific train."""
+        apps = []
+        for app_path in train_path.iterdir():
+            if not app_path.is_dir():
+                continue
+
+            app_manifest = self._create_app_manifest(app_path, train_name)
+            if app_manifest:
+                apps.append(app_manifest)
+
+        return apps
+
+    def _create_app_manifest(self, app_path: Path, train_name: str) -> Optional[AppManifest]:
+        """Create an AppManifest for a single app directory."""
+        app_name = app_path.name
+
+        # Skip excluded apps in test train
+        if train_name == "test" and app_name in Config.EXCLUDED_TEST_APPS:
+            logger.debug(f"Skipping excluded test app: {app_name}")
+            return None
+
+        # Validate required files exist
+        if not (app_path / Config.APP_METADATA_FILE).exists():
+            logger.warning(f"Skipping {app_path}: missing {Config.APP_METADATA_FILE}")
+            return None
+
+        # Find test value files
+        test_values_path = app_path / Config.TEST_VALUES_DIR
+        test_value_files = []
+
+        if test_values_path.exists():
+            test_value_files = [f.name for f in test_values_path.iterdir() if f.is_file() and f.suffix == ".yaml"]
+
+        if not test_value_files:
+            logger.warning(f"No test values found for {app_path}")
+
+        logger.debug(f"Found app: {app_path} with {len(test_value_files)} test configurations")
+        return AppManifest(path=app_path, name=app_name, train=train_name, test_value_files=test_value_files)
+
+
+class DockerComposeRenderer:
+    """Handles rendering TrueNAS apps using Docker container."""
+
+    def __init__(self, container_image: str = Config.CONTAINER_IMAGE, platform: str = Config.PLATFORM):
+        self.container_image = container_image
+        self.platform = platform
+
+    def render_app_with_values(self, app_manifest: AppManifest, test_values_filename: str) -> Dict:
+        """Render an app with specific test values and return compose data."""
+        workspace_path = os.getcwd()
+        values_path = app_manifest.path / Config.TEST_VALUES_DIR / test_values_filename
+
+        docker_cmd = [
+            "docker",
+            "run",
+            f"--platform={self.platform}",
+            "--quiet",
+            "--rm",
+            "-e FAKE_ENV=1",
+            f"-v={workspace_path}:/workspace",
+            "-v=/var/run/docker.sock:/var/run/docker.sock:ro",
+            self.container_image,
+            "apps_render_app",
+            "render",
+            f"--path=/workspace/{app_manifest.path}",
+            f"--values=/workspace/{values_path}",
+        ]
+
+        logger.debug(f"Rendering: {' '.join(docker_cmd)}")
+
+        try:
+            result = subprocess.run(docker_cmd, capture_output=True, text=True, check=True)
+            logger.debug(f"Successfully rendered {app_manifest.name} with {test_values_filename}")
+
+            if result.stdout:
+                logger.debug(f"Render output: {result.stdout}")
+
+        except subprocess.CalledProcessError as e:
+            logger.error(f"Failed to render {app_manifest.name}/{test_values_filename}")
+            logger.error(f"Docker error: {e.stderr}")
+            raise RuntimeError(f"Rendering failed for {app_manifest.name}") from e
+
+        # Read rendered compose file
+        compose_path = app_manifest.path / Config.RENDERED_COMPOSE_PATH
+        if not compose_path.exists():
+            raise FileNotFoundError(f"Rendered compose file not found: {compose_path}")
+
+        try:
+            self._fix_file_permissions(compose_path)
+            with open(compose_path, "r") as f:
+                data = yaml.safe_load(f)
+
+            # Ensure we have a dict
+            if not isinstance(data, dict):
+                raise ValueError(f"YAML file {compose_path} must contain a dictionary at root level, got {type(data)}")
+            return data
+
+        except yaml.YAMLError as e:
+            raise RuntimeError(f"Failed to parse rendered compose: {compose_path}") from e
+
+    def _fix_file_permissions(self, file_path: Path) -> None:
+        """Fix file permissions using Docker container."""
+        logger.debug(f"Fixing permissions for {file_path}")
+
+        docker_cmd = [
+            "docker",
+            "run",
+            f"--platform={self.platform}",
+            "--quiet",
+            "--rm",
+            "-e FAKE_ENV=1",
+            f"-v={os.getcwd()}:/workspace",
+            "--entrypoint=/bin/bash",
+            self.container_image,
+            "-c",
+            f"chmod 777 /workspace/{file_path}",
+        ]
+
+        result = subprocess.run(docker_cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            logger.error(f"Failed to fix permissions for {file_path}")
+            logger.error(result.stderr)
+            raise RuntimeError(f"Permission fix failed for {file_path}")
+
+
+class DockerComposeAnalyzer:
+    """Analyzes Docker Compose configurations for service capabilities."""
+
+    @staticmethod
+    def extract_service_names(compose_data: Dict, include_short_lived: bool = False) -> List[str]:
+        """Extract service names from compose data, optionally including short-lived services."""
+        services = compose_data.get("services", {})
+        if not services:
+            raise ValueError("No services found in compose data")
+
+        service_names = []
+        for service_name, service_config in services.items():
+            if not include_short_lived:
+                restart_policy = service_config.get("restart", "")
+                if restart_policy.startswith("on-failure"):
+                    logger.debug(f"Skipping short-lived service: {service_name}")
+                    continue
+
+            service_names.append(service_name)
+
+        return service_names
+
+    @staticmethod
+    def extract_capabilities_by_service(compose_data: Dict) -> Dict[str, Set[str]]:
+        """Extract capabilities grouped by service from compose data."""
+        services = compose_data.get("services", {})
+        if not services:
+            raise ValueError("No services found in compose data")
+
+        service_capabilities = {}
+
+        for service_name, service_config in services.items():
+            restart_policy = service_config.get("restart", "")
+
+            # Skip services without restart policy
+            if not restart_policy:
+                logger.warning(f"No restart policy for service: {service_name}")
+                continue
+
+            # Skip short-lived services
+            if restart_policy.startswith("on-failure"):
+                logger.debug(f"Skipping short-lived service: {service_name}")
+                continue
+
+            # Validate cap_drop configuration
+            if "cap_drop" not in service_config:
+                logger.error(
+                    f"No cap_drop for service: {service_name}. Consider explicitly setting the defaults via cap_add "
+                    "https://github.com/moby/moby/blob/7a0bf747f5c25da0794e42d5f9e5a40db5a7786e/oci/caps/defaults.go#L4"
+                )
+            elif service_config["cap_drop"] != ["ALL"]:
+                logger.error(f"Non-standard cap_drop for service: {service_name}")
+
+            # Extract capabilities
+            if "cap_add" in service_config:
+                capabilities = set(service_config["cap_add"])
+                if capabilities:
+                    service_capabilities[service_name] = capabilities
+                    logger.debug(f"Service {service_name} capabilities: {capabilities}")
+
+        return service_capabilities
+
+    @staticmethod
+    def extract_user_by_service(compose_data: Dict) -> Dict[str, Tuple[int, int]]:
+        """Extract user directive grouped by service from compose data.
+        Returns a dict mapping service name to (uid, gid) tuple.
+        Expects format "uid:gid". Defaults to (0, 0) for root if not specified."""
+        services = compose_data.get("services", {})
+        if not services:
+            raise ValueError("No services found in compose data")
+
+        service_users = {}
+
+        for service_name, service_config in services.items():
+            restart_policy = service_config.get("restart", "")
+
+            # Skip services without restart policy
+            if not restart_policy:
+                logger.warning(f"No restart policy for service: {service_name}")
+                continue
+
+            # Skip short-lived services
+            if restart_policy.startswith("on-failure"):
+                logger.debug(f"Skipping short-lived service: {service_name}")
+                continue
+
+            # Extract user directive, default to "0:0" (root) if not present
+            user_directive = service_config.get("user", "0:0")
+
+            # Parse user directive (format must be "uid:gid")
+            if isinstance(user_directive, str):
+                if ":" not in user_directive:
+                    raise ValueError(
+                        f"Service {service_name} has invalid user directive format: {user_directive}. "
+                        f"Expected format is 'uid:gid'"
+                    )
+
+                parts = user_directive.split(":")
+                if len(parts) != 2:
+                    raise ValueError(
+                        f"Service {service_name} has invalid user directive format: {user_directive}. "
+                        f"Expected format is 'uid:gid'"
+                    )
+
+                uid_part, gid_part = parts
+                try:
+                    uid = int(uid_part)
+                    gid = int(gid_part)
+                except ValueError:
+                    raise ValueError(
+                        f"Service {service_name} has non-numeric user directive: {user_directive}. "
+                        f"Both uid and gid must be numeric"
+                    )
+            else:
+                raise ValueError(
+                    f"Service {service_name} has unexpected user directive type: {type(user_directive)}. "
+                    f"Expected string format 'uid:gid'"
+                )
+
+            service_users[service_name] = (uid, gid)
+            logger.debug(f"Service {service_name} user: {uid}:{gid}")
+
+        return service_users
+
+
+class AppQuestionsValidator:
+    """Validates app questions configuration against actual services."""
+
+    def __init__(self, file_cache: FileSystemCache):
+        self.file_cache = file_cache
+
+    def validate_question(self, question: Dict) -> None:
+        """Validate a single question configuration."""
+        if "variable" not in question:
+            raise ValueError("Question missing variable field")
+
+        variable_name = question["variable"]
+        if variable_name == "TZ":
+            return
+
+        if variable_name not in [
+            "storageEntry",
+            "publicIpDnsProviderEntry",
+            "jenkinsJavaOpt",
+            "jenkinsOption",
+            "aspellDict",
+            "trustedProxy",
+            "extraParam",
+        ]:
+            if not re.match(Config.RE_VAR_NAME, variable_name):
+                raise ValueError(f"Invalid variable name: {variable_name}")
+
+        schema = question["schema"]
+        schema_type = schema["type"]
+        if schema_type == "dict":
+            for attr in schema["attrs"]:
+                self.validate_question(attr)
+        elif schema_type == "list":
+            if "min_length" in schema:
+                raise ValueError(f"List schema with min_length not supported, use min: {schema}")
+            for item in schema["items"]:
+                self.validate_question(item)
+
+    def validate_variable_names(self, app_manifest: AppManifest) -> None:
+        """Validate that variable names in questions match service names."""
+        questions_path = app_manifest.path / Config.QUESTIONS_FILE
+        if not questions_path.exists():
+            raise FileNotFoundError(f"Questions file not found: {questions_path}")
+
+        questions_config = self.file_cache.read_yaml_file(questions_path)
+        if not isinstance(questions_config, dict):
+            raise ValueError(f"Invalid questions config in {questions_path}")
+
+        for question in questions_config.get("questions", []):
+            self.validate_question(question)
+
+    def validate_container_labels_section(self, app_manifest: AppManifest, service_names: List[str]) -> None:
+        """Validate that container labels section matches actual service names."""
+        questions_path = app_manifest.path / Config.QUESTIONS_FILE
+        if not questions_path.exists():
+            raise FileNotFoundError(f"Questions file not found: {questions_path}")
+
+        questions_config = self.file_cache.read_yaml_file(questions_path)
+        if not isinstance(questions_config, dict):
+            raise ValueError(f"Invalid questions config in {questions_path}")
+
+        new_enum = [{"value": name, "description": name} for name in service_names]
+
+        def check_containers_enum(enum_item, section_name):
+            old_enum = enum_item["schema"]["enum"]
+
+            old_values = {item["value"] for item in old_enum}
+            new_values = {item["value"] for item in new_enum}
+
+            if old_values != new_values:
+                raise ValueError(
+                    f"Container {section_name} section should have {sorted(new_values)} "
+                    f"but has {sorted(old_values)}"
+                )
+
+        def check_labels():
+            # Find the labels question and validate containers enum
+            for question in questions_config.get("questions", []):
+                # Find the questions{}.labels[{}] question
+                if question.get("variable") != "labels":
+                    continue
+
+                # questions.labels
+                for attr in question["schema"]["items"][0]["schema"]["attrs"]:
+                    # Find the questions{}.labels[{}].containers[str] question
+                    if attr.get("variable") != "containers":
+                        continue
+
+                    # questions.labels.containers
+                    enum_item = attr["schema"]["items"][0]
+                    check_containers_enum(enum_item, "labels")
+                    return
+
+        def check_network():
+            # Find the network question and validate containers enum
+            for question in questions_config.get("questions", []):
+                # Find the questions{}.network{} question
+                if question.get("variable") != "network":
+                    continue
+
+                for item in question["schema"]["attrs"]:
+                    # Find the questions{}.network{}.networks[{}] question
+                    if item.get("variable") != "networks":
+                        continue
+
+                    for attr in item["schema"]["items"][0]["schema"]["attrs"]:
+                        # Find the questions{}.network{}.networks[{}].containers[{}] question
+                        if attr.get("variable") != "containers":
+                            continue
+
+                        for attr_item in attr["schema"]["items"][0]["schema"]["attrs"]:
+                            # Find the questions{}.network{}.networks[{}].containers[{}].name question
+                            if attr_item.get("variable") != "name":
+                                continue
+
+                            check_containers_enum(attr_item, "network.networks.containers.name")
+                            return
+
+        check_labels()
+        check_network()
+
+
+class AppVersionManager:
+    """Manages app version information and updates."""
+
+    def __init__(self, file_cache: FileSystemCache, should_bump_versions: bool = True):
+        self.file_cache = file_cache
+        self.should_bump_versions = should_bump_versions
+
+    def get_current_app_version(self, app_manifest: AppManifest) -> str:
+        """Get the current app version from appropriate source."""
+        # Special case for ix-app
+        if str(app_manifest.path) == f"{Config.APPS_ROOT_DIR}/stable/ix-app":
+            app_config = self.file_cache.read_yaml_file(app_manifest.path / Config.APP_METADATA_FILE)
+            return app_config["version"]
+
+        # Regular apps use ix_values.yaml
+        values_path = app_manifest.path / Config.APP_VALUES_FILE
+        if not values_path.exists():
+            raise FileNotFoundError(f"App values file not found: {values_path}")
+
+        values_config = self.file_cache.read_yaml_file(values_path)
+        return values_config["images"]["image"]["tag"]
+
+    def increment_patch_version(self, version: str) -> str:
+        """Increment the patch version number."""
+        if not self.should_bump_versions:
+            return version
+
+        try:
+            parts = version.split(".")
+            if len(parts) != 3:
+                raise ValueError("Version must be in format x.y.z")
+
+            parts[2] = str(int(parts[2]) + 1)
+            return ".".join(parts)
+        except (ValueError, IndexError) as e:
+            raise ValueError(f"Invalid version format: {version}") from e
+
+
+class AppMetadataUpdater:
+    """Updates app metadata files with capability information."""
+
+    def __init__(self, file_cache: FileSystemCache, version_manager: AppVersionManager):
+        self.file_cache = file_cache
+        self.version_manager = version_manager
+
+    @staticmethod
+    def create_run_as_context(service_users: Dict[str, Tuple[int, int]]) -> List[Dict[str, Any]]:
+        """Create run_as_context list based on service user values."""
+        run_as_context = []
+
+        for service_name, (uid, gid) in sorted(service_users.items()):
+            # Determine user type
+            if uid == 0:
+                user_type = "root user"
+            elif uid == 568:
+                user_type = "any non-root user"
+            else:
+                user_type = "non-root user"
+
+            # Determine group type
+            if gid == 0:
+                group_type = "root group"
+            elif gid == 568:
+                group_type = "any non-root group"
+            else:
+                group_type = "non-root group"
+
+            # Create description
+            if uid == 0 and gid == 0:
+                description = f"Container [{service_name}] runs as root user and group."
+            elif uid == 568 and gid == 568:
+                description = f"Container [{service_name}] can run as any non-root user and group."
+            elif uid != 0 and uid != 568 and gid != 0 and gid != 568:
+                description = f"Container [{service_name}] runs as non-root user and group."
+            elif uid == 568:
+                description = f"Container [{service_name}] can run as any non-root user and {group_type}."
+            elif gid == 568:
+                description = f"Container [{service_name}] runs as {user_type} and any non-root group."
+            else:
+                description = f"Container [{service_name}] runs as {user_type} and {group_type}."
+
+            context = {
+                "description": description,
+                "gid": gid,
+                "group_name": DockerCapabilityRegistry.gid_to_group_name(gid),
+                "uid": uid,
+                "user_name": DockerCapabilityRegistry.uid_to_user_name(uid),
+            }
+
+            run_as_context.append(context)
+
+        return run_as_context
+
+    def update_app_metadata(
+        self,
+        app_manifest: AppManifest,
+        capabilities: List[DockerCapability],
+        current_app_version: str,
+        service_users: Dict[str, Tuple[int, int]],
+        should_bump_version: bool = True,
+    ) -> None:
+        """Update app.yaml with new capabilities, run_as_context, and version information."""
+        app_metadata_path = app_manifest.path / Config.APP_METADATA_FILE
+        app_config = self.file_cache.read_yaml_file(app_metadata_path)
+
+        if not isinstance(app_config, dict):
+            raise ValueError(f"Invalid app config in {app_metadata_path}")
+
+        # Validate app configuration (warnings only)
+        self._validate_app_configuration(app_manifest, app_config)
+
+        # Check if update is needed
+        needs_version_bump = False
+
+        # Update app version if changed
+        old_app_version = app_config.get("app_version", "")
+        # If the old app version is a substring of the current version, keep it
+        # Example new version is 1.2.3-debian and app_version is 1.2.3. This is fine.
+        if old_app_version in current_app_version:
+            current_app_version = old_app_version
+        if current_app_version != old_app_version:
+            needs_version_bump = True
+        app_config["app_version"] = current_app_version
+
+        # Update capabilities if changed
+        new_capabilities_data = sorted([cap.to_dict() for cap in capabilities], key=lambda c: c["name"])
+        old_capabilities_data = sorted(app_config.get("capabilities", []), key=lambda c: c["name"])
+
+        if old_capabilities_data != new_capabilities_data:
+            needs_version_bump = True
+        app_config["capabilities"] = new_capabilities_data
+
+        # Update run_as_context if changed
+        new_run_as_context = self.create_run_as_context(service_users)
+        old_run_as_context = app_config.get("run_as_context", [])
+
+        if old_run_as_context != new_run_as_context:
+            needs_version_bump = True
+        app_config["run_as_context"] = new_run_as_context
+
+        new_maintainers = [{"email": "dev@truenas.com", "name": "truenas", "url": "https://www.truenas.com/"}]
+        if app_config.get("maintainers", []) != new_maintainers:
+            app_config["maintainers"] = new_maintainers
+            needs_version_bump = True
+
+        app_source = f"https://apps.truenas.com/catalog/{app_manifest.name}_{app_manifest.train}/"
+        curr_sources = set(app_config.get("sources", []))
+        curr_sources.add(app_source)
+        if set(app_config.get("sources", [])) != curr_sources:
+            app_config["sources"] = sorted(curr_sources)
+            needs_version_bump = True
+
+        # Bump version if needed
+        if needs_version_bump and should_bump_version:
+            old_version = app_config["version"]
+            new_version = self.version_manager.increment_patch_version(old_version)
+            app_config["version"] = new_version
+            logger.info(f"Updated {app_manifest.name} version: {old_version} → {new_version}")
+
+        # Write updated configuration
+        self.file_cache.write_yaml_file(app_metadata_path, app_config)
+
+    def _validate_app_configuration(self, app_manifest: AppManifest, app_config: Dict) -> None:
+        """Validate app configuration and log warnings for issues."""
+        app_name = app_config.get("name", app_manifest.name)
+
+        # Check for multiple categories
+        categories = app_config.get("categories", [])
+        if len(categories) > 1:
+            raise ValueError(
+                f"{app_manifest.name}: app.yaml must have exactly 1 category, found {len(categories)}: {categories}"
+            )
+
+        # Check for missing fields
+        if "date_added" not in app_config:
+            logger.warning(f"{app_manifest.name}: missing date_added")
+        if "changelog_url" not in app_config:
+            logger.warning(f"{app_manifest.name}: missing changelog_url")
+
+        # Validate media URLs
+        expected_base_url = "https://media.sys.truenas.net/apps"
+        app_expected_base_url = f"{expected_base_url}/{app_name}"
+
+        icon_url = app_config.get("icon", "")
+        if not icon_url.startswith(expected_base_url):
+            logger.error(f"{app_manifest.name}: invalid icon URL: {icon_url}. Must use {expected_base_url} as base")
+            sys.exit(1)
+
+        if not icon_url.startswith(f"{app_expected_base_url}/icons/"):
+            logger.warning(f"{app_manifest.name}: invalid icon URL: {icon_url}")
+
+        for ss_url in app_config.get("screenshots", []):
+            if not ss_url.startswith(expected_base_url):
+                logger.error(
+                    f"{app_manifest.name}: invalid screenshot URL: {ss_url}. Must use {expected_base_url} as base"
+                )
+                sys.exit(1)
+            if not ss_url.startswith(f"{app_expected_base_url}/screenshots/"):
+                logger.warning(f"{app_manifest.name}: invalid screenshot URL: {ss_url}")
+
+
+class TrueNASAppCapabilityManager:
+    """Main orchestrator for TrueNAS app capability management."""
+
+    def __init__(self, should_bump_versions: bool = True):
+        self.should_bump_versions = should_bump_versions
+        self.file_cache = FileSystemCache()
+        self.discovery_service = AppDiscoveryService()
+        self.compose_renderer = DockerComposeRenderer()
+        self.compose_analyzer = DockerComposeAnalyzer()
+        self.questions_validator = AppQuestionsValidator(self.file_cache)
+        self.version_manager = AppVersionManager(self.file_cache, should_bump_versions)
+        self.metadata_updater = AppMetadataUpdater(self.file_cache, self.version_manager)
+        self.capability_registry = DockerCapabilityRegistry()
+
+    def analyze_single_app(self, app_manifest: AppManifest) -> AppAnalysisResult:
+        """Analyze a single app across all its test configurations."""
+        if not app_manifest.test_value_files:
+            logger.warning(f"No test configurations for {app_manifest.name}")
+            return AppAnalysisResult([], [], "", {})
+
+        # Extract app title from app.yaml
+        app_metadata_path = app_manifest.path / Config.APP_METADATA_FILE
+        app_config = self.file_cache.read_yaml_file(app_metadata_path)
+        if not isinstance(app_config, dict):
+            raise ValueError(f"Invalid app config in {app_metadata_path}")
+        app_title = app_config.get("title", app_manifest.name)
+
+        # Track capabilities across all test configurations
+        capability_to_services: Dict[str, Set[str]] = {}
+        all_service_names = set()
+        # Track user values: service_name -> list of (uid, gid) tuples from all test configs
+        service_user_values: Dict[str, List[Tuple[int, int]]] = {}
+
+        for test_values_file in app_manifest.test_value_files:
+            logger.debug(f"Processing {app_manifest.name} with {test_values_file}")
+
+            try:
+                # Render app with test configuration
+                compose_data = self.compose_renderer.render_app_with_values(app_manifest, test_values_file)
+
+                # Extract service information
+                service_names = self.compose_analyzer.extract_service_names(compose_data)
+                all_service_names.update(service_names)
+
+                # Extract capabilities by service
+                service_capabilities = self.compose_analyzer.extract_capabilities_by_service(compose_data)
+
+                # Aggregate capabilities
+                for service_name, capabilities in service_capabilities.items():
+                    for capability in capabilities:
+                        if capability not in capability_to_services:
+                            capability_to_services[capability] = set()
+                        capability_to_services[capability].add(service_name)
+
+                # Extract user directives by service
+                service_users = self.compose_analyzer.extract_user_by_service(compose_data)
+                for service_name, (uid, gid) in service_users.items():
+                    if service_name not in service_user_values:
+                        service_user_values[service_name] = []
+                    service_user_values[service_name].append((uid, gid))
+
+            except Exception as e:
+                logger.error(f"Failed to process {app_manifest.name}/{test_values_file}: {e}")
+                raise
+
+        # Convert to DockerCapability objects
+        capabilities = []
+        for capability_name, services in capability_to_services.items():
+            try:
+                description = self.capability_registry.create_capability_description(
+                    capability_name, sorted(services), app_title
+                )
+                capabilities.append(DockerCapability(capability_name, description))
+            except ValueError as e:
+                logger.error(f"Failed to create capability description: {e}")
+                continue
+
+        # Determine final user for each service based on all test configurations
+        final_service_users = {}
+        for service_name, user_values in service_user_values.items():
+            uids = [uid for uid, _ in user_values]
+            gids = [gid for _, gid in user_values]
+
+            # If at least one test value has user 0 (root) or group 0 (root), the service runs as root
+            if 0 in uids or 0 in gids:
+                # Prefer entry with both uid=0 and gid=0
+                root_entry = None
+                for uid, gid in user_values:
+                    if uid == 0 and gid == 0:
+                        root_entry = (uid, gid)
+                        break
+                # If no (0,0), find entry with uid=0
+                if root_entry is None:
+                    for uid, gid in user_values:
+                        if uid == 0:
+                            root_entry = (uid, gid)
+                            break
+                # If no uid=0, find entry with gid=0
+                if root_entry is None:
+                    for uid, gid in user_values:
+                        if gid == 0:
+                            root_entry = (uid, gid)
+                            break
+                final_service_users[service_name] = root_entry
+            # If all test values have the same non-root user, use that
+            elif len(set(user_values)) == 1:
+                final_service_users[service_name] = user_values[0]
+            # If test values have different non-root users, use the first one
+            # (this shouldn't normally happen, but we handle it)
+            else:
+                logger.warning(
+                    f"Service {service_name} has inconsistent user values: {user_values}, using {user_values[0]}"
+                )
+                final_service_users[service_name] = user_values[0]
+
+        # Get current app version
+        current_version = self.version_manager.get_current_app_version(app_manifest)
+
+        return AppAnalysisResult(
+            capabilities=sorted(capabilities, key=lambda c: c.name),
+            service_names=sorted(all_service_names),
+            app_version=str(current_version),
+            service_users=final_service_users,
+        )
+
+    def update_single_app(self, app_manifest: AppManifest) -> None:
+        """Update capabilities and metadata for a single app."""
+        logger.debug(f"Updating capabilities for {app_manifest.name}")
+
+        try:
+            # Analyze the app
+            analysis_result = self.analyze_single_app(app_manifest)
+
+            # Validate variable names in questions
+            self.questions_validator.validate_variable_names(app_manifest)
+
+            # Validate questions configuration
+            self.questions_validator.validate_container_labels_section(app_manifest, analysis_result.service_names)
+
+            # Update metadata
+            self.metadata_updater.update_app_metadata(
+                app_manifest,
+                analysis_result.capabilities,
+                analysis_result.app_version,
+                analysis_result.service_users,
+                self.should_bump_versions,
+            )
+
+            logger.info(
+                f"Successfully updated {app_manifest.name} with "
+                f"{len(analysis_result.capabilities)} capabilities and "
+                f"{len(analysis_result.service_users)} services"
+            )
+
+        except Exception as e:
+            logger.error(f"Failed to update {app_manifest.name}: {e}")
+            raise
+
+    def update_all_apps(self) -> None:
+        """Update capabilities for all discovered apps."""
+        app_manifests = self.discovery_service.discover_all_apps()
+
+        if not app_manifests:
+            logger.warning("No apps found to process")
+            return
+
+        success_count = 0
+        failed_count = 0
+
+        for app_manifest in app_manifests:
+            try:
+                self.update_single_app(app_manifest)
+                success_count += 1
+            except Exception as e:
+                logger.error(f"Skipping {app_manifest.name}: {e}")
+                failed_count += 1
+                continue
+
+        logger.info(f"Successfully processed {success_count}/{len(app_manifests)} apps")
+        if failed_count > 0:
+            logger.error(f"Failed to process {failed_count} apps")
+            sys.exit(1)
+
+    def update_specific_app(self, train_name: str, app_name: str) -> None:
+        """Update capabilities for a specific app."""
+        app_manifest = self.discovery_service.discover_single_app(train_name, app_name)
+        if not app_manifest:
+            logger.error(f"App {train_name}/{app_name} not found")
+            sys.exit(1)
+
+        self.update_single_app(app_manifest)
+
+
+def parse_command_line_arguments() -> argparse.Namespace:
+    """Parse and return command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="TrueNAS Apps Capability Manager - Analyze and update app capabilities"
+    )
+    parser.add_argument("--train", help="Specific train name to process")
+    parser.add_argument("--app", help="Specific app name to process (requires --train)")
+    parser.add_argument("--no-bump", action="store_true", help="Skip version bumping when updating metadata")
+
+    return parser.parse_args()
+
+
+def main():
+    """Main application entry point."""
+    try:
+        args = parse_command_line_arguments()
+
+        # Initialize the capability manager
+        capability_manager = TrueNASAppCapabilityManager(should_bump_versions=not args.no_bump)
+
+        # Determine operation mode
+        if args.train and args.app:
+            # Update specific app
+            capability_manager.update_specific_app(args.train, args.app)
+        elif args.train or args.app:
+            # Invalid: both train and app must be provided together
+            logger.error("Both --train and --app must be provided together, or neither")
+            sys.exit(1)
+        else:
+            # Update all apps
+            capability_manager.update_all_apps()
+
+    except KeyboardInterrupt:
+        logger.info("Operation cancelled by user")
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

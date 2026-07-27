@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>TrueNAS Config Backup</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <h1>TrueNAS Config Backup</h1>
+
+  <section class="settings">
+    <h2>Configuration</h2>
+    <dl>
+      <dt>TrueNAS URL</dt><dd>{{ settings.truenas_url }}</dd>
+      <dt>Verify SSL</dt><dd>{{ settings.verify_ssl }}</dd>
+      <dt>Cron schedule</dt><dd>{{ settings.cron_schedule }}</dd>
+      <dt>Retention count</dt><dd>{{ settings.retention_count }}</dd>
+      <dt>Include secret seed</dt><dd>{{ settings.include_secret_seed }}</dd>
+      <dt>Next scheduled run</dt><dd>{{ next_run or "not scheduled" }}</dd>
+    </dl>
+    <form method="post" action="/run-now">
+      <button type="submit">Run backup now</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>Backups</h2>
+    <table>
+      <thead>
+        <tr><th>Filename</th><th>Size</th><th>Modified</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for b in backups %}
+        <tr>
+          <td>{{ b.filename }}</td>
+          <td>{{ (b.size_bytes / 1024 / 1024) | round(2) }} MB</td>
+          <td>{{ b.modified }}</td>
+          <td>
+            <a class="button" href="/backups/{{ b.filename }}/download">Download</a>
+            <form method="post" action="/backups/{{ b.filename }}/delete" onsubmit="return confirm('Delete {{ b.filename }}?');">
+              <button type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4">No backups yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Run history</h2>
+    <table>
+      <thead>
+        <tr><th>Timestamp</th><th>Status</th><th>Message</th></tr>
+      </thead>
+      <tbody>
+        {% for h in history %}
+        <tr>
+          <td>{{ h.timestamp }}</td>
+          <td>
+            {% if h.success %}
+            <span class="badge success">success</span>
+            {% else %}
+            <span class="badge failure">failure</span>
+            {% endif %}
+          </td>
+          <td>{{ h.message }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3">No runs yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</body>
+</html>

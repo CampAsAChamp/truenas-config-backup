@@ -1,0 +1,32 @@
+app_version: 0.1.0
+capabilities: []
+categories:
+- backup
+date_added: '2026-07-27'
+description: Scheduled backups of your TrueNAS system configuration, downloaded via the API.
+home: https://github.com/nschneider/truenas-config-backup
+host_mounts: []
+icon: https://media.sys.truenas.net/apps/truenas-config-backup/icons/icon.png
+keywords:
+- backup
+- config
+- truenas
+lib_version: 2.3.8
+lib_version_hash: ""
+maintainers:
+- email: nick_schneider@intuit.com
+  name: nschneider
+  url: https://github.com/nschneider
+name: truenas-config-backup
+run_as_context:
+- description: Container [truenas-config-backup] can run as any non-root user and group.
+  gid: 568
+  group_name: Host group is [apps]
+  uid: 568
+  user_name: Host user is [apps]
+screenshots: []
+sources:
+- https://github.com/nschneider/truenas-config-backup
+title: TrueNAS Config Backup
+train: community
+version: 1.0.0
