@@ -4,11 +4,6 @@ Living checklist for this repo. Update as items ship.
 
 ## Remaining
 
-### Release & CI
-- [ ] GitHub Actions workflow: build and push image to GHCR on version tag
-- [ ] Publish `0.1.0` (or next tag) to GHCR so installs pull a real image
-- [ ] Tag/release process documented (bump `app_version` in `app.yaml`, image tag in `ix_values.yaml`, git tag)
-
 ### Real-world validation
 - [ ] End-to-end install from custom catalog on a live TrueNAS SCALE box
 - [ ] Verify scheduled backup, manual run-now, dashboard download/delete
@@ -38,6 +33,11 @@ Living checklist for this repo. Update as items ship.
 - [x] Vendored `truenas/apps` library + local render/validate via `.github/scripts/ci.py`
 - [x] Root README with local run, build, validate, and custom-catalog install steps
 - [x] App icon in-repo (`icon.svg`) with GitHub raw URL in `app.yaml` / `item.yaml`
+
+### Release & CI
+- [x] GitHub Actions workflow: build and push image to GHCR on version tag
+- [x] Publish `0.1.0` (or next tag) to GHCR so installs pull a real image
+- [x] Tag/release process documented (bump `app_version` in `app.yaml`, image tag in `ix_values.yaml`, git tag)
 
 ### Architecture decisions
 - [x] Connection via API key + URL (not middleware socket mount)
