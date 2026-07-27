@@ -34,8 +34,13 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
+          version_file=$(tr -d '[:space:]' < VERSION)
           app_version=$(grep '^app_version:' ix-dev/community/truenas-config-backup/app.yaml | awk '{print $2}')
           image_tag=$(grep 'tag:' ix-dev/community/truenas-config-backup/ix_values.yaml | head -1 | awk '{print $2}')
+          if [ "$version_file" != "$TAG" ]; then
+            echo "VERSION ($version_file) does not match tag ($TAG)"
+            exit 1
+          fi
           if [ "$app_version" != "$TAG" ]; then
             echo "app.yaml app_version ($app_version) does not match tag ($TAG)"
             exit 1
@@ -60,4 +65,6 @@ jobs:
           platforms: linux/amd64
           push: true
           provenance: false
-          tags: ghcr.io/campasachamp/truenas-config-backup:${{ github.ref_name }}
+          tags: |
+            ghcr.io/campasachamp/truenas-config-backup:${{ github.ref_name }}
+            ghcr.io/campasachamp/truenas-config-backup:latest

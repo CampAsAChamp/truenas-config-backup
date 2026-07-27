@@ -37,7 +37,7 @@ Living checklist for this repo. Update as items ship.
 ### Release & CI
 - [x] GitHub Actions workflow: build and push image to GHCR on version tag
 - [x] Publish `0.1.0` to GHCR (`ghcr.io/campasachamp/truenas-config-backup:0.1.0`)
-- [x] Tag/release process documented (bump `app_version` in `app.yaml`, image tag in `ix_values.yaml`, git tag)
+- [x] Tag/release process automated (semantic-release on push to `main`; publish on tag)
 
 ### Architecture decisions
 - [x] Connection via API key + URL (not middleware socket mount)

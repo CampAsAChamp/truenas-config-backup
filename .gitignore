@@ -14,3 +14,5 @@ docker/certs/*
 
 .env.local
 local-data/
+
+node_modules/
