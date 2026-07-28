@@ -36,7 +36,7 @@ def list_backups() -> list[dict]:
     return backups
 
 
-def list_backup_runs(limit: int | None = 20) -> list[dict]:
+def _all_backup_runs() -> list[dict]:
     """Run history merged with on-disk backups (newest first)."""
     backups_by_name = {b["filename"]: b for b in list_backups()}
     claimed: set[str] = set()
@@ -87,9 +87,24 @@ def list_backup_runs(limit: int | None = 20) -> list[dict]:
             })
 
     runs.sort(key=lambda run: run["timestamp"], reverse=True)
+    return runs
+
+
+def list_backup_runs(limit: int | None = 20) -> list[dict]:
+    runs = _all_backup_runs()
     if limit is not None:
         runs = runs[:limit]
     return runs
+
+
+def list_backup_runs_page(offset: int = 0, limit: int | None = None) -> tuple[list[dict], int]:
+    """Return a page of backup runs and the total run count."""
+    runs = _all_backup_runs()
+    total = len(runs)
+    if limit is None:
+        return runs, total
+    start = max(offset, 0)
+    return runs[start:start + limit], total
 
 
 def delete_backup(filename: str) -> bool:
@@ -104,7 +119,7 @@ def delete_backup(filename: str) -> bool:
 
 def delete_run(timestamp: str) -> bool:
     """Remove a run from history and delete its backup file when still on disk."""
-    runs = list_backup_runs(limit=None)
+    runs = _all_backup_runs()
     run = next((item for item in runs if item["timestamp"] == timestamp), None)
     if not run:
         return False
@@ -146,6 +161,8 @@ def _execute_backup() -> tuple[bool, str]:
             api_key=config.TRUENAS_API_KEY,
             verify_ssl=config.TRUENAS_VERIFY_SSL,
             include_secret_seed=config.INCLUDE_SECRET_SEED,
+            include_pool_keys=config.INCLUDE_POOL_KEYS,
+            include_root_authorized_keys=config.INCLUDE_ROOT_AUTHORIZED_KEYS,
         )
     except TrueNASClientError as exc:
         message = str(exc)

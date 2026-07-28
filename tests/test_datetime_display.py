@@ -13,7 +13,7 @@ def test_format_dd_mm_yy_utc():
         date_format="dd/mm/yy",
         timezone_mode="utc",
     )
-    assert result == "04/05/25 02:58"
+    assert result == "04/05/25 02:58 AM"
 
 
 def test_format_dd_mm_yyyy_manual_timezone():
@@ -23,7 +23,7 @@ def test_format_dd_mm_yyyy_manual_timezone():
         timezone_mode="manual",
         timezone_name="America/Los_Angeles",
     )
-    assert result == "03/05/2025 19:58:12"
+    assert result == "03/05/2025 07:58:12 PM"
 
 
 def test_format_mm_dd_yy_utc():
@@ -32,7 +32,7 @@ def test_format_mm_dd_yy_utc():
         date_format="mm/dd/yy",
         timezone_mode="utc",
     )
-    assert result == "05/04/25 02:58"
+    assert result == "05/04/25 02:58 AM"
 
 
 def test_format_mm_dd_yyyy_manual_timezone():
@@ -42,7 +42,7 @@ def test_format_mm_dd_yyyy_manual_timezone():
         timezone_mode="manual",
         timezone_name="America/Los_Angeles",
     )
-    assert result == "05/03/2025 19:58:12"
+    assert result == "05/03/2025 07:58:12 PM"
 
 
 def test_format_dd_mm_yy_12h_utc():
@@ -81,7 +81,7 @@ def test_format_from_iso_string():
         date_format="dd/mm/yy",
         timezone_mode="utc",
     )
-    assert result == "04/05/25 02:58"
+    assert result == "04/05/25 02:58 AM"
 
 
 def test_invalid_manual_timezone_falls_back_to_utc():
@@ -91,7 +91,7 @@ def test_invalid_manual_timezone_falls_back_to_utc():
         timezone_mode="manual",
         timezone_name="Not/A_Real_Zone",
     )
-    assert result == "04/05/25 02:58"
+    assert result == "04/05/25 02:58 AM"
 
 
 def test_format_none_returns_empty():

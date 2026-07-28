@@ -14,12 +14,15 @@ backup_config:
   cron_schedule: "0 3 * * 0"
   dashboard_password: "test-dashboard-password"
   notify_webhook_url: ""
+  notify_provider: generic
   notify_on_success: false
   health_check_truenas: false
   retention_count: 8
   include_secret_seed: true
-  display_date_format: "dd/mm/yy"
-  display_clock_format: "24h"
+  include_pool_keys: false
+  include_root_authorized_keys: false
+  display_date_format: "mm/dd/yy"
+  display_clock_format: "12h"
   display_timezone_mode: "local"
   display_timezone: ""
 

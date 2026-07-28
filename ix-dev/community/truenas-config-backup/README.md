@@ -26,6 +26,9 @@ API), with retention pruning, a run-history log, and a simple web dashboard.
   revoked, create a new one in **My API Keys** and update the app configuration.
 - **Include Secret Seed** should stay enabled if you may restore encrypted passwords from
   this backup onto a new system.
+- **Include Pool Keys** and **Include Root Authorized Keys** are off by default; enable
+  them only when you need those secrets preserved for hardware migration.
+- **Restoring:** see the upstream [restore guide](https://github.com/CampAsAChamp/truenas-config-backup#restoring-a-backup) or the dashboard **How to restore** link.
 - **Retention Count** controls how many past backup files are kept; older files are pruned
   automatically after each successful run.
 

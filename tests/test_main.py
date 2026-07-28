@@ -15,8 +15,8 @@ def test_healthz(client):
 def test_dashboard(client, app_dirs, monkeypatch):
     (app_dirs["backup_dir"] / "sample.tar").write_bytes(b"data")
     monkeypatch.setattr("app.config.TRUENAS_URL", "https://192.168.1.50")
-    monkeypatch.setattr("app.config.DISPLAY_DATE_FORMAT", "dd/mm/yy")
-    monkeypatch.setattr("app.config.DISPLAY_CLOCK_FORMAT", "24h")
+    monkeypatch.setattr("app.config.DISPLAY_DATE_FORMAT", "mm/dd/yy")
+    monkeypatch.setattr("app.config.DISPLAY_CLOCK_FORMAT", "12h")
     monkeypatch.setattr("app.config.DISPLAY_TIMEZONE_MODE", "utc")
     monkeypatch.setattr("app.config.DISPLAY_TIMEZONE", "")
 
@@ -27,7 +27,7 @@ def test_dashboard(client, app_dirs, monkeypatch):
     assert f"v{get_version()}" in response.text
     assert '<code class="mono">https://192.168.1.50</code>' in response.text
     assert 'id="display-defaults"' in response.text
-    assert '"dateFormat": "dd/mm/yy"' in response.text
+    assert '"dateFormat": "mm/dd/yy"' in response.text
     assert 'class="timestamp col-timestamp" data-iso=' in response.text
     assert f'href="/static/style.css?v={get_version()}"' in response.text
 
@@ -202,3 +202,58 @@ def test_run_now_executes_backup(client, app_dirs):
     assert response.status_code == 303
     backups = backup_manager.list_backups()
     assert len(backups) == 1
+
+
+def test_dashboard_shows_restore_help_link(client, app_dirs):
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert 'href="/help/restore"' in response.text
+    assert "How to restore" in response.text
+
+
+def test_restore_help_requires_auth(unauthenticated_client):
+    response = unauthenticated_client.get("/help/restore", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/login?next=%2Fhelp%2Frestore"
+
+
+def test_restore_help_page(client):
+    response = client.get("/help/restore")
+
+    assert response.status_code == 200
+    assert "How to restore a backup" in response.text
+    assert "Manage Configuration" in response.text
+    assert "Back to dashboard" in response.text
+
+
+def test_dashboard_pagination(client, app_dirs, monkeypatch):
+    monkeypatch.setattr("app.config.DASHBOARD_PAGE_SIZE", 5)
+
+    for index in range(7):
+        history.append(success=False, message=f"failure {index}")
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert "Showing 1–5 of 7 runs" in response.text
+    assert 'href="/?page=2"' in response.text
+
+    response = client.get("/?page=2")
+
+    assert response.status_code == 200
+    assert "Showing 6–7 of 7 runs" in response.text
+    assert 'href="/?page=1"' in response.text
+
+
+def test_dashboard_invalid_page_clamps_to_last_page(client, app_dirs, monkeypatch):
+    monkeypatch.setattr("app.config.DASHBOARD_PAGE_SIZE", 5)
+
+    for index in range(7):
+        history.append(success=False, message=f"failure {index}")
+
+    response = client.get("/?page=99")
+
+    assert response.status_code == 200
+    assert "Showing 6–7 of 7 runs" in response.text

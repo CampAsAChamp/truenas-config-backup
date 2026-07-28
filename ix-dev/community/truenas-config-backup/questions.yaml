@@ -112,13 +112,28 @@ questions:
         - variable: notify_webhook_url
           label: Notification Webhook URL
           description: |
-            Optional URL to POST JSON backup event notifications (failures by default;
-            enable Notify on Success for heartbeat alerts). Works with Discord, Slack,
-            ntfy, Home Assistant, and other webhook receivers.
+            Optional URL to POST backup event notifications (failures by default;
+            enable Notify on Success for heartbeat alerts). For Discord, create a
+            webhook under Server Settings → Integrations and set Notify Provider to
+            Discord.
           schema:
             type: string
             required: false
             default: ""
+        - variable: notify_provider
+          label: Notification Provider
+          description: |
+            Payload format for the notification webhook. Use Discord when posting to
+            a Discord webhook URL; use Generic for Slack, ntfy, Home Assistant, and
+            other JSON receivers.
+          schema:
+            type: string
+            default: generic
+            enum:
+              - value: generic
+                description: Generic JSON payload (default)
+              - value: discord
+                description: Discord embed payload
         - variable: notify_on_success
           label: Notify on Success
           description: |
@@ -151,6 +166,21 @@ questions:
           schema:
             type: boolean
             default: true
+        - variable: include_pool_keys
+          label: Include Pool Keys
+          description: |
+            Include pool encryption keys in the backup. Enable when you may restore
+            onto new hardware with encrypted pools. Increases backup sensitivity.
+          schema:
+            type: boolean
+            default: false
+        - variable: include_root_authorized_keys
+          label: Include Root Authorized Keys
+          description: |
+            Include the root user's SSH authorized keys in the backup.
+          schema:
+            type: boolean
+            default: false
         - variable: display_date_format
           label: Display Date Format
           description: |
@@ -158,7 +188,7 @@ questions:
             override this per browser in Display settings.
           schema:
             type: string
-            default: "dd/mm/yy"
+            default: "mm/dd/yy"
             enum:
               - value: "dd/mm/yy"
                 description: "28/07/26 14:30"
@@ -177,7 +207,7 @@ questions:
             date format is ISO 8601. Users can override per browser in Display settings.
           schema:
             type: string
-            default: "24h"
+            default: "12h"
             enum:
               - value: "24h"
                 description: 24-hour (14:30)

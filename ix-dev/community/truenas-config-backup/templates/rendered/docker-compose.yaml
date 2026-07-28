@@ -74,8 +74,8 @@ services:
       BACKUP_DIR: /backups
       CONFIG_DIR: /config
       CRON_SCHEDULE: 0 3 * * 0
-      DISPLAY_CLOCK_FORMAT: 24h
-      DISPLAY_DATE_FORMAT: dd/mm/yy
+      DISPLAY_CLOCK_FORMAT: 12h
+      DISPLAY_DATE_FORMAT: mm/dd/yy
       DISPLAY_TIMEZONE_MODE: local
       HEALTH_CHECK_TRUENAS: 'false'
       INCLUDE_SECRET_SEED: 'true'

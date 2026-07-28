@@ -52,6 +52,32 @@ def test_validate_config_accepts_valid_cron(monkeypatch):
     monkeypatch.setattr(config, "TRUENAS_API_KEY", "key")
     monkeypatch.setattr(config, "CRON_SCHEDULE", "0 3 * * 0")
     monkeypatch.setattr(config, "RETENTION_COUNT", 8)
+    monkeypatch.setattr(config, "DASHBOARD_PAGE_SIZE", 20)
+    monkeypatch.setattr(config, "NOTIFY_PROVIDER", "generic")
 
     validate_config()
     CronTrigger.from_crontab(config.CRON_SCHEDULE)
+
+
+def test_validate_config_rejects_invalid_page_size(monkeypatch):
+    monkeypatch.setattr(config, "DASHBOARD_PASSWORD", "secret")
+    monkeypatch.setattr(config, "TRUENAS_API_KEY", "key")
+    monkeypatch.setattr(config, "CRON_SCHEDULE", "")
+    monkeypatch.setattr(config, "RETENTION_COUNT", 8)
+    monkeypatch.setattr(config, "DASHBOARD_PAGE_SIZE", 0)
+    monkeypatch.setattr(config, "NOTIFY_PROVIDER", "generic")
+
+    with pytest.raises(ValueError, match="DASHBOARD_PAGE_SIZE"):
+        validate_config()
+
+
+def test_validate_config_rejects_invalid_notify_provider(monkeypatch):
+    monkeypatch.setattr(config, "DASHBOARD_PASSWORD", "secret")
+    monkeypatch.setattr(config, "TRUENAS_API_KEY", "key")
+    monkeypatch.setattr(config, "CRON_SCHEDULE", "")
+    monkeypatch.setattr(config, "RETENTION_COUNT", 8)
+    monkeypatch.setattr(config, "DASHBOARD_PAGE_SIZE", 20)
+    monkeypatch.setattr(config, "NOTIFY_PROVIDER", "slack")
+
+    with pytest.raises(ValueError, match="NOTIFY_PROVIDER"):
+        validate_config()

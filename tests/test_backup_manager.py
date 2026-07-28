@@ -207,6 +207,24 @@ def test_list_backup_runs_without_history_uses_file_mtime(app_dirs):
     assert runs[0]["timestamp"] == backup_manager.list_backups()[0]["modified"]
 
 
+def test_list_backup_runs_page_returns_slice_and_total(app_dirs):
+    for index in range(25):
+        history.append(
+            success=False,
+            message=f"failure {index}",
+        )
+
+    page_runs, total = backup_manager.list_backup_runs_page(offset=0, limit=20)
+
+    assert total == 25
+    assert len(page_runs) == 20
+
+    page_runs, total = backup_manager.list_backup_runs_page(offset=20, limit=20)
+
+    assert total == 25
+    assert len(page_runs) == 5
+
+
 @patch("app.backup_manager.fetch_config_backup", return_value=b"not-a-tar")
 def test_run_backup_rejects_invalid_tar(mock_fetch, app_dirs):
     ok, message = backup_manager.run_backup()

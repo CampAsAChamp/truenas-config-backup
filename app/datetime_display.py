@@ -13,6 +13,30 @@ DATE_FORMAT_PRESETS = ("dd/mm/yy", "dd/mm/yyyy", "mm/dd/yy", "mm/dd/yyyy", "iso"
 TIMEZONE_MODES = ("local", "utc", "manual")
 CLOCK_FORMATS = ("24h", "12h")
 
+TIMEZONE_OPTIONS = (
+    "UTC",
+    "America/New_York",
+    "America/Chicago",
+    "America/Denver",
+    "America/Los_Angeles",
+    "Europe/London",
+    "Europe/Paris",
+    "Asia/Tokyo",
+    "Australia/Sydney",
+)
+
+TIMEZONE_LABELS = {
+    "UTC": "UTC",
+    "America/New_York": "Eastern",
+    "America/Chicago": "Central",
+    "America/Denver": "Mountain",
+    "America/Los_Angeles": "Pacific",
+    "Europe/London": "UK",
+    "Europe/Paris": "Central European",
+    "Asia/Tokyo": "Japan",
+    "Australia/Sydney": "Sydney",
+}
+
 _DATE_PARTS = {
     "dd/mm/yy": "%d/%m/%y",
     "dd/mm/yyyy": "%d/%m/%Y",
@@ -62,8 +86,8 @@ def _resolve_timezone(mode: str, timezone_name: str) -> timezone | ZoneInfo:
 def format_timestamp(
     value: datetime | str | None,
     *,
-    date_format: str = "dd/mm/yy",
-    clock_format: str = "24h",
+    date_format: str = "mm/dd/yy",
+    clock_format: str = "12h",
     timezone_mode: str = "local",
     timezone_name: str = "",
 ) -> str:
@@ -72,9 +96,9 @@ def format_timestamp(
     dt = _parse_timestamp(value)
     if date_format == "iso":
         return dt.astimezone(timezone.utc).isoformat()
-    date_part = _DATE_PARTS.get(date_format, _DATE_PARTS["dd/mm/yy"])
+    date_part = _DATE_PARTS.get(date_format, _DATE_PARTS["mm/dd/yy"])
     seconds = date_format.endswith("yyyy")
-    clock = clock_format if clock_format in CLOCK_FORMATS else "24h"
+    clock = clock_format if clock_format in CLOCK_FORMATS else "12h"
     time_part = _TIME_PARTS[(clock, seconds)]
     fmt = f"{date_part} {time_part}"
     tz = _resolve_timezone(timezone_mode, timezone_name)

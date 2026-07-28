@@ -105,13 +105,17 @@ exercising the dashboard.
 | `CRON_SCHEDULE` | *(none)* | Optional cron expression for scheduled backups; omit for manual-only |
 | `RETENTION_COUNT` | `8` | Number of backups to keep before pruning |
 | `INCLUDE_SECRET_SEED` | `true` | Include the password secret seed in the backup |
+| `INCLUDE_POOL_KEYS` | `false` | Include pool encryption keys in the backup |
+| `INCLUDE_ROOT_AUTHORIZED_KEYS` | `false` | Include root SSH authorized keys in the backup |
+| `DASHBOARD_PAGE_SIZE` | `20` | Number of backup runs shown per dashboard page |
 | `WEB_PORT` | `8080` | Port the dashboard listens on |
-| `DISPLAY_DATE_FORMAT` | `dd/mm/yy` | Default timestamp format on the dashboard (`dd/mm/yy`, `dd/mm/yyyy`, `mm/dd/yy`, `mm/dd/yyyy`, or `iso`) |
-| `DISPLAY_CLOCK_FORMAT` | `24h` | Default clock style for non-ISO formats (`24h` or `12h`) |
+| `DISPLAY_DATE_FORMAT` | `mm/dd/yy` | Default timestamp format on the dashboard (`dd/mm/yy`, `dd/mm/yyyy`, `mm/dd/yy`, `mm/dd/yyyy`, or `iso`) |
+| `DISPLAY_CLOCK_FORMAT` | `12h` | Default clock style for non-ISO formats (`24h` or `12h`) |
 | `DISPLAY_TIMEZONE_MODE` | `local` | Default timezone mode (`local`, `utc`, or `manual`) |
 | `DISPLAY_TIMEZONE` | *(empty)* | IANA timezone when mode is `manual` (e.g. `Europe/London`) |
 | `DASHBOARD_PASSWORD` | *(required)* | Password for the dashboard login page |
-| `NOTIFY_WEBHOOK_URL` | *(none)* | Optional URL to POST JSON backup event notifications |
+| `NOTIFY_WEBHOOK_URL` | *(none)* | Optional URL to POST backup event notifications |
+| `NOTIFY_PROVIDER` | `generic` | Notification payload format: `generic` or `discord` |
 | `NOTIFY_ON_SUCCESS` | `false` | Also notify the webhook when backups succeed |
 | `HEALTH_CHECK_TRUENAS` | `false` | When true, `/readyz` probes TrueNAS connectivity (slower) |
 
@@ -129,7 +133,49 @@ Set `CRON_SCHEDULE` with standard 5-field cron syntax (e.g. `0 3 * * 0` for week
 
 ### Notifications
 
-When `NOTIFY_WEBHOOK_URL` is set, the app POSTs JSON on backup failures (and on success when `NOTIFY_ON_SUCCESS=true`). Compatible with Discord, Slack, ntfy, Home Assistant, and other webhook receivers.
+When `NOTIFY_WEBHOOK_URL` is set, the app POSTs on backup failures (and on success when `NOTIFY_ON_SUCCESS=true`). Set `NOTIFY_PROVIDER=discord` when using a Discord webhook URL (Server Settings → Integrations → Webhooks). Use `generic` (default) for Slack, ntfy, Home Assistant, and other JSON receivers.
+
+### Restoring a backup
+
+This app backs up configuration only — restore is done in the TrueNAS web UI. The dashboard includes a **How to restore** link with a quick reference; this section is the full guide.
+
+#### Get the backup file
+
+Download a `.tar` file from the dashboard, or copy it from the `/backups` volume. Files are produced by TrueNAS `config.save` — the same format as **Manage Configuration → Download File** in the TrueNAS UI.
+
+#### Where to upload in TrueNAS SCALE
+
+- **SCALE 24.10 – 25.04:** **System Settings → General** → **Manage Configuration** (top-right) → **Upload File**
+- **SCALE 25.10+:** **System → Advanced Settings → Manage Configuration → Upload File**
+
+#### Step-by-step restore
+
+1. Choose the downloaded `.tar` file and click **Upload**.
+2. TrueNAS applies the configuration and **restarts** the system.
+3. After reboot, log back into the web UI. Existing accounts and passwords are preserved when the backup included the secret seed.
+
+#### Fresh install / hardware migration
+
+1. Install TrueNAS SCALE fresh on the new hardware and complete initial setup (set the `truenas_admin` password during install).
+2. Log into the web UI and upload your backup via **Manage Configuration**.
+3. After reboot, log out and back in — you may need your **pre-migration root password**.
+4. Import pools separately if needed. Config restore does not recreate pools on blank disks.
+
+#### Backup option implications
+
+| Option | Default | Restore impact |
+|---|---|---|
+| `INCLUDE_SECRET_SEED` | `true` | When enabled, encrypted passwords can be restored on new hardware. When disabled, passwords reset after restore. |
+| `INCLUDE_POOL_KEYS` | `false` | When enabled, pool encryption keys are included — needed for encrypted pools on new hardware. |
+| `INCLUDE_ROOT_AUTHORIZED_KEYS` | `false` | When enabled, root SSH authorized keys are preserved in the backup. |
+
+Treat backups containing the secret seed or pool keys as highly sensitive. See [SECURITY.md](SECURITY.md).
+
+#### Warnings / troubleshooting
+
+- Uploading a config file **replaces** the entire current system configuration. Save the target system's current config first if it has settings worth keeping.
+- **Network mismatch:** Restoring a config with static IPs or VLANs onto hardware with different NICs can make the web UI unreachable. Fix network settings via the system console (`/usr/bin/cli --menu`) before or after upload if needed.
+- **Version compatibility:** Restoring onto a much older or newer SCALE version may fail or behave unexpectedly. Prefer matching major versions when possible.
 
 ### Health endpoints
 

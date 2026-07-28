@@ -1,0 +1,64 @@
+{% from "_icons.html" import icon %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>How to restore — TrueNAS Config Backup</title>
+  <link rel="icon" href="{{ static_url('logo.svg') }}" type="image/svg+xml">
+  <link rel="icon" href="{{ static_url('logo.png') }}" type="image/png">
+  <link rel="stylesheet" href="{{ static_url('style.css') }}">
+</head>
+<body>
+  {% set back_href = "/" %}
+  {% include "_site_header.html" %}
+
+  <section class="panel restore-help">
+    <h2>{{ icon("info", 22) }} How to restore a backup</h2>
+
+    <ol class="restore-help__steps">
+      <li>Download a backup <code class="mono">.tar</code> file from the dashboard (or copy it from the <code class="mono">/backups</code> volume).</li>
+      <li>In the TrueNAS web UI, open <strong>Manage Configuration → Upload File</strong>:
+        <ul>
+          <li><strong>SCALE 24.10 – 25.04:</strong> System Settings → General → Manage Configuration</li>
+          <li><strong>SCALE 25.10+:</strong> System → Advanced Settings → Manage Configuration</li>
+        </ul>
+      </li>
+      <li>Select your downloaded <code class="mono">.tar</code> file and click <strong>Upload</strong>.</li>
+      <li>TrueNAS applies the configuration and <strong>restarts</strong>. Log back into the web UI after reboot.</li>
+    </ol>
+
+    <div class="restore-help__callout" role="note">
+      <strong>Important:</strong> Uploading a config file <strong>replaces</strong> the entire current system configuration. Save the target system's current config first if it has settings worth keeping.
+    </div>
+
+    <h3>Fresh install / hardware migration</h3>
+    <ol class="restore-help__steps">
+      <li>Install TrueNAS SCALE fresh on the new hardware and complete initial setup.</li>
+      <li>Log into the web UI and upload your backup via Manage Configuration.</li>
+      <li>After reboot, you may need your pre-migration <strong>root password</strong> to sign in.</li>
+      <li>Import pools separately if needed — config restore does not recreate pools on blank disks.</li>
+    </ol>
+
+    <h3>Backup options on this instance</h3>
+    <dl class="restore-help__options">
+      <dt>Include Secret Seed</dt>
+      <dd>{{ settings.include_secret_seed }} — {% if settings.include_secret_seed %}encrypted passwords can be restored on new hardware{% else %}passwords will reset after restore{% endif %}</dd>
+      <dt>Include Pool Keys</dt>
+      <dd>{{ settings.include_pool_keys }} — {% if settings.include_pool_keys %}pool encryption keys are included in backups{% else %}encrypted pools may need keys re-entered after restore{% endif %}</dd>
+      <dt>Include Root Authorized Keys</dt>
+      <dd>{{ settings.include_root_authorized_keys }} — {% if settings.include_root_authorized_keys %}root SSH keys are included{% else %}root SSH keys are not included{% endif %}</dd>
+    </dl>
+
+    <h3>Troubleshooting</h3>
+    <ul class="restore-help__tips">
+      <li><strong>Network mismatch:</strong> Restoring static IPs or VLANs onto hardware with different NICs can make the web UI unreachable. Fix network settings via the system console (<code class="mono">/usr/bin/cli --menu</code>) if needed.</li>
+      <li><strong>Version compatibility:</strong> Prefer restoring onto a similar SCALE version when possible.</li>
+      <li>This app backs up configuration only — restore is performed in the TrueNAS UI, not here.</li>
+    </ul>
+
+    <p class="restore-help__footer">
+      <a href="https://github.com/CampAsAChamp/truenas-config-backup#restoring-a-backup" target="_blank" rel="noopener noreferrer">Full documentation on GitHub</a>
+    </p>
+  </section>
+</body>
+</html>

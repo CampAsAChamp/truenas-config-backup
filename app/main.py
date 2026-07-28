@@ -18,7 +18,7 @@ from .auth import (
     verify_session,
 )
 from .config_validation import validate_config
-from .datetime_display import format_timestamp, to_iso
+from .datetime_display import TIMEZONE_LABELS, TIMEZONE_OPTIONS, format_timestamp, to_iso
 from .health import readiness_status
 from .version import get_version
 
@@ -57,11 +57,39 @@ def _static_url(path: str) -> str:
 templates.env.globals["static_url"] = _static_url
 
 
-def _redirect_home(toast: str, msg: str = "") -> RedirectResponse:
+def _redirect_home(toast: str, msg: str = "", page: int | None = None) -> RedirectResponse:
     params = {"toast": toast}
     if msg:
         params["msg"] = msg
+    if page is not None and page > 1:
+        params["page"] = str(page)
     return RedirectResponse(url=f"/?{urlencode(params)}", status_code=303)
+
+
+def _clamp_page(page: int, total_runs: int, page_size: int) -> int:
+    if page < 1:
+        return 1
+    if total_runs == 0:
+        return 1
+    total_pages = max(1, (total_runs + page_size - 1) // page_size)
+    return min(page, total_pages)
+
+
+def _pagination_context(page: int, page_size: int, total_runs: int) -> dict:
+    page = _clamp_page(page, total_runs, page_size)
+    total_pages = max(1, (total_runs + page_size - 1) // page_size) if total_runs else 1
+    showing_from = (page - 1) * page_size + 1 if total_runs else 0
+    showing_to = min(page * page_size, total_runs)
+    return {
+        "page": page,
+        "page_size": page_size,
+        "total_runs": total_runs,
+        "total_pages": total_pages,
+        "showing_from": showing_from,
+        "showing_to": showing_to,
+        "has_prev": page > 1,
+        "has_next": page < total_pages,
+    }
 
 
 def _safe_next_path(next_path: str | None) -> str:
@@ -164,7 +192,14 @@ def logout():
 
 
 @app.get("/", dependencies=[Depends(require_dashboard_auth)])
-def dashboard(request: Request):
+def dashboard(request: Request, page: int = 1):
+    page_size = config.DASHBOARD_PAGE_SIZE
+    offset = (max(page, 1) - 1) * page_size
+    backup_runs, total_runs = backup_manager.list_backup_runs_page(
+        offset=offset,
+        limit=page_size,
+    )
+    pagination = _pagination_context(page, page_size, total_runs)
     next_run = scheduler.next_run_time()
     return templates.TemplateResponse(
         request,
@@ -172,7 +207,8 @@ def dashboard(request: Request):
         {
             "version": get_version(),
             "dev_mode": config.DEV_MODE,
-            "backup_runs": backup_manager.list_backup_runs(),
+            "backup_runs": backup_runs,
+            "pagination": pagination,
             "next_run_iso": to_iso(next_run) if next_run else "",
             "settings": {
                 "truenas_url": config.TRUENAS_URL,
@@ -180,12 +216,35 @@ def dashboard(request: Request):
                 "cron_schedule": config.CRON_SCHEDULE,
                 "retention_count": config.RETENTION_COUNT,
                 "include_secret_seed": config.INCLUDE_SECRET_SEED,
+                "include_pool_keys": config.INCLUDE_POOL_KEYS,
+                "include_root_authorized_keys": config.INCLUDE_ROOT_AUTHORIZED_KEYS,
             },
             "display_defaults": {
                 "dateFormat": config.DISPLAY_DATE_FORMAT,
                 "clockFormat": config.DISPLAY_CLOCK_FORMAT,
                 "timezoneMode": config.DISPLAY_TIMEZONE_MODE,
                 "timezone": config.DISPLAY_TIMEZONE,
+            },
+            "display_config": {
+                "timezoneOptions": list(TIMEZONE_OPTIONS),
+                "timezoneLabels": TIMEZONE_LABELS,
+            },
+        },
+    )
+
+
+@app.get("/help/restore", dependencies=[Depends(require_dashboard_auth)])
+def restore_help(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "restore_help.html",
+        {
+            "version": get_version(),
+            "dev_mode": config.DEV_MODE,
+            "settings": {
+                "include_secret_seed": config.INCLUDE_SECRET_SEED,
+                "include_pool_keys": config.INCLUDE_POOL_KEYS,
+                "include_root_authorized_keys": config.INCLUDE_ROOT_AUTHORIZED_KEYS,
             },
         },
     )
@@ -215,7 +274,16 @@ def delete_backup(filename: str):
 
 
 @app.post("/runs/delete", dependencies=[Depends(require_dashboard_auth)])
-def delete_run(timestamp: str = Form(...)):
+def delete_run(timestamp: str = Form(...), page: int = Form(1)):
     if backup_manager.delete_run(timestamp):
-        return _redirect_home("run-deleted")
-    return _redirect_home("run-delete-failed")
+        total_runs = backup_manager.list_backup_runs_page(offset=0, limit=1)[1]
+        redirect_page = _clamp_page(page, total_runs, config.DASHBOARD_PAGE_SIZE)
+        offset = (redirect_page - 1) * config.DASHBOARD_PAGE_SIZE
+        page_runs, _ = backup_manager.list_backup_runs_page(
+            offset=offset,
+            limit=config.DASHBOARD_PAGE_SIZE,
+        )
+        if redirect_page > 1 and not page_runs:
+            redirect_page = max(1, redirect_page - 1)
+        return _redirect_home("run-deleted", page=redirect_page if redirect_page > 1 else None)
+    return _redirect_home("run-delete-failed", page=page if page > 1 else None)
