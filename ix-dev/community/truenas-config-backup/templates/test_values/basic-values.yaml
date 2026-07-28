@@ -12,7 +12,7 @@ backup_config:
   schedule_dow: 0
   schedule_dom: 1
   cron_schedule: "0 3 * * 0"
-  dashboard_password: ""
+  dashboard_password: "test-dashboard-password"
   notify_webhook_url: ""
   notify_on_success: false
   health_check_truenas: false

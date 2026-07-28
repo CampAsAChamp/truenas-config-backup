@@ -1,6 +1,29 @@
 import pytest
+from fastapi.testclient import TestClient
 
 from app import config
+
+TEST_DASHBOARD_PASSWORD = "test-password"
+
+
+class AuthenticatedTestClient:
+    def __init__(self, client: TestClient):
+        self._client = client
+        self._auth = ("", TEST_DASHBOARD_PASSWORD)
+
+    def __getattr__(self, name):
+        return getattr(self._client, name)
+
+    def request(self, method, url, **kwargs):
+        if "auth" not in kwargs:
+            kwargs["auth"] = self._auth
+        return self._client.request(method, url, **kwargs)
+
+    def get(self, url, **kwargs):
+        return self.request("GET", url, **kwargs)
+
+    def post(self, url, **kwargs):
+        return self.request("POST", url, **kwargs)
 
 
 @pytest.fixture
@@ -22,11 +45,9 @@ def app_dirs(tmp_path, monkeypatch):
 def client(app_dirs, monkeypatch):
     monkeypatch.setattr("app.scheduler.start", lambda: None)
     monkeypatch.setattr("app.scheduler.shutdown", lambda: None)
-    monkeypatch.setattr("app.config.DASHBOARD_PASSWORD", "")
-
-    from fastapi.testclient import TestClient
+    monkeypatch.setattr("app.config.DASHBOARD_PASSWORD", TEST_DASHBOARD_PASSWORD)
 
     from app.main import app
 
     with TestClient(app) as test_client:
-        yield test_client
+        yield AuthenticatedTestClient(test_client)

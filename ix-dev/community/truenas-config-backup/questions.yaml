@@ -104,14 +104,12 @@ questions:
         - variable: dashboard_password
           label: Dashboard Password
           description: |
-            Optional HTTP Basic Auth password for the web dashboard. When set, the
-            username can be anything; only the password is checked. Leave empty to
-            allow unauthenticated access (restrict port exposure on your network).
+            HTTP Basic Auth password for the web dashboard. The username can be anything;
+            only the password is checked. Required for all installs.
           schema:
             type: string
-            required: false
+            required: true
             private: true
-            default: ""
         - variable: notify_webhook_url
           label: Notification Webhook URL
           description: |

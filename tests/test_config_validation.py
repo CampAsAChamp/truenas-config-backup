@@ -5,7 +5,18 @@ from app import config
 from app.config_validation import validate_config
 
 
+def test_validate_config_rejects_missing_dashboard_password(monkeypatch):
+    monkeypatch.setattr(config, "DASHBOARD_PASSWORD", "")
+    monkeypatch.setattr(config, "TRUENAS_API_KEY", "key")
+    monkeypatch.setattr(config, "CRON_SCHEDULE", "")
+    monkeypatch.setattr(config, "RETENTION_COUNT", 8)
+
+    with pytest.raises(ValueError, match="DASHBOARD_PASSWORD"):
+        validate_config()
+
+
 def test_validate_config_warns_on_missing_api_key(monkeypatch, caplog):
+    monkeypatch.setattr(config, "DASHBOARD_PASSWORD", "secret")
     monkeypatch.setattr(config, "TRUENAS_API_KEY", "")
     monkeypatch.setattr(config, "CRON_SCHEDULE", "")
     monkeypatch.setattr(config, "RETENTION_COUNT", 8)
@@ -17,6 +28,7 @@ def test_validate_config_warns_on_missing_api_key(monkeypatch, caplog):
 
 
 def test_validate_config_rejects_invalid_cron(monkeypatch):
+    monkeypatch.setattr(config, "DASHBOARD_PASSWORD", "secret")
     monkeypatch.setattr(config, "TRUENAS_API_KEY", "key")
     monkeypatch.setattr(config, "CRON_SCHEDULE", "not-a-cron")
     monkeypatch.setattr(config, "RETENTION_COUNT", 8)
@@ -26,6 +38,7 @@ def test_validate_config_rejects_invalid_cron(monkeypatch):
 
 
 def test_validate_config_rejects_negative_retention(monkeypatch):
+    monkeypatch.setattr(config, "DASHBOARD_PASSWORD", "secret")
     monkeypatch.setattr(config, "TRUENAS_API_KEY", "key")
     monkeypatch.setattr(config, "CRON_SCHEDULE", "")
     monkeypatch.setattr(config, "RETENTION_COUNT", -1)
@@ -35,6 +48,7 @@ def test_validate_config_rejects_negative_retention(monkeypatch):
 
 
 def test_validate_config_accepts_valid_cron(monkeypatch):
+    monkeypatch.setattr(config, "DASHBOARD_PASSWORD", "secret")
     monkeypatch.setattr(config, "TRUENAS_API_KEY", "key")
     monkeypatch.setattr(config, "CRON_SCHEDULE", "0 3 * * 0")
     monkeypatch.setattr(config, "RETENTION_COUNT", 8)

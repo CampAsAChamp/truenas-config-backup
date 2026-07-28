@@ -8,6 +8,9 @@ logger = logging.getLogger("truenas_config_backup")
 
 
 def validate_config() -> None:
+    if not config.DASHBOARD_PASSWORD:
+        raise ValueError("DASHBOARD_PASSWORD is required")
+
     if not config.TRUENAS_API_KEY:
         logger.warning("TRUENAS_API_KEY is not set; backups will fail until configured")
 

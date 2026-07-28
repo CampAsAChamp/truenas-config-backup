@@ -117,26 +117,20 @@ def test_delete_run_missing(client):
     assert response.headers["location"] == "/?toast=run-delete-failed"
 
 
-def test_dashboard_requires_auth_when_password_set(client, monkeypatch):
-    monkeypatch.setattr("app.config.DASHBOARD_PASSWORD", "secret")
-
-    response = client.get("/")
+def test_dashboard_requires_auth(client):
+    response = client.get("/", auth=None)
 
     assert response.status_code == 401
 
 
-def test_dashboard_auth_with_password(client, monkeypatch):
-    monkeypatch.setattr("app.config.DASHBOARD_PASSWORD", "secret")
+def test_dashboard_rejects_wrong_password(client):
+    response = client.get("/", auth=("", "wrong-password"))
 
-    response = client.get("/", auth=("", "secret"))
-
-    assert response.status_code == 200
+    assert response.status_code == 401
 
 
-def test_healthz_open_when_password_set(client, monkeypatch):
-    monkeypatch.setattr("app.config.DASHBOARD_PASSWORD", "secret")
-
-    response = client.get("/healthz")
+def test_healthz_open_without_dashboard_auth(client):
+    response = client.get("/healthz", auth=None)
 
     assert response.status_code == 200
     assert response.text == "OK"

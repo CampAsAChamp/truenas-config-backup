@@ -18,7 +18,7 @@ Living checklist for this repo. Update as items ship.
 - [x] Configurable paths via env (`BACKUP_DIR`, `CONFIG_DIR`)
 - [x] `GET /healthz` for container health checks
 - [x] Unit/integration tests for `app/` (`tests/`, pytest, CI workflow)
-- [x] Optional dashboard HTTP Basic Auth (`DASHBOARD_PASSWORD`)
+- [x] Required dashboard HTTP Basic Auth (`DASHBOARD_PASSWORD`)
 - [x] Backup run lock (no overlapping scheduled + manual runs)
 - [x] Startup config validation (cron, retention)
 - [x] Post-download tar sanity check

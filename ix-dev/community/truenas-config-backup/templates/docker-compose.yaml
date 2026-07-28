@@ -34,9 +34,7 @@
 {% if values.backup_config.display_timezone %}
 {% do c1.environment.add_env("DISPLAY_TIMEZONE", values.backup_config.display_timezone) %}
 {% endif %}
-{% if values.backup_config.dashboard_password %}
 {% do c1.environment.add_env("DASHBOARD_PASSWORD", values.backup_config.dashboard_password) %}
-{% endif %}
 {% if values.backup_config.notify_webhook_url %}
 {% do c1.environment.add_env("NOTIFY_WEBHOOK_URL", values.backup_config.notify_webhook_url) %}
 {% endif %}

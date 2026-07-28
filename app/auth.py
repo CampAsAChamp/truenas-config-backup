@@ -11,8 +11,6 @@ security = HTTPBasic(auto_error=False)
 def require_dashboard_auth(
     credentials: HTTPBasicCredentials | None = Depends(security),
 ) -> None:
-    if not config.DASHBOARD_PASSWORD:
-        return
     if credentials is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

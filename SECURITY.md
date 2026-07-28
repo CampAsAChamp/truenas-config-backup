@@ -14,10 +14,11 @@ Do not open public issues for undisclosed vulnerabilities.
 
 ### Dashboard access
 
-The web dashboard can trigger backups, download full TrueNAS configuration archives, and delete stored backups. By default there is **no authentication** on the dashboard.
+The web dashboard can trigger backups, download full TrueNAS configuration archives, and delete stored backups. **Authentication is required** via HTTP Basic Auth (`DASHBOARD_PASSWORD`).
 
-- Set `DASHBOARD_PASSWORD` to enable HTTP Basic Auth when the port is reachable beyond a trusted network.
-- Alternatively, restrict port exposure (localhost-only binding, VLAN firewall, TrueNAS ingress rules).
+- Set a strong `DASHBOARD_PASSWORD` during install or in your environment before starting the container.
+- The username can be anything; only the password is checked.
+- Restrict port exposure where possible (localhost-only binding, VLAN firewall, TrueNAS ingress rules).
 
 ### Backup file sensitivity
 
