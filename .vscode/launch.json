@@ -64,8 +64,7 @@
       "module": "pytest",
       "args": [
         "-v",
-        "--cov=app",
-        "--cov-report=term-missing"
+        "--cov"
       ],
       "cwd": "${workspaceFolder}",
       "env": {

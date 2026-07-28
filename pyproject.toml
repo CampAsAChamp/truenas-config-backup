@@ -12,3 +12,14 @@ ignore = ["UP017"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["I001", "E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = ["--strict-markers", "--tb=short"]
+
+[tool.coverage.run]
+source = ["app"]
+
+[tool.coverage.report]
+show_missing = true

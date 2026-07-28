@@ -44,7 +44,7 @@
     {
       "label": "Run tests",
       "type": "shell",
-      "command": "${workspaceFolder}/.venv/bin/python -m pytest --cov=app --cov-report=term-missing",
+      "command": "${workspaceFolder}/.venv/bin/python -m pytest --cov",
       "options": {
         "cwd": "${workspaceFolder}"
       },

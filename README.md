@@ -215,7 +215,7 @@ Use the project venv so pytest picks up `pytest-cov` (system `pip3`/`pytest` oft
 python3 -m venv .venv
 source .venv/bin/activate   # prompt should show (.venv)
 pip install -r requirements.txt -r requirements-dev.txt
-python -m pytest --cov=app
+python -m pytest --cov
 ```
 
 Confirm you're in the venv: `which python` should point at `.venv/bin/python`.
