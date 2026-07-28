@@ -1,3 +1,10 @@
+## [0.7.2](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.7.1...0.7.2) (2026-07-28)
+
+
+### Bug Fixes
+
+* update README dashboard image ([23607f2](https://github.com/CampAsAChamp/truenas-config-backup/commit/23607f20f5431fe0f11359f1e38e27360c9d2428))
+
 ## [0.7.1](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.7.0...0.7.1) (2026-07-28)
 
 
