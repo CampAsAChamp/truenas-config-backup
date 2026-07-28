@@ -46,3 +46,30 @@ def test_append_writes_jsonl(app_dirs):
     assert entry["success"] is True
     assert entry["message"] == "logged"
     assert "timestamp" in entry
+
+
+def test_delete_by_timestamp(app_dirs):
+    history.append(success=True, message="keep", filename="keep.tar")
+    history.append(success=False, message="remove")
+    remove_ts = history.read_all()[0]["timestamp"]
+
+    assert history.delete_by_timestamp(remove_ts) is True
+
+    entries = history.read_all()
+    assert len(entries) == 1
+    assert entries[0]["message"] == "keep"
+
+
+def test_delete_by_filename(app_dirs):
+    history.append(success=True, message="first", filename="first.tar")
+    history.append(success=True, message="second", filename="second.tar")
+
+    assert history.delete_by_filename("first.tar") is True
+
+    entries = history.read_all()
+    assert len(entries) == 1
+    assert entries[0]["filename"] == "second.tar"
+
+
+def test_delete_by_timestamp_missing(app_dirs):
+    assert history.delete_by_timestamp("2026-01-01T00:00:00+00:00") is False

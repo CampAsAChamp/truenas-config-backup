@@ -73,6 +73,60 @@ def test_run_backup_success(mock_fetch, app_dirs):
     assert entries[0]["filename"] == result
 
 
+def test_delete_backup_removes_history(app_dirs):
+    _write_backup(app_dirs, "keep.tar")
+    history.append(success=True, message="backup completed", filename="keep.tar")
+
+    assert backup_manager.delete_backup("keep.tar") is True
+
+    assert backup_manager.list_backups() == []
+    assert history.read_all() == []
+
+
+def test_delete_run_removes_backup_and_history(app_dirs):
+    _write_backup(app_dirs, "keep.tar")
+    history.append(success=True, message="backup completed", filename="keep.tar")
+    timestamp = history.read_all()[0]["timestamp"]
+
+    assert backup_manager.delete_run(timestamp) is True
+
+    assert backup_manager.list_backups() == []
+    assert history.read_all() == []
+
+
+def test_delete_run_removes_history_when_backup_gone(app_dirs):
+    history.append(
+        success=True,
+        message="backup completed",
+        filename="truenas-config-gone.tar",
+    )
+    timestamp = history.read_all()[0]["timestamp"]
+
+    assert backup_manager.delete_run(timestamp) is True
+    assert history.read_all() == []
+
+
+def test_delete_run_removes_failed_history(app_dirs):
+    history.append(success=False, message="api down")
+    timestamp = history.read_all()[0]["timestamp"]
+
+    assert backup_manager.delete_run(timestamp) is True
+    assert history.read_all() == []
+
+
+def test_delete_run_orphan_backup_without_history(app_dirs):
+    _write_backup(app_dirs, "orphan.tar")
+    runs = backup_manager.list_backup_runs()
+    timestamp = runs[0]["timestamp"]
+
+    assert backup_manager.delete_run(timestamp) is True
+    assert backup_manager.list_backups() == []
+
+
+def test_delete_run_unknown_timestamp(app_dirs):
+    assert backup_manager.delete_run("2026-01-01T00:00:00+00:00") is False
+
+
 @patch("app.backup_manager.fetch_config_backup", side_effect=TrueNASClientError("api down"))
 def test_run_backup_truenas_error(mock_fetch, app_dirs):
     ok, message = backup_manager.run_backup()

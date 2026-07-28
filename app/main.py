@@ -2,7 +2,7 @@ import os
 from contextlib import asynccontextmanager
 from urllib.parse import urlencode
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, Form, Request
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -119,3 +119,10 @@ def delete_backup(filename: str):
     if backup_manager.delete_backup(filename):
         return _redirect_home("backup-deleted", safe_name)
     return _redirect_home("backup-delete-failed", safe_name)
+
+
+@app.post("/runs/delete", dependencies=[Depends(require_dashboard_auth)])
+def delete_run(timestamp: str = Form(...)):
+    if backup_manager.delete_run(timestamp):
+        return _redirect_home("run-deleted")
+    return _redirect_home("run-delete-failed")

@@ -98,7 +98,26 @@ def delete_backup(filename: str) -> bool:
     if not os.path.isfile(path):
         return False
     os.remove(path)
+    history.delete_by_filename(safe_name)
     return True
+
+
+def delete_run(timestamp: str) -> bool:
+    """Remove a run from history and delete its backup file when still on disk."""
+    runs = list_backup_runs(limit=None)
+    run = next((item for item in runs if item["timestamp"] == timestamp), None)
+    if not run:
+        return False
+
+    deleted = False
+    if run.get("has_backup") and run.get("filename"):
+        if delete_backup(run["filename"]):
+            deleted = True
+
+    if history.delete_by_timestamp(timestamp):
+        deleted = True
+
+    return deleted
 
 
 def backup_path(filename: str) -> str | None:

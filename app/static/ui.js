@@ -6,6 +6,8 @@
     "backup-failure": (msg) => `Backup failed: ${msg}`,
     "backup-deleted": (msg) => `Deleted ${msg}`,
     "backup-delete-failed": (msg) => `Could not delete ${msg || "backup"}`,
+    "run-deleted": () => "Run removed",
+    "run-delete-failed": () => "Could not remove run",
   };
 
   const TOAST_ICONS = {
@@ -102,6 +104,9 @@
       return;
     }
 
+    const titleEl = document.getElementById("delete-confirm-title");
+    const backupMsgEl = document.getElementById("delete-confirm-backup-msg");
+    const historyMsgEl = document.getElementById("delete-confirm-history-msg");
     const filenameEl = document.getElementById("delete-confirm-filename");
     const cancelBtn = document.getElementById("delete-confirm-cancel");
     const confirmBtn = document.getElementById("delete-confirm-submit");
@@ -111,8 +116,19 @@
     function openModal(form, button) {
       pendingForm = form;
       triggerButton = button;
+      const hasBackup = form.dataset.deleteHasBackup === "true";
+      const filename = form.dataset.deleteFilename || "";
+
+      if (titleEl) {
+        titleEl.textContent = hasBackup ? "Delete Backup?" : "Remove Run?";
+      }
+      if (backupMsgEl && historyMsgEl) {
+        const showBackupMsg = hasBackup && filename;
+        backupMsgEl.hidden = !showBackupMsg;
+        historyMsgEl.hidden = showBackupMsg;
+      }
       if (filenameEl) {
-        filenameEl.textContent = form.dataset.deleteFilename || "";
+        filenameEl.textContent = filename;
       }
       dialog.showModal();
     }
@@ -131,7 +147,7 @@
       }
     });
 
-    document.querySelectorAll(".delete-backup-form").forEach((form) => {
+    document.querySelectorAll(".delete-run-form, .delete-backup-form").forEach((form) => {
       form.addEventListener("submit", (event) => {
         if (form.dataset.confirmed === "true") {
           return;

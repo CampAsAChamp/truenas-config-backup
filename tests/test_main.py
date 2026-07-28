@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from app import backup_manager
+from app import backup_manager, history
 from app.version import get_version
 
 
@@ -49,12 +49,14 @@ def test_download_backup_success(client, app_dirs):
 def test_delete_backup(client, app_dirs):
     path = app_dirs["backup_dir"] / "remove.tar"
     path.write_bytes(b"x")
+    history.append(success=True, message="backup completed", filename="remove.tar")
 
     response = client.post("/backups/remove.tar/delete", follow_redirects=False)
 
     assert response.status_code == 303
     assert response.headers["location"] == "/?toast=backup-deleted&msg=remove.tar"
     assert not path.exists()
+    assert history.read_all() == []
 
 
 def test_delete_backup_missing(client):
@@ -62,6 +64,57 @@ def test_delete_backup_missing(client):
 
     assert response.status_code == 303
     assert response.headers["location"] == "/?toast=backup-delete-failed&msg=missing.tar"
+
+
+def test_delete_run_with_backup(client, app_dirs):
+    path = app_dirs["backup_dir"] / "remove.tar"
+    path.write_bytes(b"x")
+    history.append(success=True, message="backup completed", filename="remove.tar")
+    timestamp = history.read_all()[0]["timestamp"]
+
+    response = client.post("/runs/delete", data={"timestamp": timestamp}, follow_redirects=False)
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/?toast=run-deleted"
+    assert not path.exists()
+    assert history.read_all() == []
+
+
+def test_delete_run_without_backup(client, app_dirs):
+    history.append(
+        success=True,
+        message="backup completed",
+        filename="truenas-config-gone.tar",
+    )
+    timestamp = history.read_all()[0]["timestamp"]
+
+    response = client.post("/runs/delete", data={"timestamp": timestamp}, follow_redirects=False)
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/?toast=run-deleted"
+    assert history.read_all() == []
+
+
+def test_delete_failed_run(client, app_dirs):
+    history.append(success=False, message="api down")
+    timestamp = history.read_all()[0]["timestamp"]
+
+    response = client.post("/runs/delete", data={"timestamp": timestamp}, follow_redirects=False)
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/?toast=run-deleted"
+    assert history.read_all() == []
+
+
+def test_delete_run_missing(client):
+    response = client.post(
+        "/runs/delete",
+        data={"timestamp": "2026-01-01T00:00:00+00:00"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/?toast=run-delete-failed"
 
 
 def test_dashboard_requires_auth_when_password_set(client, monkeypatch):

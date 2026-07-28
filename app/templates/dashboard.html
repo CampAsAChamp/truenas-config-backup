@@ -55,18 +55,30 @@
             <td class="col-size">{% if run.size_bytes is not none %}{{ (run.size_bytes / 1024 / 1024) | round(2) }} MB{% else %}<span class="cell-empty">—</span>{% endif %}</td>
             <td class="col-message">{{ run.message or "—" }}</td>
             <td class="col-actions">
-              {% if run.has_backup %}
               <div class="actions">
+                {% if run.has_backup %}
                 <a class="button button--icon" href="/backups/{{ run.filename }}/download" aria-label="Download {{ run.filename }}">
                   {{ icon("download") }}
                 </a>
-                <form class="delete-backup-form" method="post" action="/backups/{{ run.filename }}/delete" data-delete-filename="{{ run.filename }}">
-                  <button type="submit" class="button button--icon button--danger" aria-label="Delete {{ run.filename }}">
+                {% endif %}
+                <form
+                  class="delete-run-form"
+                  method="post"
+                  action="/runs/delete"
+                  data-delete-timestamp="{{ run.timestamp }}"
+                  data-delete-has-backup="{{ 'true' if run.has_backup else 'false' }}"
+                  data-delete-filename="{{ run.filename or '' }}"
+                >
+                  <input type="hidden" name="timestamp" value="{{ run.timestamp }}">
+                  <button
+                    type="submit"
+                    class="button button--icon button--danger"
+                    aria-label="{% if run.has_backup %}Delete {{ run.filename }}{% else %}Remove run{% endif %}"
+                  >
                     {{ icon("trash") }}
                   </button>
                 </form>
               </div>
-              {% endif %}
             </td>
           </tr>
           {% else %}
@@ -161,8 +173,13 @@
     <div class="confirm-modal__content">
       <h3 id="delete-confirm-title" class="confirm-modal__title">Delete Backup?</h3>
       <p class="confirm-modal__body">
-        This will permanently remove the backup file:
-        <span id="delete-confirm-filename" class="confirm-modal__filename"></span>
+        <span id="delete-confirm-backup-msg">
+          This will permanently remove the backup file:
+          <span id="delete-confirm-filename" class="confirm-modal__filename"></span>
+        </span>
+        <span id="delete-confirm-history-msg" hidden>
+          This will remove this run from history.
+        </span>
       </p>
       <div class="confirm-modal__actions">
         <button type="button" class="button" id="delete-confirm-cancel">Cancel</button>
