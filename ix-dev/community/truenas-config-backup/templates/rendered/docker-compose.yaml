@@ -108,7 +108,7 @@ services:
       - --fail
       - http://127.0.0.1:30330/healthz
       timeout: 5s
-    image: ghcr.io/campasachamp/truenas-config-backup:0.7.2
+    image: ghcr.io/campasachamp/truenas-config-backup:0.8.0
     platform: linux/amd64
     ports:
     - mode: ingress

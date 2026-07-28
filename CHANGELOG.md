@@ -1,3 +1,10 @@
+# [0.8.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.7.2...0.8.0) (2026-07-28)
+
+
+### Features
+
+* add GitHub link to dashboard header ([2e8eeff](https://github.com/CampAsAChamp/truenas-config-backup/commit/2e8eeff3dbb82dff36c266c14c3e3a208ac597af))
+
 ## [0.7.2](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.7.1...0.7.2) (2026-07-28)
 
 
