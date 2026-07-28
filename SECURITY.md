@@ -22,7 +22,7 @@ The web dashboard can trigger backups, download full TrueNAS configuration archi
 
 ### Backup file sensitivity
 
-Config backup `.tar` files may include the **password secret seed** when `INCLUDE_SECRET_SEED=true` (the default). Treat downloaded backups and the backup storage volume as highly sensitive.
+Config backup `.tar` files may include the **password secret seed** when `INCLUDE_SECRET_SEED=true` (the default). When `INCLUDE_POOL_KEYS=true` or `INCLUDE_ROOT_AUTHORIZED_KEYS=true`, backups also contain pool encryption keys and root SSH keys respectively. Treat downloaded backups and the backup storage volume as highly sensitive.
 
 ### TrueNAS API keys
 

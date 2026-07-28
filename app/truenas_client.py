@@ -69,6 +69,8 @@ def fetch_config_backup(
     api_key: str,
     verify_ssl: bool,
     include_secret_seed: bool,
+    include_pool_keys: bool = False,
+    include_root_authorized_keys: bool = False,
 ) -> bytes:
     """Trigger config.save via core.download and return the tar bytes."""
     ws_url = _ws_url(base_url)
@@ -86,7 +88,11 @@ def fetch_config_backup(
             "core.download",
             [
                 "config.save",
-                [{"secretseed": include_secret_seed, "root_authorized_keys": False, "pool_keys": False}],
+                [{
+                    "secretseed": include_secret_seed,
+                    "root_authorized_keys": include_root_authorized_keys,
+                    "pool_keys": include_pool_keys,
+                }],
                 "freenas-v1.db.tar",
             ],
             request_id=2,

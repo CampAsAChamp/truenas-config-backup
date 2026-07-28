@@ -61,10 +61,17 @@ def test_fetch_config_backup_success(mock_ws_connect, mock_client_cls):
         api_key="test-key",
         verify_ssl=True,
         include_secret_seed=True,
+        include_pool_keys=True,
+        include_root_authorized_keys=True,
     )
 
     assert result == b"tar-data"
     mock_ws.send.assert_called()
+    sent_payload = json.loads(mock_ws.send.call_args[0][0])
+    save_params = sent_payload["params"][1][0]
+    assert save_params["secretseed"] is True
+    assert save_params["pool_keys"] is True
+    assert save_params["root_authorized_keys"] is True
     mock_client.get.assert_called_once_with("https://truenas.local/_download/job-1?auth_token=abc")
 
 
