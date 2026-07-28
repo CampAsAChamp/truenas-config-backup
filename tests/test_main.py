@@ -27,6 +27,7 @@ def test_dashboard(client, app_dirs, monkeypatch):
     assert 'id="display-defaults"' in response.text
     assert '"dateFormat": "dd/mm/yy"' in response.text
     assert 'class="timestamp col-timestamp" data-iso=' in response.text
+    assert f'href="/static/style.css?v={get_version()}"' in response.text
 
 
 def test_download_backup_not_found(client):

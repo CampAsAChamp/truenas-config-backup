@@ -33,6 +33,13 @@ def _format_datetime(value):
 templates.env.filters["format_datetime"] = _format_datetime
 
 
+def _static_url(path: str) -> str:
+    return f"/static/{path.lstrip('/')}?v={get_version()}"
+
+
+templates.env.globals["static_url"] = _static_url
+
+
 def _redirect_home(toast: str, msg: str = "") -> RedirectResponse:
     params = {"toast": toast}
     if msg:

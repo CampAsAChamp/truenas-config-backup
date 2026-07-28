@@ -5,13 +5,13 @@
 <head>
   <meta charset="utf-8">
   <title>TrueNAS Config Backup</title>
-  <link rel="icon" href="/static/logo.svg" type="image/svg+xml">
-  <link rel="icon" href="/static/logo.png" type="image/png">
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" href="{{ static_url('logo.svg') }}" type="image/svg+xml">
+  <link rel="icon" href="{{ static_url('logo.png') }}" type="image/png">
+  <link rel="stylesheet" href="{{ static_url('style.css') }}">
 </head>
 <body>
   <header class="site-header">
-    <img class="logo" src="/static/logo.svg" alt="" width="48" height="48">
+    <img class="logo" src="{{ static_url('logo.svg') }}" alt="" width="48" height="48">
     <div>
       <h1>TrueNAS Config Backup</h1>
       <span class="version">v{{ version }}</span>
@@ -173,8 +173,8 @@
 
   <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
-  <script src="/static/ui.js"></script>
+  <script src="{{ static_url('ui.js') }}"></script>
   <script type="application/json" id="display-defaults">{{ display_defaults | tojson }}</script>
-  <script src="/static/display-settings.js"></script>
+  <script src="{{ static_url('display-settings.js') }}"></script>
 </body>
 </html>
