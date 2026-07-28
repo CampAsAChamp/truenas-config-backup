@@ -14,31 +14,35 @@
   <td class="col-message">{{ run.message or "—" }}</td>
   <td class="col-actions">
     <div class="actions">
-      {% if run.has_backup %}
-      <a class="button button--icon" href="/backups/{{ run.filename }}/download" aria-label="Download {{ run.filename }}">
-        {{ icon("download") }}
-      </a>
-      {% endif %}
-      <form
-        class="delete-run-form"
-        method="post"
-        action="/runs/delete"
-        data-delete-timestamp="{{ run.timestamp }}"
-        data-delete-has-backup="{{ 'true' if run.has_backup else 'false' }}"
-        data-delete-filename="{{ run.filename or '' }}"
-      >
-        <input type="hidden" name="timestamp" value="{{ run.timestamp }}">
-        {% if page > 1 %}
-        <input type="hidden" name="page" value="{{ page }}">
+      <div class="actions__slot">
+        {% if run.has_backup %}
+        <a class="button button--icon" href="/backups/{{ run.filename }}/download" aria-label="Download {{ run.filename }}">
+          {{ icon("download") }}
+        </a>
         {% endif %}
-        <button
-          type="submit"
-          class="button button--icon button--danger"
-          aria-label="{% if run.has_backup %}Delete {{ run.filename }}{% else %}Remove run{% endif %}"
+      </div>
+      <div class="actions__slot">
+        <form
+          class="delete-run-form"
+          method="post"
+          action="/runs/delete"
+          data-delete-timestamp="{{ run.timestamp }}"
+          data-delete-has-backup="{{ 'true' if run.has_backup else 'false' }}"
+          data-delete-filename="{{ run.filename or '' }}"
         >
-          {{ icon("trash") }}
-        </button>
-      </form>
+          <input type="hidden" name="timestamp" value="{{ run.timestamp }}">
+          {% if page > 1 %}
+          <input type="hidden" name="page" value="{{ page }}">
+          {% endif %}
+          <button
+            type="submit"
+            class="button button--icon button--danger"
+            aria-label="{% if run.has_backup %}Delete {{ run.filename }}{% else %}Remove run{% endif %}"
+          >
+            {{ icon("trash") }}
+          </button>
+        </form>
+      </div>
     </div>
   </td>
 </tr>

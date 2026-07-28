@@ -53,12 +53,20 @@ button:hover,
 
 .actions {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.5rem;
 }
 
-.actions form {
+.actions__slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(18px + 0.8rem + 2px);
+  flex-shrink: 0;
+}
+
+.actions__slot form {
   display: inline-flex;
 }
 
