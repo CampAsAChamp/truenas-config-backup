@@ -1,3 +1,12 @@
+# [0.7.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.6.0...0.7.0) (2026-07-28)
+
+
+### Features
+
+* add dashboard pagination, restore help, and config options ([a0398cd](https://github.com/CampAsAChamp/truenas-config-backup/commit/a0398cdec8e9c6ef6da28165687128f0bf82a3a6))
+* add Discord webhook notification provider ([fbe764b](https://github.com/CampAsAChamp/truenas-config-backup/commit/fbe764bb4ffde3d9321d9be80ffc5ffa65df0853))
+* add pool keys and root SSH keys to config backups ([5735097](https://github.com/CampAsAChamp/truenas-config-backup/commit/5735097822b40c6c2060805d84afeaf4b3a308f1))
+
 # [0.6.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.5.1...0.6.0) (2026-07-28)
 
 
