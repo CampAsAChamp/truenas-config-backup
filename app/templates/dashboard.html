@@ -193,5 +193,24 @@
   <script src="{{ static_url('ui.js') }}"></script>
   <script type="application/json" id="display-defaults">{{ display_defaults | tojson }}</script>
   <script src="{{ static_url('display-settings.js') }}"></script>
+  {% if dev_mode %}
+  <script>
+    (function () {
+      var lastBootId = null;
+      var source = new EventSource('/dev/reload-events');
+      source.onmessage = function (event) {
+        var bootId = JSON.parse(event.data).boot_id;
+        if (lastBootId !== null && bootId !== lastBootId) {
+          location.reload();
+          return;
+        }
+        lastBootId = bootId;
+      };
+      source.onerror = function () {
+        source.close();
+      };
+    })();
+  </script>
+  {% endif %}
 </body>
 </html>

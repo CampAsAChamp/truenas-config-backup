@@ -33,4 +33,6 @@ NOTIFY_ON_SUCCESS = _bool_env("NOTIFY_ON_SUCCESS", False)
 
 HEALTH_CHECK_TRUENAS = _bool_env("HEALTH_CHECK_TRUENAS", False)
 
+DEV_MODE = _bool_env("DEV_MODE", False)
+
 HISTORY_FILE = os.path.join(CONFIG_DIR, "history.jsonl")

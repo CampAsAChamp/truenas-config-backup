@@ -42,6 +42,28 @@ ix-dev/community/truenas-config-backup/
 
 ## Running the backend locally
 
+### Hot reload (recommended)
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+cp .env.local.example .env.local   # edit TRUENAS_API_KEY and DASHBOARD_PASSWORD
+./scripts/dev.sh
+```
+
+Then visit `http://127.0.0.1:8080`. Edits to Python, templates, CSS, or JS under `app/`
+restart the server automatically and refresh the browser.
+
+You can also use **Run and Debug → Run app** in VS Code/Cursor — it uses the same
+reload settings and sets `DEV_MODE=true`.
+
+`DEV_MODE` enables dev-only behavior: mtime-based cache busting for static assets and
+a live-reload SSE endpoint. It is never set in the production container.
+
+### Production-like run (no reload)
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -56,7 +78,7 @@ Then visit `http://localhost:8080`.
 
 ### Sample data for local testing
 
-When you run the app via **Run and Debug → Run app** in VS Code/Cursor, sample backups and
+When you run the app via **Run and Debug → Run app** or `./scripts/dev.sh`, sample backups and
 run history are seeded automatically into `local-data/` if that folder has no `.tar` files yet.
 No TrueNAS connection is required to browse, download, or delete those backups.
 

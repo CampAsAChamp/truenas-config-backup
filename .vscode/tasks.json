@@ -14,6 +14,20 @@
       }
     },
     {
+      "label": "Dev server (hot reload)",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/dev.sh",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Install dependencies",
       "type": "shell",
       "command": "${workspaceFolder}/.venv/bin/pip install -r requirements.txt -r requirements-dev.txt",

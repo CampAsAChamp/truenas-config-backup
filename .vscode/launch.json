@@ -12,11 +12,22 @@
         "127.0.0.1",
         "--port",
         "8080",
-        "--reload"
+        "--reload",
+        "--reload-dir",
+        "app",
+        "--reload-include",
+        "*.py",
+        "--reload-include",
+        "*.html",
+        "--reload-include",
+        "*.css",
+        "--reload-include",
+        "*.js"
       ],
       "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env.local",
       "env": {
+        "DEV_MODE": "true",
         "BACKUP_DIR": "${workspaceFolder}/local-data/backups",
         "CONFIG_DIR": "${workspaceFolder}/local-data/config",
         "TRUENAS_VERIFY_SSL": "false"

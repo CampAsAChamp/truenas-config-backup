@@ -34,7 +34,16 @@ templates.env.filters["format_datetime"] = _format_datetime
 
 
 def _static_url(path: str) -> str:
-    return f"/static/{path.lstrip('/')}?v={get_version()}"
+    rel_path = path.lstrip("/")
+    if config.DEV_MODE:
+        file_path = os.path.join(STATIC_DIR, rel_path)
+        try:
+            cache_key = int(os.stat(file_path).st_mtime)
+        except OSError:
+            cache_key = get_version()
+    else:
+        cache_key = get_version()
+    return f"/static/{rel_path}?v={cache_key}"
 
 
 templates.env.globals["static_url"] = _static_url
@@ -56,6 +65,12 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="TrueNAS Config Backup", lifespan=lifespan)
+
+if config.DEV_MODE:
+    from .dev_reload import router as dev_reload_router
+
+    app.include_router(dev_reload_router)
+
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
@@ -79,6 +94,7 @@ def dashboard(request: Request):
         "dashboard.html",
         {
             "version": get_version(),
+            "dev_mode": config.DEV_MODE,
             "backup_runs": backup_manager.list_backup_runs(),
             "next_run_iso": to_iso(next_run) if next_run else "",
             "settings": {
