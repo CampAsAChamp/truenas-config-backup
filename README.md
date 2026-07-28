@@ -28,7 +28,7 @@ Note: TrueNAS SCALE 25.04 deprecated the old synchronous REST config-save endpoi
 ## Repository layout
 
 ```
-docs/                             Brand assets (logo.svg, logo.png, dashboard.png; logo also in app/static/)
+docs/                             Brand assets (logo.svg, logo.png, dashboard.png)
 app/                              FastAPI backend (the container's application code)
 tests/                            pytest unit and integration tests for app/
 Dockerfile, requirements.txt      Container build

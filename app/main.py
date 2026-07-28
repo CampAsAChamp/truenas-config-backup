@@ -24,6 +24,8 @@ from .version import get_version
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+DOCS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs")
+BRAND_ASSETS = {"logo.svg", "logo.png"}
 
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
@@ -41,17 +43,23 @@ def _format_datetime(value):
 templates.env.filters["format_datetime"] = _format_datetime
 
 
+def _asset_location(rel_path: str) -> tuple[str, str]:
+    if rel_path in BRAND_ASSETS:
+        return "/brand", os.path.join(DOCS_DIR, rel_path)
+    return "/static", os.path.join(STATIC_DIR, rel_path)
+
+
 def _static_url(path: str) -> str:
     rel_path = path.lstrip("/")
+    base, file_path = _asset_location(rel_path)
     if config.DEV_MODE:
-        file_path = os.path.join(STATIC_DIR, rel_path)
         try:
             cache_key = int(os.stat(file_path).st_mtime)
         except OSError:
             cache_key = get_version()
     else:
         cache_key = get_version()
-    return f"/static/{rel_path}?v={cache_key}"
+    return f"{base}/{rel_path}?v={cache_key}"
 
 
 templates.env.globals["static_url"] = _static_url
@@ -143,6 +151,7 @@ if config.DEV_MODE:
 
     app.include_router(dev_reload_router)
 
+app.mount("/brand", StaticFiles(directory=DOCS_DIR), name="brand")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 

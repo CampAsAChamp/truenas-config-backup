@@ -18,6 +18,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
+COPY docs/logo.svg docs/logo.png ./docs/
 
 ENV BACKUP_DIR=/backups \
     CONFIG_DIR=/config \

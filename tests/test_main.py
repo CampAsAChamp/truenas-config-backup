@@ -30,6 +30,7 @@ def test_dashboard(client, app_dirs, monkeypatch):
     assert '"dateFormat": "mm/dd/yy"' in response.text
     assert 'class="timestamp col-timestamp" data-iso=' in response.text
     assert f'href="/static/style.css?v={get_version()}"' in response.text
+    assert f'href="/brand/logo.svg?v={get_version()}"' in response.text
 
 
 def test_download_backup_not_found(client):
@@ -210,6 +211,8 @@ def test_dashboard_shows_restore_help_link(client, app_dirs):
     assert response.status_code == 200
     assert 'href="/help/restore"' in response.text
     assert "How to restore" in response.text
+    assert 'href="https://github.com/CampAsAChamp/truenas-config-backup"' in response.text
+    assert 'aria-label="View source on GitHub"' in response.text
 
 
 def test_restore_help_requires_auth(unauthenticated_client):
@@ -226,6 +229,7 @@ def test_restore_help_page(client):
     assert "How to restore a backup" in response.text
     assert "Manage Configuration" in response.text
     assert "Back to dashboard" in response.text
+    assert 'href="https://github.com/CampAsAChamp/truenas-config-backup"' in response.text
 
 
 def test_dashboard_pagination(client, app_dirs, monkeypatch):
