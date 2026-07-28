@@ -277,7 +277,7 @@ Push to `main` — no manual version bumps, git tags, or release PRs.
 
 Tag pushes from semantic-release use `GITHUB_TOKEN`, which does **not** trigger other
 workflows on GitHub — so image publish runs in `release.yml`, not via a separate tag hook.
-Use **Actions → Publish image → Run workflow** to re-publish an existing tag manually.
+Use **Actions → Publish Docker image → Run workflow** to re-publish an existing tag manually.
 
 Commits that do not use conventional prefixes (`chore:`, `docs:`, etc. without `fix`/`feat`) do
 **not** trigger a release.

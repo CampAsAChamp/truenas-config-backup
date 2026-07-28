@@ -44,7 +44,7 @@ Living checklist for this repo. Update as items ship.
 - [x] Manual re-publish via workflow_dispatch in publish-image.yml
 - [x] Ruff lint in CI
 - [x] MIT LICENSE, SECURITY.md, pre-commit hooks
-- [ ] Backfill GHCR image for `0.1.1` (run Publish image workflow manually after merge)
+- [ ] Backfill GHCR image for `0.1.1` (run Publish Docker image workflow manually after merge)
 
 ### Architecture decisions
 - [x] Connection via API key + URL (not middleware socket mount)

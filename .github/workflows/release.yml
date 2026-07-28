@@ -21,6 +21,7 @@ jobs:
       - run: pytest --cov=app --cov-report=term-missing
 
   release:
+    name: Release new version
     needs: test
     runs-on: ubuntu-latest
     outputs:
@@ -45,6 +46,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish:
+    name: Publish Docker image
     needs: release
     if: needs.release.outputs.new_release_published == 'true'
     runs-on: ubuntu-latest

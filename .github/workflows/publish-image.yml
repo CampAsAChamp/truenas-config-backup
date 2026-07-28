@@ -1,6 +1,6 @@
 # Manual re-publish only. Automated releases build and push from release.yml because
 # tag pushes created by GITHUB_TOKEN do not trigger other workflows.
-name: Publish image
+name: Publish Docker image
 
 on:
   workflow_dispatch:
@@ -29,6 +29,7 @@ jobs:
       - run: pytest --cov=app --cov-report=term-missing
 
   publish:
+    name: Publish Docker image
     needs: test
     runs-on: ubuntu-latest
     permissions:
