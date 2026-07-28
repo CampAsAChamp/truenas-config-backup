@@ -1,0 +1,79 @@
+.tooltip-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.15rem;
+  color: var(--text-muted);
+  cursor: help;
+  vertical-align: middle;
+}
+
+.tooltip-trigger:hover,
+.tooltip-trigger:focus {
+  color: var(--accent);
+}
+
+.tooltip-trigger:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+.tooltip {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(18rem, calc(100vw - 2rem));
+  padding: 0.7rem 0.85rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.45;
+  z-index: 20;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+.tooltip-trigger:hover .tooltip,
+.tooltip-trigger:focus .tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.tooltip p {
+  margin: 0 0 0.45rem;
+}
+
+.tooltip p:last-child {
+  margin-bottom: 0;
+}
+
+.tooltip strong {
+  color: var(--field-label);
+  font-weight: 600;
+}
+
+.settings dt {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--field-label-size);
+  font-weight: 600;
+  color: var(--field-label);
+}
+
+.settings dd {
+  margin: 0 0 1.5rem 0;
+}
+
+.settings dd:last-of-type {
+  margin-bottom: 0;
+}

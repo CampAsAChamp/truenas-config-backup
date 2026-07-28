@@ -1,0 +1,20 @@
+<dialog id="delete-confirm-modal" class="confirm-modal" aria-labelledby="delete-confirm-title">
+  <div class="confirm-modal__content">
+    <h3 id="delete-confirm-title" class="confirm-modal__title">Delete Backup?</h3>
+    <p class="confirm-modal__body">
+      <span id="delete-confirm-backup-msg">
+        This will permanently remove the backup file:
+        <span id="delete-confirm-filename" class="confirm-modal__filename"></span>
+      </span>
+      <span id="delete-confirm-history-msg" hidden>
+        This will remove this run from history.
+      </span>
+    </p>
+    <div class="confirm-modal__actions">
+      <button type="button" class="button" id="delete-confirm-cancel">Cancel</button>
+      <button type="button" class="button button--danger" id="delete-confirm-submit">Delete</button>
+    </div>
+  </div>
+</dialog>
+
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>

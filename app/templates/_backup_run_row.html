@@ -1,0 +1,45 @@
+{% from "_icons.html" import icon %}
+{% macro backup_run_row(run, page) %}
+<tr class="{{ 'run--failed' if not run.success else 'run--success' }}">
+  <td class="timestamp col-timestamp" data-iso="{{ run.timestamp }}">{{ run.timestamp | format_datetime }}</td>
+  <td class="col-status">
+    {% if run.success %}
+    <span class="status status--success" role="img" aria-label="Success">{{ icon("circle-check", 20) }}</span>
+    {% else %}
+    <span class="status status--failure" role="img" aria-label="Failure">{{ icon("circle-x", 20) }}</span>
+    {% endif %}
+  </td>
+  <td class="filename col-filename">{% if run.filename %}{{ run.filename }}{% else %}<span class="cell-empty">—</span>{% endif %}</td>
+  <td class="col-size">{% if run.size_bytes is not none %}{{ (run.size_bytes / 1024 / 1024) | round(2) }} MB{% else %}<span class="cell-empty">—</span>{% endif %}</td>
+  <td class="col-message">{{ run.message or "—" }}</td>
+  <td class="col-actions">
+    <div class="actions">
+      {% if run.has_backup %}
+      <a class="button button--icon" href="/backups/{{ run.filename }}/download" aria-label="Download {{ run.filename }}">
+        {{ icon("download") }}
+      </a>
+      {% endif %}
+      <form
+        class="delete-run-form"
+        method="post"
+        action="/runs/delete"
+        data-delete-timestamp="{{ run.timestamp }}"
+        data-delete-has-backup="{{ 'true' if run.has_backup else 'false' }}"
+        data-delete-filename="{{ run.filename or '' }}"
+      >
+        <input type="hidden" name="timestamp" value="{{ run.timestamp }}">
+        {% if page > 1 %}
+        <input type="hidden" name="page" value="{{ page }}">
+        {% endif %}
+        <button
+          type="submit"
+          class="button button--icon button--danger"
+          aria-label="{% if run.has_backup %}Delete {{ run.filename }}{% else %}Remove run{% endif %}"
+        >
+          {{ icon("trash") }}
+        </button>
+      </form>
+    </div>
+  </td>
+</tr>
+{% endmacro %}

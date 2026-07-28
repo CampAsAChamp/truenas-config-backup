@@ -1,0 +1,54 @@
+{% from "_icons.html" import icon %}
+{% from "_tooltips.html" import setting_help %}
+<section class="settings panel">
+  <h2>{{ icon("settings", 22) }} Configuration</h2>
+  <dl>
+    <dt>{{ icon("link", 18) }} TrueNAS URL</dt><dd><code class="mono">{{ settings.truenas_url }}</code></dd>
+    <dt>{{ icon("shield-check", 18) }} Verify SSL
+      {% call setting_help() %}
+      <p><strong>What it is.</strong> Whether the app validates TrueNAS's TLS certificate when connecting over HTTPS.</p>
+      <p><strong>Off (default).</strong> The connection is still encrypted, but the certificate is not checked. Backups work with self-signed certificates.</p>
+      <p><strong>On.</strong> The certificate must be trusted and match the hostname. Backups fail if the cert is self-signed, expired, or invalid.</p>
+      <p><strong>When to leave off.</strong> Home-lab setups with a self-signed TrueNAS certificate (most common).</p>
+      <p><strong>When to turn on.</strong> TrueNAS uses a valid certificate from a trusted CA (e.g. Let's Encrypt).</p>
+      {% endcall %}
+    </dt><dd>{{ settings.verify_ssl }}</dd>
+    <dt>{{ icon("calendar-clock", 18) }} Cron Schedule</dt><dd>{{ settings.cron_schedule or "none (manual only)" }}</dd>
+    <dt>{{ icon("timer", 18) }} Next Scheduled Run</dt>
+    <dd>
+      {% if next_run_iso %}
+      <span class="timestamp" data-iso="{{ next_run_iso }}">{{ next_run_iso | format_datetime }}</span>
+      {% else %}
+      not scheduled
+      {% endif %}
+    </dd>
+    <dt>{{ icon("layers", 18) }} Retention Count</dt><dd>{{ settings.retention_count }}</dd>
+    <dt>{{ icon("key", 18) }} Include Secret Seed
+      {% call setting_help() %}
+      <p><strong>What it is.</strong> Whether TrueNAS includes its password secret seed in the config backup.</p>
+      <p><strong>Off.</strong> Encrypted passwords in the backup cannot be restored on a new system.</p>
+      <p><strong>On (default).</strong> The secret seed is saved so encrypted passwords can be restored after migration or disaster recovery.</p>
+      <p><strong>When to leave on.</strong> You may restore this backup onto new hardware and need stored passwords to work.</p>
+      <p><strong>When to turn off.</strong> You only need non-password config, or you deliberately avoid storing cryptographic secrets in backup files.</p>
+      <p><a href="/help/restore">See How to restore</a> for details on password recovery after migration.</p>
+      {% endcall %}
+    </dt><dd>{{ settings.include_secret_seed }}</dd>
+    <dt>{{ icon("key", 18) }} Include Pool Keys
+      {% call setting_help() %}
+      <p><strong>What it is.</strong> Whether TrueNAS includes pool encryption keys in the config backup.</p>
+      <p><strong>Off (default).</strong> Pool keys are not stored in the backup file.</p>
+      <p><strong>On.</strong> Encrypted pool keys are included — needed to unlock encrypted pools on new hardware after restore.</p>
+      <p><strong>Security.</strong> Treat backups with pool keys as highly sensitive.</p>
+      <p><a href="/help/restore">See How to restore</a> for migration guidance.</p>
+      {% endcall %}
+    </dt><dd>{{ settings.include_pool_keys }}</dd>
+    <dt>{{ icon("key", 18) }} Include Root Authorized Keys
+      {% call setting_help() %}
+      <p><strong>What it is.</strong> Whether the root user's SSH authorized keys are included in the backup.</p>
+      <p><strong>Off (default).</strong> Root SSH keys are not stored in the backup file.</p>
+      <p><strong>On.</strong> Root SSH keys are preserved for restore onto a new system.</p>
+      <p><a href="/help/restore">See How to restore</a> for details.</p>
+      {% endcall %}
+    </dt><dd>{{ settings.include_root_authorized_keys }}</dd>
+  </dl>
+</section>

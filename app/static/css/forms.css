@@ -1,0 +1,154 @@
+.display-settings {
+  margin-top: 0;
+}
+
+.display-settings form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.5rem;
+}
+
+.display-settings label {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  font-size: var(--field-label-size);
+  font-weight: 600;
+  color: var(--field-label);
+}
+
+.display-field-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.display-settings select {
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+}
+
+.display-settings .manual-timezone {
+  display: none;
+}
+
+.display-settings .manual-timezone.is-visible {
+  display: flex;
+}
+
+.display-settings .display-reset {
+  align-self: flex-start;
+}
+
+.display-settings .local-timezone-hint {
+  margin: -0.35rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.display-settings .display-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.display-settings .display-preview-label {
+  font-size: var(--field-label-size);
+  font-weight: 600;
+  color: var(--field-label);
+}
+
+.display-settings .display-preview output {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 4rem);
+}
+
+.login-panel {
+  width: 100%;
+  max-width: 28rem;
+  margin: 0;
+}
+
+.login-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.login-panel__intro {
+  margin: 0 0 1.25rem;
+  color: var(--text-muted);
+}
+
+.login-error {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--failure-border);
+  border-radius: 4px;
+  background: var(--failure-bg);
+  color: var(--failure-text);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.login-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.login-form__label {
+  color: var(--field-label);
+  font-size: var(--field-label-size);
+  font-weight: 600;
+}
+
+.login-form input[type="password"] {
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+
+.login-form input[type="password"]:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.login-form button {
+  align-self: flex-start;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.login-form button:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}

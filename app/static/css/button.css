@@ -1,0 +1,67 @@
+button,
+.button {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-family: inherit;
+  line-height: 1.25;
+}
+
+button:hover,
+.button:hover {
+  background: var(--surface-hover);
+  border-color: var(--text-muted);
+}
+
+.button--ghost {
+  background: transparent;
+}
+
+.button--action {
+  min-width: 7.5rem;
+}
+
+.button--icon {
+  min-width: 0;
+  padding: 0.4rem;
+}
+
+.button--icon .icon {
+  width: 18px;
+  height: 18px;
+}
+
+.button--danger {
+  background: var(--failure-bg);
+  color: var(--failure-text);
+  border-color: #7f1d1d;
+}
+
+.button--danger:hover {
+  background: #4d2020;
+  border-color: var(--failure-text);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.actions form {
+  display: inline-flex;
+}
+
+form {
+  display: inline;
+}
