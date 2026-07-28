@@ -16,6 +16,7 @@ def test_notify_noop_when_url_unset(monkeypatch):
 
 def test_notify_posts_failure_payload(monkeypatch):
     monkeypatch.setattr(config, "NOTIFY_WEBHOOK_URL", "https://example.com/hook")
+    monkeypatch.setattr(config, "NOTIFY_PROVIDER", "generic")
     monkeypatch.setattr(config, "NOTIFY_ON_SUCCESS", False)
     monkeypatch.setattr(config, "TRUENAS_URL", "https://192.168.1.50")
 
@@ -63,3 +64,20 @@ def test_notify_logs_webhook_errors(monkeypatch, caplog):
             notify_backup_result(success=False, message="failed")
 
     assert "notification webhook failed" in caplog.text
+
+
+def test_notify_discord_posts_embed_payload(monkeypatch):
+    monkeypatch.setattr(config, "NOTIFY_WEBHOOK_URL", "https://discord.com/api/webhooks/test")
+    monkeypatch.setattr(config, "NOTIFY_PROVIDER", "discord")
+    monkeypatch.setattr(config, "NOTIFY_ON_SUCCESS", False)
+    monkeypatch.setattr(config, "TRUENAS_URL", "https://192.168.1.50")
+
+    with patch("app.notify.urllib.request.urlopen") as mock_urlopen:
+        notify_backup_result(success=False, message="api down", filename="backup.tar")
+
+    payload = json.loads(mock_urlopen.call_args[0][0].data.decode("utf-8"))
+    assert "embeds" in payload
+    assert payload["embeds"][0]["title"] == "TrueNAS Config Backup Failed"
+    assert payload["embeds"][0]["description"] == "api down"
+    assert payload["embeds"][0]["fields"][0]["value"] == "https://192.168.1.50"
+    assert payload["embeds"][0]["fields"][1]["value"] == "backup.tar"
