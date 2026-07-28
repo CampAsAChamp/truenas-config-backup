@@ -1,3 +1,10 @@
+# [0.6.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.5.1...0.6.0) (2026-07-28)
+
+
+### Features
+
+* increase top and bottom margin for bottom 2 ([19142e4](https://github.com/CampAsAChamp/truenas-config-backup/commit/19142e46470154f5087b982113a8b8f4307f9d88))
+
 ## [0.5.1](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.5.0...0.5.1) (2026-07-28)
 
 
