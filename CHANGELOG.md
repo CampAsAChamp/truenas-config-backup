@@ -1,3 +1,10 @@
+## [0.5.1](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.5.0...0.5.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* cache busting ([77f8fed](https://github.com/CampAsAChamp/truenas-config-backup/commit/77f8fed34ac9b3085ea9e658e52e41aa83f01643))
+
 # [0.5.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.4.0...0.5.0) (2026-07-28)
 
 
