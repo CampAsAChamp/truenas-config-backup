@@ -1,3 +1,10 @@
+## [0.7.1](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.7.0...0.7.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* use fixed button slots for rows ([a2f5bdf](https://github.com/CampAsAChamp/truenas-config-backup/commit/a2f5bdfab9b7e74a20bde779e8bb9e2231cf9124))
+
 # [0.7.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.6.0...0.7.0) (2026-07-28)
 
 
