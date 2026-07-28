@@ -48,6 +48,22 @@ def _call(ws, method: str, params: list, request_id: int) -> dict:
             return msg.get("result")
 
 
+def check_truenas_connection(base_url: str, api_key: str, verify_ssl: bool) -> None:
+    """Verify TrueNAS is reachable and the API key is valid."""
+    if not api_key:
+        raise TrueNASClientError("TRUENAS_API_KEY is not set")
+
+    ws_url = _ws_url(base_url)
+    ssl_context = _ssl_context(verify_ssl) if ws_url.startswith("wss") else None
+
+    with ws_connect(ws_url, ssl_context=ssl_context, open_timeout=WS_TIMEOUT) as ws:
+        auth_result = _call(
+            ws, "auth.login_with_api_key", [api_key], request_id=1,
+        )
+        if not auth_result:
+            raise TrueNASClientError("TrueNAS API key authentication failed")
+
+
 def fetch_config_backup(
     base_url: str,
     api_key: str,

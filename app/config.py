@@ -21,4 +21,16 @@ INCLUDE_SECRET_SEED = _bool_env("INCLUDE_SECRET_SEED", True)
 
 WEB_PORT = int(os.environ.get("WEB_PORT", "8080"))
 
+DISPLAY_DATE_FORMAT = os.environ.get("DISPLAY_DATE_FORMAT", "dd/mm/yy").strip()
+DISPLAY_CLOCK_FORMAT = os.environ.get("DISPLAY_CLOCK_FORMAT", "24h").strip().lower()
+DISPLAY_TIMEZONE_MODE = os.environ.get("DISPLAY_TIMEZONE_MODE", "local").strip().lower()
+DISPLAY_TIMEZONE = os.environ.get("DISPLAY_TIMEZONE", "").strip()
+
+DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD", "").strip()
+
+NOTIFY_WEBHOOK_URL = os.environ.get("NOTIFY_WEBHOOK_URL", "").strip()
+NOTIFY_ON_SUCCESS = _bool_env("NOTIFY_ON_SUCCESS", False)
+
+HEALTH_CHECK_TRUENAS = _bool_env("HEALTH_CHECK_TRUENAS", False)
+
 HISTORY_FILE = os.path.join(CONFIG_DIR, "history.jsonl")

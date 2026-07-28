@@ -1,3 +1,5 @@
+{% from "_icons.html" import icon %}
+{% from "_tooltips.html" import setting_help %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,89 +18,163 @@
     </div>
   </header>
 
-  <section class="settings">
-    <h2>Configuration</h2>
-    <dl>
-      <dt>TrueNAS URL</dt><dd>{{ settings.truenas_url }}</dd>
-      <dt>Verify SSL</dt><dd>{{ settings.verify_ssl }}</dd>
-      <dt>Cron schedule</dt><dd>{{ settings.cron_schedule or "none (manual only)" }}</dd>
-      <dt>Next scheduled run</dt><dd>{{ next_run or "not scheduled" }}</dd>
-      <dt>Retention count</dt><dd>{{ settings.retention_count }}</dd>
-      <dt>Include secret seed</dt><dd>{{ settings.include_secret_seed }}</dd>
-    </dl>
-    <form method="post" action="/run-now">
-      <button type="submit">
-        <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polygon points="5 3 19 12 5 21 5 3"/>
-        </svg>
-        Run backup now
-      </button>
-    </form>
+  <section class="panel backup-runs">
+    <div class="backup-runs__header">
+      <h2>{{ icon("archive", 22) }} Backups</h2>
+      <form class="run-backup" method="post" action="/run-now">
+        <button type="submit">
+          {{ icon("play") }}
+          Run Backup Now
+        </button>
+      </form>
+    </div>
+    <div class="table-wrap">
+      <table class="backup-table">
+        <thead>
+          <tr>
+            <th class="col-timestamp">Timestamp</th>
+            <th class="col-status">Status</th>
+            <th class="col-filename">Filename</th>
+            <th class="col-size">Size</th>
+            <th class="col-message">Message</th>
+            <th class="col-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for run in backup_runs %}
+          <tr class="{{ 'run--failed' if not run.success else 'run--success' }}">
+            <td class="timestamp col-timestamp" data-iso="{{ run.timestamp }}">{{ run.timestamp | format_datetime }}</td>
+            <td class="col-status">
+              {% if run.success %}
+              <span class="status status--success" role="img" aria-label="Success">{{ icon("circle-check", 20) }}</span>
+              {% else %}
+              <span class="status status--failure" role="img" aria-label="Failure">{{ icon("circle-x", 20) }}</span>
+              {% endif %}
+            </td>
+            <td class="filename col-filename">{% if run.filename %}{{ run.filename }}{% else %}<span class="cell-empty">—</span>{% endif %}</td>
+            <td class="col-size">{% if run.size_bytes is not none %}{{ (run.size_bytes / 1024 / 1024) | round(2) }} MB{% else %}<span class="cell-empty">—</span>{% endif %}</td>
+            <td class="col-message">{{ run.message or "—" }}</td>
+            <td class="col-actions">
+              {% if run.has_backup %}
+              <div class="actions">
+                <a class="button button--icon" href="/backups/{{ run.filename }}/download" aria-label="Download {{ run.filename }}">
+                  {{ icon("download") }}
+                </a>
+                <form class="delete-backup-form" method="post" action="/backups/{{ run.filename }}/delete" data-delete-filename="{{ run.filename }}">
+                  <button type="submit" class="button button--icon button--danger" aria-label="Delete {{ run.filename }}">
+                    {{ icon("trash") }}
+                  </button>
+                </form>
+              </div>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6">No runs yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </section>
 
-  <section>
-    <h2>Backups</h2>
-    <table>
-      <thead>
-        <tr><th>Filename</th><th>Size</th><th>Modified</th><th></th></tr>
-      </thead>
-      <tbody>
-        {% for b in backups %}
-        <tr>
-          <td>{{ b.filename }}</td>
-          <td>{{ (b.size_bytes / 1024 / 1024) | round(2) }} MB</td>
-          <td>{{ b.modified }}</td>
-          <td class="actions">
-            <a class="button button--action" href="/backups/{{ b.filename }}/download">
-              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              Download
-            </a>
-            <form method="post" action="/backups/{{ b.filename }}/delete" onsubmit="return confirm('Delete {{ b.filename }}?');">
-              <button type="submit" class="button button--action button--danger">
-                <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <polyline points="3 6 5 6 21 6"/>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                </svg>
-                Delete
-              </button>
-            </form>
-          </td>
-        </tr>
-        {% else %}
-        <tr><td colspan="4">No backups yet.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </section>
+  <div class="two-col">
+    <section class="settings panel">
+      <h2>{{ icon("settings", 22) }} Configuration</h2>
+      <dl>
+        <dt>{{ icon("link", 18) }} TrueNAS URL</dt><dd><code class="mono">{{ settings.truenas_url }}</code></dd>
+        <dt>{{ icon("shield-check", 18) }} Verify SSL
+          {% call setting_help() %}
+          <p><strong>What it is.</strong> Whether the app validates TrueNAS's TLS certificate when connecting over HTTPS.</p>
+          <p><strong>Off (default).</strong> The connection is still encrypted, but the certificate is not checked. Backups work with self-signed certificates.</p>
+          <p><strong>On.</strong> The certificate must be trusted and match the hostname. Backups fail if the cert is self-signed, expired, or invalid.</p>
+          <p><strong>When to leave off.</strong> Home-lab setups with a self-signed TrueNAS certificate (most common).</p>
+          <p><strong>When to turn on.</strong> TrueNAS uses a valid certificate from a trusted CA (e.g. Let's Encrypt).</p>
+          {% endcall %}
+        </dt><dd>{{ settings.verify_ssl }}</dd>
+        <dt>{{ icon("calendar-clock", 18) }} Cron Schedule</dt><dd>{{ settings.cron_schedule or "none (manual only)" }}</dd>
+        <dt>{{ icon("timer", 18) }} Next Scheduled Run</dt>
+        <dd>
+          {% if next_run_iso %}
+          <span class="timestamp" data-iso="{{ next_run_iso }}">{{ next_run_iso | format_datetime }}</span>
+          {% else %}
+          not scheduled
+          {% endif %}
+        </dd>
+        <dt>{{ icon("layers", 18) }} Retention Count</dt><dd>{{ settings.retention_count }}</dd>
+        <dt>{{ icon("key", 18) }} Include Secret Seed
+          {% call setting_help() %}
+          <p><strong>What it is.</strong> Whether TrueNAS includes its password secret seed in the config backup.</p>
+          <p><strong>Off.</strong> Encrypted passwords in the backup cannot be restored on a new system.</p>
+          <p><strong>On (default).</strong> The secret seed is saved so encrypted passwords can be restored after migration or disaster recovery.</p>
+          <p><strong>When to leave on.</strong> You may restore this backup onto new hardware and need stored passwords to work.</p>
+          <p><strong>When to turn off.</strong> You only need non-password config, or you deliberately avoid storing cryptographic secrets in backup files.</p>
+          {% endcall %}
+        </dt><dd>{{ settings.include_secret_seed }}</dd>
+      </dl>
+    </section>
 
-  <section>
-    <h2>Run history</h2>
-    <table>
-      <thead>
-        <tr><th>Timestamp</th><th>Status</th><th>Message</th></tr>
-      </thead>
-      <tbody>
-        {% for h in history %}
-        <tr>
-          <td>{{ h.timestamp }}</td>
-          <td>
-            {% if h.success %}
-            <span class="badge success">success</span>
-            {% else %}
-            <span class="badge failure">failure</span>
-            {% endif %}
-          </td>
-          <td>{{ h.message }}</td>
-        </tr>
-        {% else %}
-        <tr><td colspan="3">No runs yet.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </section>
+    <section class="display-settings panel">
+      <h2>{{ icon("clock", 22) }} Display Settings</h2>
+      <form id="display-settings-form" onsubmit="return false;">
+        <label>
+          <span class="display-field-label">{{ icon("calendar", 18) }} Date Format</span>
+          <select id="display-date-format">
+            <option value="dd/mm/yy">dd/mm/yy</option>
+            <option value="dd/mm/yyyy">dd/mm/yyyy</option>
+            <option value="mm/dd/yy">mm/dd/yy</option>
+            <option value="mm/dd/yyyy">mm/dd/yyyy</option>
+            <option value="iso">ISO 8601</option>
+          </select>
+        </label>
+        <label class="clock-format" id="display-clock-format-row">
+          <span class="display-field-label">{{ icon("clock", 18) }} Clock</span>
+          <select id="display-clock-format">
+            <option value="24h">24-hour</option>
+            <option value="12h">12-hour</option>
+          </select>
+        </label>
+        <label>
+          <span class="display-field-label">{{ icon("globe", 18) }} Timezone</span>
+          <select id="display-timezone-mode">
+            <option value="local">Local</option>
+            <option value="utc">UTC</option>
+            <option value="manual">Manual</option>
+          </select>
+        </label>
+        <p class="local-timezone-hint" id="display-local-timezone" hidden></p>
+        <label class="manual-timezone">
+          <span class="display-field-label">{{ icon("map-pin", 18) }} Region</span>
+          <select id="display-timezone">
+            <option value="">Select region…</option>
+          </select>
+        </label>
+        <button type="button" class="display-reset" id="display-reset">Reset To Defaults</button>
+        <div class="display-preview">
+          <span class="display-preview-label display-field-label">{{ icon("eye", 18) }} Preview</span>
+          <output id="display-preview" for="display-settings-form" aria-live="polite"></output>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <dialog id="delete-confirm-modal" class="confirm-modal" aria-labelledby="delete-confirm-title">
+    <div class="confirm-modal__content">
+      <h3 id="delete-confirm-title" class="confirm-modal__title">Delete Backup?</h3>
+      <p class="confirm-modal__body">
+        This will permanently remove the backup file:
+        <span id="delete-confirm-filename" class="confirm-modal__filename"></span>
+      </p>
+      <div class="confirm-modal__actions">
+        <button type="button" class="button" id="delete-confirm-cancel">Cancel</button>
+        <button type="button" class="button button--danger" id="delete-confirm-submit">Delete</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="/static/ui.js"></script>
+  <script type="application/json" id="display-defaults">{{ display_defaults | tojson }}</script>
+  <script src="/static/display-settings.js"></script>
 </body>
 </html>

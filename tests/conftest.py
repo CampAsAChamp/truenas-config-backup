@@ -22,6 +22,7 @@ def app_dirs(tmp_path, monkeypatch):
 def client(app_dirs, monkeypatch):
     monkeypatch.setattr("app.scheduler.start", lambda: None)
     monkeypatch.setattr("app.scheduler.shutdown", lambda: None)
+    monkeypatch.setattr("app.config.DASHBOARD_PASSWORD", "")
 
     from fastapi.testclient import TestClient
 

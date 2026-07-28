@@ -1,8 +1,10 @@
 import time
+import threading
 from unittest.mock import patch
 
 from app import backup_manager, config, history
 from app.truenas_client import TrueNASClientError
+from tests.tar_helpers import make_tar_bytes
 
 
 def _write_backup(app_dirs, name: str, content: bytes = b"tar") -> None:
@@ -53,7 +55,7 @@ def test_delete_backup_blocks_path_traversal(app_dirs):
     assert (app_dirs["backup_dir"] / "safe.tar").exists()
 
 
-@patch("app.backup_manager.fetch_config_backup", return_value=b"backup-bytes")
+@patch("app.backup_manager.fetch_config_backup", return_value=make_tar_bytes())
 def test_run_backup_success(mock_fetch, app_dirs):
     ok, result = backup_manager.run_backup()
 
@@ -103,9 +105,100 @@ def test_prune_old_backups(app_dirs, monkeypatch):
         _write_backup(app_dirs, name)
         time.sleep(0.01)
 
-    with patch("app.backup_manager.fetch_config_backup", return_value=b"x"):
+    with patch("app.backup_manager.fetch_config_backup", return_value=make_tar_bytes(b"x")):
         backup_manager.run_backup()
 
     names = {b["filename"] for b in backup_manager.list_backups()}
     assert len(names) == 2
     assert "one.tar" not in names
+
+
+def test_list_backup_runs_joins_history(app_dirs):
+    _write_backup(app_dirs, "truenas-config-20260101-120000.tar")
+    history.append(
+        success=True,
+        message="backup completed",
+        filename="truenas-config-20260101-120000.tar",
+    )
+    history.append(success=False, message="api down")
+
+    runs = backup_manager.list_backup_runs()
+    success_entry = next(e for e in history.read_all() if e.get("filename"))
+    failure_entry = next(e for e in history.read_all() if not e.get("success"))
+
+    assert len(runs) == 2
+    assert runs[0]["success"] is False
+    assert runs[0]["has_backup"] is False
+    assert runs[0]["filename"] is None
+    assert runs[0]["message"] == "api down"
+    assert runs[0]["timestamp"] == failure_entry["timestamp"]
+
+    assert runs[1]["success"] is True
+    assert runs[1]["has_backup"] is True
+    assert runs[1]["filename"] == "truenas-config-20260101-120000.tar"
+    assert runs[1]["message"] == "backup completed"
+    assert runs[1]["timestamp"] == success_entry["timestamp"]
+
+
+def test_list_backup_runs_without_history_uses_file_mtime(app_dirs):
+    _write_backup(app_dirs, "orphan.tar")
+
+    runs = backup_manager.list_backup_runs()
+
+    assert len(runs) == 1
+    assert runs[0]["success"] is True
+    assert runs[0]["has_backup"] is True
+    assert runs[0]["filename"] == "orphan.tar"
+    assert runs[0]["message"] == ""
+    assert runs[0]["timestamp"] == backup_manager.list_backups()[0]["modified"]
+
+
+@patch("app.backup_manager.fetch_config_backup", return_value=b"not-a-tar")
+def test_run_backup_rejects_invalid_tar(mock_fetch, app_dirs):
+    ok, message = backup_manager.run_backup()
+
+    assert ok is False
+    assert message == "invalid backup file"
+    assert backup_manager.list_backups() == []
+
+
+@patch("app.backup_manager.fetch_config_backup", return_value=make_tar_bytes())
+def test_run_backup_blocks_concurrent_runs(mock_fetch, app_dirs):
+    started = threading.Event()
+    release = threading.Event()
+
+    def slow_fetch(*args, **kwargs):
+        started.set()
+        release.wait(timeout=2)
+        return make_tar_bytes()
+
+    mock_fetch.side_effect = slow_fetch
+
+    results: list[tuple[bool, str]] = []
+
+    def first_run():
+        results.append(backup_manager.run_backup())
+
+    thread = threading.Thread(target=first_run)
+    thread.start()
+    assert started.wait(timeout=2)
+
+    results.append(backup_manager.run_backup())
+    release.set()
+    thread.join(timeout=2)
+
+    assert results[0] == (False, "backup already in progress")
+    assert results[1][0] is True
+
+
+@patch("app.backup_manager._execute_backup", return_value=(True, "backup.tar"))
+def test_run_scheduled_backup_skips_when_busy(mock_execute, app_dirs):
+    backup_manager._backup_lock.acquire()
+    try:
+        backup_manager.run_scheduled_backup()
+    finally:
+        backup_manager._backup_lock.release()
+
+    mock_execute.assert_not_called()
+    entries = history.read_all()
+    assert entries[0]["message"] == "skipped: backup already in progress"

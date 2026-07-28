@@ -4,7 +4,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 from . import config
-from .backup_manager import run_backup
+from .backup_manager import run_scheduled_backup
 
 logger = logging.getLogger("truenas_config_backup")
 
@@ -16,7 +16,12 @@ def start() -> None:
         logger.info("scheduler disabled (CRON_SCHEDULE not set)")
         return
     trigger = CronTrigger.from_crontab(config.CRON_SCHEDULE)
-    _scheduler.add_job(run_backup, trigger=trigger, id="scheduled_backup", replace_existing=True)
+    _scheduler.add_job(
+        run_scheduled_backup,
+        trigger=trigger,
+        id="scheduled_backup",
+        replace_existing=True,
+    )
     _scheduler.start()
     logger.info("scheduler started with cron '%s'", config.CRON_SCHEDULE)
 

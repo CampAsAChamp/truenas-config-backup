@@ -21,7 +21,7 @@
         "CONFIG_DIR": "${workspaceFolder}/local-data/config",
         "TRUENAS_VERIFY_SSL": "false"
       },
-      "preLaunchTask": "Prepare local data dirs",
+      "preLaunchTask": "Prepare local data",
       "justMyCode": true
     },
     {
@@ -43,7 +43,7 @@
         "CONFIG_DIR": "${workspaceFolder}/local-data/config",
         "TRUENAS_VERIFY_SSL": "false"
       },
-      "preLaunchTask": "Prepare local data dirs",
+      "preLaunchTask": "Prepare local data",
       "justMyCode": true
     },
     {

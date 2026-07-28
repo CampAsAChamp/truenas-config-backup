@@ -1,0 +1,10 @@
+{% from "_icons.html" import icon %}
+
+{% macro setting_help() %}
+<span class="tooltip-trigger" tabindex="0" aria-label="More information">
+  {{ icon("info", 14) }}
+  <span class="tooltip" role="tooltip">
+    {{ caller() }}
+  </span>
+</span>
+{% endmacro %}

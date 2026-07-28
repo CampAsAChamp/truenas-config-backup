@@ -2,9 +2,9 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Prepare local data dirs",
+      "label": "Prepare local data",
       "type": "shell",
-      "command": "mkdir -p local-data/backups local-data/config",
+      "command": "mkdir -p local-data/backups local-data/config && ${workspaceFolder}/.venv/bin/python scripts/seed-local-data.py --if-empty",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -72,6 +72,19 @@
       "problemMatcher": []
     },
     {
+      "label": "Seed local data (force)",
+      "type": "shell",
+      "command": "mkdir -p local-data/backups local-data/config && ${workspaceFolder}/.venv/bin/python scripts/seed-local-data.py --force",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Build container (local tag)",
       "type": "shell",
       "command": "podman build -t ghcr.io/campasachamp/truenas-config-backup:local .",
@@ -93,7 +106,7 @@
         "cwd": "${workspaceFolder}"
       },
       "dependsOn": [
-        "Prepare local data dirs",
+        "Prepare local data",
         "Build container (local tag)"
       ],
       "dependsOrder": "sequence",
