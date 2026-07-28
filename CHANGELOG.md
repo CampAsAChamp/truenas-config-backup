@@ -1,3 +1,10 @@
+# [0.4.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.3.0...0.4.0) (2026-07-28)
+
+
+### Features
+
+* display version num, add icons to buttons, and reorder fields ([ac93b44](https://github.com/CampAsAChamp/truenas-config-backup/commit/ac93b44fcb65cb184dbf755463f989b5d0cb32fa))
+
 # [0.3.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.2.0...0.3.0) (2026-07-28)
 
 
