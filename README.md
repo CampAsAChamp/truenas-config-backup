@@ -99,6 +99,7 @@ exercising the dashboard.
 |---|---|---|
 | `TRUENAS_URL` | `https://127.0.0.1` | Base URL of the TrueNAS system to back up |
 | `TRUENAS_API_KEY` | *(required)* | API key for that TrueNAS system |
+| `DASHBOARD_PASSWORD` | *(required)* | Password for the dashboard login page |
 | `TRUENAS_VERIFY_SSL` | `false` | Verify the TrueNAS TLS certificate |
 | `BACKUP_DIR` | `/backups` | Where downloaded backup tars are stored |
 | `CONFIG_DIR` | `/config` | Where the run-history log is stored |
@@ -113,7 +114,6 @@ exercising the dashboard.
 | `DISPLAY_CLOCK_FORMAT` | `12h` | Default clock style for non-ISO formats (`24h` or `12h`) |
 | `DISPLAY_TIMEZONE_MODE` | `local` | Default timezone mode (`local`, `utc`, or `manual`) |
 | `DISPLAY_TIMEZONE` | *(empty)* | IANA timezone when mode is `manual` (e.g. `Europe/London`) |
-| `DASHBOARD_PASSWORD` | *(required)* | Password for the dashboard login page |
 | `NOTIFY_WEBHOOK_URL` | *(none)* | Optional URL to POST backup event notifications |
 | `NOTIFY_PROVIDER` | `generic` | Notification payload format: `generic` or `discord` |
 | `NOTIFY_ON_SUCCESS` | `false` | Also notify the webhook when backups succeed |
