@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.2.0...0.3.0) (2026-07-28)
+
+
+### Features
+
+* add logo ([614b4cf](https://github.com/CampAsAChamp/truenas-config-backup/commit/614b4cf095e86a304cdf7cd0787b1577afaf41e4))
+
 # [0.2.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.1.1...0.2.0) (2026-07-27)
 
 
