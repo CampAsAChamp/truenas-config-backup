@@ -1,0 +1,28 @@
+---
+description: Git commit style for truenas-config-backup (Conventional Commits)
+alwaysApply: true
+---
+
+# Git (truenas-config-backup)
+
+This repo uses [Conventional Commits](https://www.conventionalcommits.org/) so
+[semantic-release](https://semantic-release.gitbook.io/) can bump on `main`. See
+[README — Releasing](README.md#releasing) for release behavior.
+
+**Agent commits:** always draft conventional subjects here — do not use plain imperative
+subjects, even though this repo is under `~/Documents/personal_repos/`.
+
+- Subject: `type: description`, `type(scope): description`, or `type!: description`
+- Types: `feat`, `fix`, `perf`, `revert`, `chore`, `docs`, `style`, `refactor`, `test`, `build`, `ci`
+- No trailing period on the subject
+- Optional short body focusing on **why**
+- No Jira IDs
+- Only commit when explicitly requested; never push unless asked
+
+Examples: `feat: add backup retention policy`, `fix(auth): reject empty dashboard password`,
+`docs: update README install steps`
+
+**Local enforcement:** global hooks at `~/.config/git/hooks` skip conventional checks when the
+branch has no Jira ID. For strict local validation (like
+[plextraktbox](https://github.com/CampAsAChamp/plextraktbox)), use repo-local
+`.githooks/commit-msg` and `git config core.hooksPath .githooks`.
