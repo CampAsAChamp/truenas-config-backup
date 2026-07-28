@@ -41,6 +41,11 @@ h1 {
   margin: 0;
 }
 
+.version {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
 h2 {
   font-size: 1.1rem;
   margin-top: 2rem;
@@ -94,13 +99,47 @@ button,
   cursor: pointer;
   font-size: 0.85rem;
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-family: inherit;
+  line-height: 1.25;
 }
 
 button:hover,
 .button:hover {
   background: var(--surface-hover);
   border-color: var(--text-muted);
+}
+
+.button--action {
+  min-width: 7.5rem;
+}
+
+.button--danger {
+  background: var(--failure-bg);
+  color: var(--failure-text);
+  border-color: #7f1d1d;
+}
+
+.button--danger:hover {
+  background: #4d2020;
+  border-color: var(--failure-text);
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.actions form {
+  display: inline-flex;
 }
 
 form {

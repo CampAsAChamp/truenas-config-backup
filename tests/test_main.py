@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 from app import backup_manager
+from app.version import get_version
 
 
 def test_healthz(client):
@@ -16,6 +17,7 @@ def test_dashboard(client, app_dirs):
 
     assert response.status_code == 200
     assert "sample.tar" in response.text
+    assert f"v{get_version()}" in response.text
 
 
 def test_download_backup_not_found(client):

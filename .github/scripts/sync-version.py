@@ -18,6 +18,7 @@ def main() -> None:
     version = sys.argv[1]
 
     (ROOT / "VERSION").write_text(f"{version}\n", encoding="utf-8")
+    (ROOT / "app/VERSION").write_text(f"{version}\n", encoding="utf-8")
 
     app_yaml = APP / "app.yaml"
     app_yaml.write_text(

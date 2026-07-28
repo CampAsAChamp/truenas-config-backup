@@ -28,6 +28,7 @@
         "assets": [
           "CHANGELOG.md",
           "VERSION",
+          "app/VERSION",
           "package.json",
           "package-lock.json",
           "ix-dev/community/truenas-config-backup/app.yaml",

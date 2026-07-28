@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from . import backup_manager, config, history, scheduler
+from .version import get_version
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
@@ -36,6 +37,7 @@ def dashboard(request: Request):
         request,
         "dashboard.html",
         {
+            "version": get_version(),
             "backups": backup_manager.list_backups(),
             "history": history.read_all()[:20],
             "next_run": scheduler.next_run_time(),
