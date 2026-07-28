@@ -1,19 +1,25 @@
+{% from "_icons.html" import icon %}
 <header class="site-header">
   <img class="logo" src="{{ static_url('logo.svg') }}" alt="" width="48" height="48">
   <div>
     <h1>TrueNAS Config Backup</h1>
     <span class="version">v{{ version }}</span>
   </div>
-  {% if back_href %}
   <div class="site-header__actions">
+    <a
+      class="button button--ghost button--icon"
+      href="https://github.com/CampAsAChamp/truenas-config-backup"
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="View source on GitHub"
+    >
+      {{ icon("github") }}
+    </a>
+    {% if back_href %}
     <a class="button button--ghost" href="{{ back_href }}">Back to dashboard</a>
+    {% endif %}
     <form class="logout-form" method="post" action="/logout">
       <button type="submit" class="button button--ghost">Log out</button>
     </form>
   </div>
-  {% else %}
-  <form class="logout-form" method="post" action="/logout">
-    <button type="submit" class="button button--ghost">Log out</button>
-  </form>
-  {% endif %}
 </header>
