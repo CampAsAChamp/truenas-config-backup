@@ -97,9 +97,9 @@ exercising the dashboard.
 
 | Variable | Default | Description |
 |---|---|---|
-| `TRUENAS_URL` | `https://127.0.0.1` | Base URL of the TrueNAS system to back up |
 | `TRUENAS_API_KEY` | *(required)* | API key for that TrueNAS system |
 | `DASHBOARD_PASSWORD` | *(required)* | Password for the dashboard login page |
+| `TRUENAS_URL` | `https://127.0.0.1` | Base URL of the TrueNAS system to back up |
 | `TRUENAS_VERIFY_SSL` | `false` | Verify the TrueNAS TLS certificate |
 | `BACKUP_DIR` | `/backups` | Where downloaded backup tars are stored |
 | `CONFIG_DIR` | `/config` | Where the run-history log is stored |
