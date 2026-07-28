@@ -7,9 +7,21 @@ backup_config:
   truenas_url: "https://127.0.0.1"
   api_key: "test-api-key"
   verify_ssl: false
+  schedule_mode: custom
+  schedule_time: "03:00"
+  schedule_dow: 0
+  schedule_dom: 1
   cron_schedule: "0 3 * * 0"
+  dashboard_password: ""
+  notify_webhook_url: ""
+  notify_on_success: false
+  health_check_truenas: false
   retention_count: 8
   include_secret_seed: true
+  display_date_format: "dd/mm/yy"
+  display_clock_format: "24h"
+  display_timezone_mode: "local"
+  display_timezone: ""
 
 network:
   web_port:

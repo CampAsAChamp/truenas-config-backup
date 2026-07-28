@@ -10,11 +10,38 @@
 {% do c1.environment.add_env("TRUENAS_URL", values.backup_config.truenas_url) %}
 {% do c1.environment.add_env("TRUENAS_API_KEY", values.backup_config.api_key) %}
 {% do c1.environment.add_env("TRUENAS_VERIFY_SSL", values.backup_config.verify_ssl) %}
-{% if values.backup_config.cron_schedule %}
+{% set schedule_mode = values.backup_config.schedule_mode | default("manual") %}
+{% if schedule_mode != "manual" %}
+{% set schedule_time = values.backup_config.schedule_time | default("03:00") | string %}
+{% set time_parts = schedule_time.split(":") %}
+{% set cron_hour = time_parts[0] | int %}
+{% set cron_min = time_parts[1] | int if time_parts | length > 1 else 0 %}
+{% if schedule_mode == "daily" %}
+{% do c1.environment.add_env("CRON_SCHEDULE", cron_min ~ " " ~ cron_hour ~ " * * *") %}
+{% elif schedule_mode == "weekly" %}
+{% do c1.environment.add_env("CRON_SCHEDULE", cron_min ~ " " ~ cron_hour ~ " * * " ~ values.backup_config.schedule_dow) %}
+{% elif schedule_mode == "monthly" %}
+{% do c1.environment.add_env("CRON_SCHEDULE", cron_min ~ " " ~ cron_hour ~ " " ~ values.backup_config.schedule_dom ~ " * *") %}
+{% elif schedule_mode == "custom" and values.backup_config.cron_schedule %}
 {% do c1.environment.add_env("CRON_SCHEDULE", values.backup_config.cron_schedule) %}
+{% endif %}
 {% endif %}
 {% do c1.environment.add_env("RETENTION_COUNT", values.backup_config.retention_count) %}
 {% do c1.environment.add_env("INCLUDE_SECRET_SEED", values.backup_config.include_secret_seed) %}
+{% do c1.environment.add_env("DISPLAY_DATE_FORMAT", values.backup_config.display_date_format) %}
+{% do c1.environment.add_env("DISPLAY_CLOCK_FORMAT", values.backup_config.display_clock_format) %}
+{% do c1.environment.add_env("DISPLAY_TIMEZONE_MODE", values.backup_config.display_timezone_mode) %}
+{% if values.backup_config.display_timezone %}
+{% do c1.environment.add_env("DISPLAY_TIMEZONE", values.backup_config.display_timezone) %}
+{% endif %}
+{% if values.backup_config.dashboard_password %}
+{% do c1.environment.add_env("DASHBOARD_PASSWORD", values.backup_config.dashboard_password) %}
+{% endif %}
+{% if values.backup_config.notify_webhook_url %}
+{% do c1.environment.add_env("NOTIFY_WEBHOOK_URL", values.backup_config.notify_webhook_url) %}
+{% endif %}
+{% do c1.environment.add_env("NOTIFY_ON_SUCCESS", values.backup_config.notify_on_success) %}
+{% do c1.environment.add_env("HEALTH_CHECK_TRUENAS", values.backup_config.health_check_truenas) %}
 {% do c1.environment.add_env("BACKUP_DIR", values.consts.backups_dir_path) %}
 {% do c1.environment.add_env("CONFIG_DIR", values.consts.config_dir_path) %}
 {% do c1.environment.add_env("WEB_PORT", values.network.web_port.port_number) %}
