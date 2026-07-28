@@ -54,9 +54,17 @@ def test_seed_creates_backups_and_history(tmp_path):
 
     assert history_file.is_file()
     entries = [json.loads(line) for line in history_file.read_text().splitlines()]
-    assert len(entries) == 6
-    assert sum(1 for entry in entries if entry["success"]) == 4
+    assert len(entries) == 7
+    assert sum(1 for entry in entries if entry["success"]) == 5
     assert sum(1 for entry in entries if not entry["success"]) == 2
+
+    pruned = next(
+        entry
+        for entry in entries
+        if entry.get("filename") == "truenas-config-20250401-030000.tar"
+    )
+    assert pruned["success"] is True
+    assert not (backup_dir / pruned["filename"]).exists()
 
 
 def test_seed_if_empty_skips_when_backups_exist(tmp_path):
@@ -88,7 +96,7 @@ def test_seed_force_replaces_existing_data(tmp_path):
     assert (backup_dir / "old.tar") not in tar_files
 
     entries = [json.loads(line) for line in (config_dir / "history.jsonl").read_text().splitlines()]
-    assert len(entries) == 6
+    assert len(entries) == 7
     assert entries[0]["message"] != "old"
 
 

@@ -6,6 +6,7 @@ Steps:
 2. Optionally skip when backups already exist (--if-empty) or clear first (--force).
 3. Write sample .tar backup files with realistic names and sizes.
 4. Write history.jsonl with matching success and failure run entries.
+5. Include at least one successful run whose backup file was removed (e.g. retention).
 """
 
 from __future__ import annotations
@@ -32,6 +33,12 @@ BACKUP_SPECS: list[tuple[str, int]] = [
 ]
 
 HISTORY_SPECS: list[dict] = [
+    {
+        "timestamp": "2025-04-01T03:00:00+00:00",
+        "success": True,
+        "message": "backup completed",
+        "filename": "truenas-config-20250401-030000.tar",
+    },
     {
         "timestamp": "2025-05-04T02:58:12+00:00",
         "success": False,
