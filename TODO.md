@@ -18,6 +18,12 @@ Living checklist for this repo. Update as items ship.
 - [x] Configurable paths via env (`BACKUP_DIR`, `CONFIG_DIR`)
 - [x] `GET /healthz` for container health checks
 - [x] Unit/integration tests for `app/` (`tests/`, pytest, CI workflow)
+- [x] Optional dashboard HTTP Basic Auth (`DASHBOARD_PASSWORD`)
+- [x] Backup run lock (no overlapping scheduled + manual runs)
+- [x] Startup config validation (cron, retention)
+- [x] Post-download tar sanity check
+- [x] Webhook notifications (`NOTIFY_WEBHOOK_URL`)
+- [x] `GET /readyz` readiness endpoint
 
 ### Container
 - [x] Dockerfile + `requirements.txt`
@@ -31,10 +37,13 @@ Living checklist for this repo. Update as items ship.
 - [x] Vendored `truenas/apps` library + local render/validate via `.github/scripts/ci.py`
 - [x] Root README with local run, build, validate, and Custom App install steps
 - [x] App icon in-repo (`icon.svg`) with GitHub raw URL in `app.yaml` / `item.yaml`
+- [x] Cron schedule presets (Daily / Weekly / Monthly + custom)
 
 ### Release & CI
 - [x] GitHub Actions workflow: build and push image to GHCR on release (same workflow as semantic-release; tag hook alone does not fire because GITHUB_TOKEN suppresses downstream workflows)
 - [x] Manual re-publish via workflow_dispatch in publish-image.yml
+- [x] Ruff lint in CI
+- [x] MIT LICENSE, SECURITY.md, pre-commit hooks
 - [ ] Backfill GHCR image for `0.1.1` (run Publish image workflow manually after merge)
 
 ### Architecture decisions
@@ -45,6 +54,4 @@ Living checklist for this repo. Update as items ship.
 ## Maybe later
 
 - [ ] Upstream PR to [truenas/apps](https://github.com/truenas/apps) (after real-world mileage)
-- [ ] Friendlier cron UX (Daily/Weekly/Monthly presets + custom escape hatch)
 - [ ] Local socket-mount mode (`/var/run/middlewared.sock`) for zero-config same-box backup — skipped for now due to app-framework restrictions
-- [ ] Scope/minimum-privilege API key docs (recommend `config.save`-only key if TrueNAS supports method scoping)

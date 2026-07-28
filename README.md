@@ -54,6 +54,23 @@ TRUENAS_URL=https://127.0.0.1 TRUENAS_API_KEY=your-api-key \
 
 Then visit `http://localhost:8080`.
 
+### Sample data for local testing
+
+When you run the app via **Run and Debug → Run app** in VS Code/Cursor, sample backups and
+run history are seeded automatically into `local-data/` if that folder has no `.tar` files yet.
+No TrueNAS connection is required to browse, download, or delete those backups.
+
+To seed manually (CLI or container runs):
+
+```bash
+mkdir -p local-data/backups local-data/config
+python scripts/seed-local-data.py          # skip if backups already exist
+python scripts/seed-local-data.py --force  # replace existing seed data
+```
+
+The seed data is fake — placeholder tar archives and a hand-written `history.jsonl` for
+exercising the dashboard.
+
 ### Configuration (env vars)
 
 | Variable | Default | Description |
@@ -67,6 +84,48 @@ Then visit `http://localhost:8080`.
 | `RETENTION_COUNT` | `8` | Number of backups to keep before pruning |
 | `INCLUDE_SECRET_SEED` | `true` | Include the password secret seed in the backup |
 | `WEB_PORT` | `8080` | Port the dashboard listens on |
+| `DISPLAY_DATE_FORMAT` | `dd/mm/yy` | Default timestamp format on the dashboard (`dd/mm/yy`, `dd/mm/yyyy`, `mm/dd/yy`, `mm/dd/yyyy`, or `iso`) |
+| `DISPLAY_CLOCK_FORMAT` | `24h` | Default clock style for non-ISO formats (`24h` or `12h`) |
+| `DISPLAY_TIMEZONE_MODE` | `local` | Default timezone mode (`local`, `utc`, or `manual`) |
+| `DISPLAY_TIMEZONE` | *(empty)* | IANA timezone when mode is `manual` (e.g. `Europe/London`) |
+| `DASHBOARD_PASSWORD` | *(none)* | Optional HTTP Basic Auth password for the dashboard; username is ignored |
+| `NOTIFY_WEBHOOK_URL` | *(none)* | Optional URL to POST JSON backup event notifications |
+| `NOTIFY_ON_SUCCESS` | `false` | Also notify the webhook when backups succeed |
+| `HEALTH_CHECK_TRUENAS` | `false` | When true, `/readyz` probes TrueNAS connectivity (slower) |
+
+The dashboard **Display settings** section lets each browser override date format and timezone; overrides are stored in `localStorage` and fall back to these env defaults when unset.
+
+### Dashboard authentication
+
+By default the dashboard has **no authentication**. Anyone who can reach the published port can trigger backups, download config archives, and delete files. For untrusted networks:
+
+- Set `DASHBOARD_PASSWORD` to require HTTP Basic Auth (any username; only the password is checked), or
+- Restrict port exposure (localhost binding, VLAN firewall, TrueNAS ingress rules).
+
+See [SECURITY.md](SECURITY.md) for more detail.
+
+### Backup schedule
+
+Set `CRON_SCHEDULE` with standard 5-field cron syntax (e.g. `0 3 * * 0` for weekly at 3am Sunday). Omit for manual-only backups. The TrueNAS Custom App wizard offers Daily / Weekly / Monthly presets that render to `CRON_SCHEDULE` automatically.
+
+### Notifications
+
+When `NOTIFY_WEBHOOK_URL` is set, the app POSTs JSON on backup failures (and on success when `NOTIFY_ON_SUCCESS=true`). Compatible with Discord, Slack, ntfy, Home Assistant, and other webhook receivers.
+
+### Health endpoints
+
+- `GET /healthz` — liveness probe (always returns `OK`; unauthenticated)
+- `GET /readyz` — readiness JSON (writable storage, last backup status; optional TrueNAS probe via `HEALTH_CHECK_TRUENAS`)
+
+### Creating a least-privilege API key
+
+1. On the TrueNAS system to back up, open **My API Keys** (user menu → **My API Keys**).
+2. Click **Add** and give the key a descriptive name (e.g. `config-backup`).
+3. If your TrueNAS version supports method scoping, restrict the key to configuration backup methods (`config.save` and related download access).
+4. Copy the key into `TRUENAS_API_KEY` — it is shown only once.
+5. Use **`https://`** in `TRUENAS_URL`. Keys used over plain HTTP are revoked by TrueNAS.
+
+If a key was revoked, create a new one; revoked keys cannot be reused until renewed in the TrueNAS UI.
 
 ### HTTPS required for API keys
 
@@ -96,6 +155,12 @@ python -m pytest --cov=app
 
 Confirm you're in the venv: `which python` should point at `.venv/bin/python`.
 
+Optional local hooks:
+
+```bash
+pip install pre-commit && pre-commit install
+```
+
 Tests live under `tests/` and cover history logging, backup management, the TrueNAS
 WebSocket client (mocked), and FastAPI routes. GitHub Actions runs the same suite
 on push and pull request (`.github/workflows/test-app.yml`).
@@ -105,7 +170,7 @@ on push and pull request (`.github/workflows/test-app.yml`).
 Build with Podman from the repo root:
 
 ```bash
-podman build -t ghcr.io/campasachamp/truenas-config-backup:0.1.0 .
+podman build -t ghcr.io/campasachamp/truenas-config-backup:local .
 ```
 
 ### Behind Zscaler
@@ -165,8 +230,8 @@ BREAKING CHANGE: removed legacy env var FOO
 ### After a release
 
 - **Verify CI** published `ghcr.io/campasachamp/truenas-config-backup:<version>` and updated `:latest`
-- **Custom App users:** edit the deployed app and update the image tag to the new version
-  (or re-deploy the compose YAML with the updated tag)
+- **Custom App users on `:latest`:** restart or redeploy the app to pull the new image (TrueNAS may cache — use **Pull latest image** if available)
+- **Custom App users pinned to a version tag:** edit the deployed app and bump the image tag to the new release
 
 The GHCR package must stay **public** so TrueNAS can pull the image without authentication.
 CI fails if the git tag does not match `VERSION`, `app_version`, and the image tag in `ix_values.yaml`.
@@ -194,9 +259,9 @@ later), third-party app catalogs are no longer supported — deploy it as a
 ### Custom App (wizard)
 
 1. **Apps → Discover Apps → Custom App**.
-2. Set the container image to `ghcr.io/campasachamp/truenas-config-backup:0.1.0`
-   (check [releases](https://github.com/CampAsAChamp/truenas-config-backup/releases)
-   for the latest version).
+2. Set the container image to `ghcr.io/campasachamp/truenas-config-backup:latest`
+   (or pin to a specific release tag from [releases](https://github.com/CampAsAChamp/truenas-config-backup/releases)
+   if you prefer fixed versions).
 3. Add host-path volumes for backup storage and run history, mounted at `/backups`
    and `/config` respectively (e.g. datasets under your apps pool).
 4. Set the environment variables from the [configuration table](#configuration-env-vars)
@@ -212,13 +277,15 @@ port, and secrets for your system:
 ```yaml
 services:
   truenas-config-backup:
-    image: ghcr.io/campasachamp/truenas-config-backup:0.1.0
+    image: ghcr.io/campasachamp/truenas-config-backup:latest
     user: "568:568"
     environment:
       TRUENAS_URL: "https://127.0.0.1"
       TRUENAS_API_KEY: "your-api-key"
       TRUENAS_VERIFY_SSL: "false"
       # CRON_SCHEDULE: "0 3 * * 0"   # optional; omit for manual-only backups
+      # DASHBOARD_PASSWORD: "your-dashboard-password"
+      # NOTIFY_WEBHOOK_URL: "https://hooks.example.com/backup"
       RETENTION_COUNT: "8"
       INCLUDE_SECRET_SEED: "true"
       BACKUP_DIR: /backups
