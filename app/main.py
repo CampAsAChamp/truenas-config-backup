@@ -10,9 +10,9 @@ from fastapi.templating import Jinja2Templates
 
 from . import backup_manager, config, scheduler
 from .auth import (
-    AuthRequired,
     SESSION_COOKIE,
     SESSION_MAX_AGE,
+    AuthRequired,
     require_dashboard_auth,
     session_cookie_value,
     verify_session,
