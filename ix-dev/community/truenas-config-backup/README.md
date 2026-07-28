@@ -16,7 +16,7 @@ API), with retention pruning, a run-history log, and a simple web dashboard.
    setups). The connection is still encrypted; only certificate verification is skipped.
 4. **Optional:** choose a backup schedule preset (Daily / Weekly / Monthly) or a custom
    cron expression. Leave schedule mode on Manual for on-demand backups only.
-5. **Set a Dashboard Password** for HTTP Basic Auth on the web dashboard (username is ignored).
+5. **Set a Dashboard Password** for the web dashboard login page.
 6. Open the **WebUI** portal after install to view, download, or delete backups and see
    run history.
 

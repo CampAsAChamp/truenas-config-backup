@@ -1,4 +1,5 @@
 import os
+import secrets
 from contextlib import asynccontextmanager
 from urllib.parse import urlencode
 
@@ -8,7 +9,14 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from . import backup_manager, config, scheduler
-from .auth import require_dashboard_auth
+from .auth import (
+    AuthRequired,
+    SESSION_COOKIE,
+    SESSION_MAX_AGE,
+    require_dashboard_auth,
+    session_cookie_value,
+    verify_session,
+)
 from .config_validation import validate_config
 from .datetime_display import format_timestamp, to_iso
 from .health import readiness_status
@@ -56,6 +64,36 @@ def _redirect_home(toast: str, msg: str = "") -> RedirectResponse:
     return RedirectResponse(url=f"/?{urlencode(params)}", status_code=303)
 
 
+def _safe_next_path(next_path: str | None) -> str:
+    if not next_path or not next_path.startswith("/") or next_path.startswith("//"):
+        return "/"
+    return next_path
+
+
+def _login_url(next_path: str = "/", error: bool = False) -> str:
+    params = {"next": _safe_next_path(next_path)}
+    if error:
+        params["error"] = "1"
+    return f"/login?{urlencode(params)}"
+
+
+def _set_session_cookie(response: RedirectResponse) -> RedirectResponse:
+    response.set_cookie(
+        SESSION_COOKIE,
+        session_cookie_value(),
+        max_age=SESSION_MAX_AGE,
+        httponly=True,
+        samesite="lax",
+        path="/",
+    )
+    return response
+
+
+def _clear_session_cookie(response: RedirectResponse) -> RedirectResponse:
+    response.delete_cookie(SESSION_COOKIE, path="/")
+    return response
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     validate_config()
@@ -65,6 +103,12 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="TrueNAS Config Backup", lifespan=lifespan)
+
+
+@app.exception_handler(AuthRequired)
+async def auth_required_handler(_request: Request, exc: AuthRequired):
+    return RedirectResponse(url=_login_url(exc.next_path), status_code=303)
+
 
 if config.DEV_MODE:
     from .dev_reload import router as dev_reload_router
@@ -84,6 +128,39 @@ def readyz():
     status = readiness_status()
     code = 200 if status["ready"] else 503
     return JSONResponse(status, status_code=code)
+
+
+@app.get("/login")
+def login_page(request: Request, next: str = "/", error: str = ""):
+    if verify_session(request.cookies.get(SESSION_COOKIE)):
+        return RedirectResponse(url=_safe_next_path(next), status_code=303)
+    return templates.TemplateResponse(
+        request,
+        "login.html",
+        {
+            "version": get_version(),
+            "next_path": _safe_next_path(next),
+            "show_error": error == "1",
+        },
+    )
+
+
+@app.post("/login")
+def login_submit(password: str = Form(...), next: str = Form("/")):
+    next_path = _safe_next_path(next)
+    if not secrets.compare_digest(
+        password.encode("utf-8"),
+        config.DASHBOARD_PASSWORD.encode("utf-8"),
+    ):
+        return RedirectResponse(url=_login_url(next_path, error=True), status_code=303)
+    response = RedirectResponse(url=next_path, status_code=303)
+    return _set_session_cookie(response)
+
+
+@app.post("/logout")
+def logout():
+    response = RedirectResponse(url="/login", status_code=303)
+    return _clear_session_cookie(response)
 
 
 @app.get("/", dependencies=[Depends(require_dashboard_auth)])

@@ -110,7 +110,7 @@ exercising the dashboard.
 | `DISPLAY_CLOCK_FORMAT` | `24h` | Default clock style for non-ISO formats (`24h` or `12h`) |
 | `DISPLAY_TIMEZONE_MODE` | `local` | Default timezone mode (`local`, `utc`, or `manual`) |
 | `DISPLAY_TIMEZONE` | *(empty)* | IANA timezone when mode is `manual` (e.g. `Europe/London`) |
-| `DASHBOARD_PASSWORD` | *(required)* | HTTP Basic Auth password for the dashboard; username is ignored |
+| `DASHBOARD_PASSWORD` | *(required)* | Password for the dashboard login page |
 | `NOTIFY_WEBHOOK_URL` | *(none)* | Optional URL to POST JSON backup event notifications |
 | `NOTIFY_ON_SUCCESS` | `false` | Also notify the webhook when backups succeed |
 | `HEALTH_CHECK_TRUENAS` | `false` | When true, `/readyz` probes TrueNAS connectivity (slower) |
@@ -119,7 +119,7 @@ The dashboard **Display settings** section lets each browser override date forma
 
 ### Dashboard authentication
 
-The dashboard requires HTTP Basic Auth. Set `DASHBOARD_PASSWORD` before starting the app; the username can be anything — only the password is checked. Anyone who can reach the published port can otherwise trigger backups, download config archives, and delete files.
+The dashboard requires a password. Set `DASHBOARD_PASSWORD` before starting the app; visiting `/` redirects to a login page where you enter that password. A signed session cookie keeps you signed in for seven days. Use **Log out** on the dashboard to clear the session.
 
 See [SECURITY.md](SECURITY.md) for more detail.
 

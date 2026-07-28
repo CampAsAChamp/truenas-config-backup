@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Sign in — TrueNAS Config Backup</title>
+  <link rel="icon" href="{{ static_url('logo.svg') }}" type="image/svg+xml">
+  <link rel="icon" href="{{ static_url('logo.png') }}" type="image/png">
+  <link rel="stylesheet" href="{{ static_url('style.css') }}">
+</head>
+<body class="login-page">
+  <main class="login-panel panel">
+    <header class="login-panel__header">
+      <img class="logo" src="{{ static_url('logo.svg') }}" alt="" width="48" height="48">
+      <div>
+        <h1>TrueNAS Config Backup</h1>
+        <span class="version">v{{ version }}</span>
+      </div>
+    </header>
+
+    <p class="login-panel__intro">Sign in to manage backups and view run history.</p>
+
+    {% if show_error %}
+    <p class="login-error" role="alert">Incorrect password. Try again.</p>
+    {% endif %}
+
+    <form class="login-form" method="post" action="/login">
+      <input type="hidden" name="next" value="{{ next_path }}">
+      <label class="login-form__field">
+        <span class="login-form__label">Password</span>
+        <input type="password" name="password" autocomplete="current-password" required autofocus>
+      </label>
+      <button type="submit">Sign in</button>
+    </form>
+  </main>
+</body>
+</html>

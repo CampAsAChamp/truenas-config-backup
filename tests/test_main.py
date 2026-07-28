@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+from tests.conftest import login_client
+
 from app import backup_manager, history
 from app.version import get_version
 
@@ -117,20 +119,45 @@ def test_delete_run_missing(client):
     assert response.headers["location"] == "/?toast=run-delete-failed"
 
 
-def test_dashboard_requires_auth(client):
-    response = client.get("/", auth=None)
+def test_dashboard_requires_auth(unauthenticated_client):
+    response = unauthenticated_client.get("/", follow_redirects=False)
 
-    assert response.status_code == 401
-
-
-def test_dashboard_rejects_wrong_password(client):
-    response = client.get("/", auth=("", "wrong-password"))
-
-    assert response.status_code == 401
+    assert response.status_code == 303
+    assert response.headers["location"] == "/login?next=%2F"
 
 
-def test_healthz_open_without_dashboard_auth(client):
-    response = client.get("/healthz", auth=None)
+def test_login_rejects_wrong_password(unauthenticated_client):
+    response = unauthenticated_client.post(
+        "/login",
+        data={"password": "wrong-password", "next": "/"},
+        follow_redirects=False,
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/login?next=%2F&error=1"
+
+
+def test_login_grants_access(unauthenticated_client):
+    login_client(unauthenticated_client)
+
+    response = unauthenticated_client.get("/")
+
+    assert response.status_code == 200
+
+
+def test_logout_clears_session(client):
+    response = client.post("/logout", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/login"
+
+    response = client.get("/", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/login?next=%2F"
+
+
+def test_healthz_open_without_dashboard_auth(unauthenticated_client):
+    response = unauthenticated_client.get("/healthz")
 
     assert response.status_code == 200
     assert response.text == "OK"

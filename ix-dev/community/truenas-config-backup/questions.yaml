@@ -104,8 +104,7 @@ questions:
         - variable: dashboard_password
           label: Dashboard Password
           description: |
-            HTTP Basic Auth password for the web dashboard. The username can be anything;
-            only the password is checked. Required for all installs.
+            Password for the web dashboard login page. Required for all installs.
           schema:
             type: string
             required: true
