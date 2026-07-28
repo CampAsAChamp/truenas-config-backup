@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.svg" alt="TrueNAS Config Backup logo" width="120">
+  <img src="docs/logo.svg" alt="TrueNAS Config Backup logo" width="120">
 </p>
 
 # TrueNAS Config Backup
@@ -9,7 +9,7 @@ API, with retention pruning, run-history logging, and a small web dashboard.
 Install on TrueNAS SCALE 24.10+ via **Custom App** (native Docker).
 
 <p align="center">
-  <img src="dashboard.png" alt="TrueNAS Config Backup dashboard" width="720">
+  <img src="docs/dashboard.png" alt="TrueNAS Config Backup dashboard" width="720">
 </p>
 
 ## What it does
@@ -28,7 +28,7 @@ Note: TrueNAS SCALE 25.04 deprecated the old synchronous REST config-save endpoi
 ## Repository layout
 
 ```
-logo.svg, logo.png, dashboard.png  Brand assets (logo also served from app/static/ in the dashboard)
+docs/                             Brand assets (logo.svg, logo.png, dashboard.png; logo also in app/static/)
 app/                              FastAPI backend (the container's application code)
 tests/                            pytest unit and integration tests for app/
 Dockerfile, requirements.txt      Container build
