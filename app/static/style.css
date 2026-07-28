@@ -300,6 +300,10 @@ td.filename {
   flex-shrink: 0;
 }
 
+.run-backup button .icon {
+  color: var(--success-text);
+}
+
 .backup-table {
   table-layout: fixed;
   width: 100%;
