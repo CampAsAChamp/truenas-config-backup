@@ -227,8 +227,9 @@ pip install pre-commit && pre-commit install
 ```
 
 Tests live under `tests/` and cover history logging, backup management, the TrueNAS
-WebSocket client (mocked), and FastAPI routes. GitHub Actions runs the same suite
-on push and pull request (`.github/workflows/test-app.yml`).
+WebSocket client (mocked), and FastAPI routes. Pull requests run ruff and pytest via
+[`.github/workflows/test-app.yml`](.github/workflows/test-app.yml); pushes to `main` run the
+same checks in [`.github/workflows/release.yml`](.github/workflows/release.yml) before release.
 
 ## Building the container
 
