@@ -3,7 +3,7 @@ from unittest.mock import patch
 from conftest import login_client
 
 from src import backup_manager, history
-from src.version import get_version
+from src.version import get_display_version, get_version
 
 
 def test_healthz(client):
@@ -24,7 +24,7 @@ def test_dashboard(client, app_dirs, monkeypatch):
 
     assert response.status_code == 200
     assert "sample.tar" in response.text
-    assert f"v{get_version()}" in response.text
+    assert get_display_version() in response.text
     assert "config-readonly-field__value--mono" in response.text
     assert "https://192.168.1.50" in response.text
     assert 'id="display-defaults"' in response.text
@@ -179,10 +179,7 @@ def test_run_now(mock_run_backup, client):
     response = client.post("/run-now", follow_redirects=False)
 
     assert response.status_code == 303
-    assert (
-        response.headers["location"]
-        == "/?toast=backup-success&msg=truenas-config-20260101-120000.tar"
-    )
+    assert response.headers["location"] == "/?toast=backup-success&msg=truenas-config-20260101-120000.tar"
     mock_run_backup.assert_called_once()
 
 
@@ -204,6 +201,16 @@ def test_run_now_executes_backup(client, app_dirs):
     assert response.status_code == 303
     backups = backup_manager.list_backups()
     assert len(backups) == 1
+
+
+def test_dashboard_shows_local_version_in_dev_mode(client, app_dirs, monkeypatch):
+    monkeypatch.setattr("src.config.DEV_MODE", True)
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert get_display_version(dev_mode=True) in response.text
+    assert f"v{get_version()}" not in response.text
 
 
 def test_dashboard_shows_restore_help_link(client, app_dirs):

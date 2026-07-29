@@ -26,7 +26,7 @@ from .log_reader import tail_log_entries
 from .logging_setup import clear_logs, configure_logging
 from .settings import validate_settings
 from .settings_store import PersistedSettings, seed_if_missing, update_persisted
-from .version import get_version
+from .version import get_display_version, get_version
 
 logger = logging.getLogger("truenas_config_backup")
 
@@ -196,7 +196,7 @@ def login_page(request: Request, next: str = "/", error: str = ""):
         request,
         "login.html",
         {
-            "version": get_version(),
+            "version_display": get_display_version(dev_mode=config.DEV_MODE),
             "next_path": _safe_next_path(next),
             "show_error": error == "1",
         },
@@ -235,7 +235,7 @@ def dashboard(request: Request, page: int = 1):
         request,
         "dashboard.html",
         {
-            "version": get_version(),
+            "version_display": get_display_version(dev_mode=config.DEV_MODE),
             "dev_mode": config.DEV_MODE,
             "backup_runs": backup_runs,
             "pagination": pagination,
@@ -271,7 +271,7 @@ def restore_help(request: Request):
         request,
         "restore_help.html",
         {
-            "version": get_version(),
+            "version_display": get_display_version(dev_mode=config.DEV_MODE),
             "dev_mode": config.DEV_MODE,
             "settings": {
                 "include_secret_seed": config.INCLUDE_SECRET_SEED,
@@ -356,9 +356,7 @@ def api_update_settings(body: SettingsUpdate):
                             if persisted.include_secret_seed is not None
                             else True,
                             "include_pool_keys": persisted.include_pool_keys or False,
-                            "include_root_authorized_keys": (
-                                persisted.include_root_authorized_keys or False
-                            ),
+                            "include_root_authorized_keys": (persisted.include_root_authorized_keys or False),
                         }
                     ),
                     "notify": config.settings.notify.model_copy(
