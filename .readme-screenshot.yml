@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/CampAsAChamp/readme-screenshot/v1.1.0/schema/readme-screenshot.schema.json
+version: 1
+
+output: docs/dashboard.png
+
+server:
+  prepare: python scripts/seed-local-data.py --force
+  start: python -m uvicorn src.main:app --host 127.0.0.1 --port {port}
+  health_url: "http://127.0.0.1:{port}/healthz"
+  env:
+    PYTHONPATH: app
+    DASHBOARD_PASSWORD: screenshot
+    TRUENAS_URL: "https://192.168.1.50"
+    TRUENAS_VERIFY_SSL: "false"
+    DISPLAY_TIMEZONE_MODE: manual
+    DISPLAY_TIMEZONE: America/Los_Angeles
+    DEV_MODE: "false"
+    BACKUP_DIR: local-data/backups
+    CONFIG_DIR: local-data/config
+
+capture:
+  viewport: { width: 1280, height: 900 }
+  target: { type: full_page }
+  base_url: /
+  auth:
+    login_url: /login
+    password: screenshot
+    wait_for: ".backup-table tbody tr"
+  clock:
+    freeze: "2026-07-28T22:24:00Z"
+    timezone: America/Los_Angeles
+
+theme:
+  modes: [default]
+
+commit:
+  message: "docs: update dashboard screenshot"

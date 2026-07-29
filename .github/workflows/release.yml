@@ -10,7 +10,7 @@ on:
       - "app/src/static/**"
       - "app/src/VERSION"
       - "scripts/seed-local-data.py"
-      - "scripts/capture-dashboard-screenshot.py"
+      - ".readme-screenshot.yml"
   workflow_run:
     workflows:
       - Dashboard screenshot

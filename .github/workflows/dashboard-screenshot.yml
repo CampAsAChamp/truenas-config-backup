@@ -9,29 +9,17 @@ on:
       - "app/src/static/**"
       - "app/src/VERSION"
       - "scripts/seed-local-data.py"
-      - "scripts/capture-dashboard-screenshot.py"
+      - ".readme-screenshot.yml"
   workflow_dispatch:
-
-permissions:
-  contents: write
 
 jobs:
   screenshot:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - run: pip install -r requirements.txt -r requirements-dev.txt
-
-      - run: playwright install chromium --with-deps
-
-      - run: python scripts/capture-dashboard-screenshot.py
-
-      - uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "docs: update dashboard screenshot"
-          file_pattern: docs/dashboard.png
+    uses: CampAsAChamp/readme-screenshot/.github/workflows/capture-and-commit.yml@v1.1.0
+    with:
+      config: .readme-screenshot.yml
+      commit_message: "docs: update dashboard screenshot"
+      file_pattern: docs/dashboard.png
+      install_consumer_deps: false
+      pip_requirements: "requirements.txt requirements-dev.txt"
+    permissions:
+      contents: write

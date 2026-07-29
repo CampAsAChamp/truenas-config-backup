@@ -59,12 +59,11 @@
     },
     {
       "name": "Capture dashboard screenshot",
-      "type": "debugpy",
+      "type": "node-terminal",
       "request": "launch",
-      "program": "${workspaceFolder}/scripts/capture-dashboard-screenshot.py",
+      "command": "readme-screenshot capture",
       "cwd": "${workspaceFolder}",
-      "preLaunchTask": "Install Playwright Chromium",
-      "justMyCode": true
+      "preLaunchTask": "Install Playwright Chromium"
     },
     {
       "name": "Debug all tests",

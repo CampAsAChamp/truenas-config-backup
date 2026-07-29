@@ -101,7 +101,7 @@
     {
       "label": "Install Playwright Chromium",
       "type": "shell",
-      "command": "${workspaceFolder}/.venv/bin/python -m playwright install chromium",
+      "command": "npx playwright install chromium",
       "options": {
         "cwd": "${workspaceFolder}"
       },
@@ -114,7 +114,7 @@
     {
       "label": "Capture dashboard screenshot",
       "type": "shell",
-      "command": "${workspaceFolder}/.venv/bin/python scripts/capture-dashboard-screenshot.py",
+      "command": "readme-screenshot capture",
       "options": {
         "cwd": "${workspaceFolder}"
       },
