@@ -110,10 +110,20 @@ python -m pytest --cov
 
 Confirm you're in the venv: `which python` should point at `.venv/bin/python`.
 
-Optional local hooks:
+Optional local hooks (ruff + pytest before every push, matching CI):
 
 ```bash
-pip install pre-commit && pre-commit install
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt -r requirements-dev.txt
+git config core.hooksPath .githooks
+```
+
+The repo includes [`.githooks/pre-push`](../.githooks/pre-push), which runs the same checks as
+[`.github/workflows/test-app.yml`](../.github/workflows/test-app.yml). To run them manually:
+
+```bash
+.venv/bin/pre-commit run --hook-stage pre-push --all-files
 ```
 
 Tests live under `app/tests/` and cover history logging, backup management, the TrueNAS

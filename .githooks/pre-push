@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+PRE_COMMIT="${ROOT}/.venv/bin/pre-commit"
+
+if [[ ! -x "$PRE_COMMIT" ]]; then
+  echo "pre-push: ${PRE_COMMIT} not found." >&2
+  echo "Create the venv and install dev deps:" >&2
+  echo "  python3 -m venv .venv && .venv/bin/pip install -r requirements.txt -r requirements-dev.txt" >&2
+  exit 1
+fi
+
+echo "pre-push: running ruff and pytest (same checks as CI)..." >&2
+exec "$PRE_COMMIT" run --hook-stage pre-push --all-files
