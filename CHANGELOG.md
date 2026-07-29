@@ -1,3 +1,10 @@
+# [0.11.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.10.0...0.11.0) (2026-07-29)
+
+
+### Features
+
+* show Local version label in dev mode ([7a785fd](https://github.com/CampAsAChamp/truenas-config-backup/commit/7a785fdef5c2f58df887b592ce2c97f095b07bb6))
+
 # [0.10.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.9.0...0.10.0) (2026-07-29)
 
 
