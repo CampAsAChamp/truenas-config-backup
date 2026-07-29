@@ -1,6 +1,14 @@
 groups:
-  - name: TrueNAS Config Backup Configuration
-    description: Configure TrueNAS Config Backup
+  - name: Connection
+    description: TrueNAS connection settings
+  - name: Backups
+    description: Backup schedule and retention
+  - name: Dashboard
+    description: Web dashboard access
+  - name: Notifications
+    description: Optional backup event notifications
+  - name: Advanced
+    description: Advanced backup and notification options
   - name: Network Configuration
     description: Configure Network for TrueNAS Config Backup
   - name: Storage Configuration
@@ -9,9 +17,9 @@ groups:
     description: Configure Resources for TrueNAS Config Backup
 
 questions:
-  - variable: backup_config
+  - variable: connection_config
     label: ""
-    group: TrueNAS Config Backup Configuration
+    group: Connection
     schema:
       type: dict
       attrs:
@@ -45,6 +53,13 @@ questions:
           schema:
             type: boolean
             default: false
+
+  - variable: backup_config
+    label: ""
+    group: Backups
+    schema:
+      type: dict
+      attrs:
         - variable: schedule_mode
           label: Backup Schedule
           description: |
@@ -101,55 +116,6 @@ questions:
             type: string
             required: false
             default: ""
-        - variable: dashboard_password
-          label: Dashboard Password
-          description: |
-            Password for the web dashboard login page. Required for all installs.
-          schema:
-            type: string
-            required: true
-            private: true
-        - variable: notify_webhook_url
-          label: Notification Webhook URL
-          description: |
-            Optional URL to POST backup event notifications (failures by default;
-            enable Notify on Success for heartbeat alerts). For Discord, create a
-            webhook under Server Settings → Integrations and set Notify Provider to
-            Discord.
-          schema:
-            type: string
-            required: false
-            default: ""
-        - variable: notify_provider
-          label: Notification Provider
-          description: |
-            Payload format for the notification webhook. Use Discord when posting to
-            a Discord webhook URL; use Generic for Slack, ntfy, Home Assistant, and
-            other JSON receivers.
-          schema:
-            type: string
-            default: generic
-            enum:
-              - value: generic
-                description: Generic JSON payload (default)
-              - value: discord
-                description: Discord embed payload
-        - variable: notify_on_success
-          label: Notify on Success
-          description: |
-            Also POST to the notification webhook when a backup succeeds. Off by default
-            (failures only).
-          schema:
-            type: boolean
-            default: false
-        - variable: health_check_truenas
-          label: Health Check TrueNAS Connection
-          description: |
-            When enabled, /readyz probes TrueNAS connectivity (slower; requires a
-            valid API key). Container liveness still uses /healthz only.
-          schema:
-            type: boolean
-            default: false
         - variable: retention_count
           label: Retention Count
           description: Number of past backups to keep before pruning the oldest.
@@ -166,6 +132,45 @@ questions:
           schema:
             type: boolean
             default: true
+
+  - variable: dashboard_config
+    label: ""
+    group: Dashboard
+    schema:
+      type: dict
+      attrs:
+        - variable: dashboard_password
+          label: Dashboard Password
+          description: |
+            Password for the web dashboard login page. Required for all installs.
+          schema:
+            type: string
+            required: true
+            private: true
+
+  - variable: notification_config
+    label: ""
+    group: Notifications
+    schema:
+      type: dict
+      attrs:
+        - variable: notify_webhook_url
+          label: Notification Webhook URL
+          description: |
+            Optional URL to POST backup event notifications (failures by default).
+            Discord webhooks are detected automatically; use Generic JSON for Slack,
+            ntfy, Home Assistant, and other receivers.
+          schema:
+            type: string
+            required: false
+            default: ""
+
+  - variable: advanced_config
+    label: ""
+    group: Advanced
+    schema:
+      type: dict
+      attrs:
         - variable: include_pool_keys
           label: Include Pool Keys
           description: |
@@ -181,63 +186,14 @@ questions:
           schema:
             type: boolean
             default: false
-        - variable: display_date_format
-          label: Display Date Format
+        - variable: notify_on_success
+          label: Notify on Success
           description: |
-            Default date/time format for timestamps on the dashboard. Users can
-            override this per browser in Display settings.
+            Also POST to the notification webhook when a backup succeeds. Off by default
+            (failures only).
           schema:
-            type: string
-            default: "mm/dd/yy"
-            enum:
-              - value: "dd/mm/yy"
-                description: "28/07/26 14:30"
-              - value: "dd/mm/yyyy"
-                description: "28/07/2026 14:30:45"
-              - value: "mm/dd/yy"
-                description: "07/28/26 14:30"
-              - value: "mm/dd/yyyy"
-                description: "07/28/2026 14:30:45"
-              - value: "iso"
-                description: ISO 8601
-        - variable: display_clock_format
-          label: Display Clock Format
-          description: |
-            Default 12- or 24-hour clock for dashboard timestamps. Ignored when
-            date format is ISO 8601. Users can override per browser in Display settings.
-          schema:
-            type: string
-            default: "12h"
-            enum:
-              - value: "24h"
-                description: 24-hour (14:30)
-              - value: "12h"
-                description: 12-hour (2:30 PM)
-        - variable: display_timezone_mode
-          label: Display Timezone Mode
-          description: |
-            Default timezone for dashboard timestamps. Local uses the viewer's
-            browser timezone when overridden in Display settings.
-          schema:
-            type: string
-            default: "local"
-            enum:
-              - value: "local"
-                description: Local (browser or container TZ)
-              - value: "utc"
-                description: UTC
-              - value: "manual"
-                description: Manual IANA timezone
-        - variable: display_timezone
-          label: Display Timezone (IANA)
-          description: |
-            IANA timezone name used when Display Timezone Mode is Manual
-            (e.g. Europe/London, America/Los_Angeles).
-          schema:
-            type: string
-            required: false
-            default: ""
-            show_if: [["display_timezone_mode", "=", "manual"]]
+            type: boolean
+            default: false
 
   - variable: network
     label: ""

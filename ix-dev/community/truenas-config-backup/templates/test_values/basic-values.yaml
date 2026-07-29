@@ -3,28 +3,30 @@ resources:
     cpus: 1.0
     memory: 512
 
-backup_config:
+connection_config:
   truenas_url: "https://127.0.0.1"
   api_key: "test-api-key"
   verify_ssl: false
+
+backup_config:
   schedule_mode: custom
   schedule_time: "03:00"
   schedule_dow: 0
   schedule_dom: 1
   cron_schedule: "0 3 * * 0"
-  dashboard_password: "test-dashboard-password"
-  notify_webhook_url: ""
-  notify_provider: generic
-  notify_on_success: false
-  health_check_truenas: false
   retention_count: 8
   include_secret_seed: true
+
+dashboard_config:
+  dashboard_password: "test-dashboard-password"
+
+notification_config:
+  notify_webhook_url: ""
+
+advanced_config:
   include_pool_keys: false
   include_root_authorized_keys: false
-  display_date_format: "mm/dd/yy"
-  display_clock_format: "12h"
-  display_timezone_mode: "local"
-  display_timezone: ""
+  notify_on_success: false
 
 network:
   web_port:
