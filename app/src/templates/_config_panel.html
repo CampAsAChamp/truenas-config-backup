@@ -1,59 +1,96 @@
 {% from "_icons.html" import icon %}
-{% from "_tooltips.html" import setting_help %}
+{% from "_tooltips.html" import setting_help, readonly_value %}
+{% set connection_readonly_hint = "Set in the TrueNAS app environment; restart required to change." %}
 <section class="settings panel">
-  <h2>{{ icon("settings", 22) }} Configuration</h2>
-  <p class="config-readonly-hint" role="note">
-    {{ icon("info", 16) }}
-    These settings are read-only. To change them, update the environment variables in the
-    TrueNAS app configuration and restart the container.
-  </p>
-  <dl>
-    <dt>{{ icon("link", 18) }} TrueNAS URL</dt><dd><code class="mono">{{ settings.truenas_url }}</code></dd>
-    <dt>{{ icon("shield-check", 18) }} Verify SSL
-      {% call setting_help() %}
-      <p><strong>What it is.</strong> Whether the app validates TrueNAS's TLS certificate when connecting over HTTPS.</p>
-      <p><strong>Off (default).</strong> The connection is still encrypted, but the certificate is not checked. Backups work with self-signed certificates.</p>
-      <p><strong>On.</strong> The certificate must be trusted and match the hostname. Backups fail if the cert is self-signed, expired, or invalid.</p>
-      <p><strong>When to leave off.</strong> Home-lab setups with a self-signed TrueNAS certificate (most common).</p>
-      <p><strong>When to turn on.</strong> TrueNAS uses a valid certificate from a trusted CA (e.g. Let's Encrypt).</p>
-      {% endcall %}
-    </dt><dd>{{ settings.verify_ssl }}</dd>
-    <dt>{{ icon("calendar-clock", 18) }} Cron Schedule</dt><dd>{{ settings.cron_schedule or "none (manual only)" }}</dd>
-    <dt>{{ icon("timer", 18) }} Next Scheduled Run</dt>
-    <dd>
-      {% if next_run_iso %}
-      <span class="timestamp" data-iso="{{ next_run_iso }}">{{ next_run_iso | format_datetime }}</span>
-      {% else %}
-      not scheduled
-      {% endif %}
-    </dd>
-    <dt>{{ icon("layers", 18) }} Retention Count</dt><dd>{{ settings.retention_count }}</dd>
-    <dt>{{ icon("key", 18) }} Include Secret Seed
-      {% call setting_help() %}
-      <p><strong>What it is.</strong> Whether TrueNAS includes its password secret seed in the config backup.</p>
-      <p><strong>Off.</strong> Encrypted passwords in the backup cannot be restored on a new system.</p>
-      <p><strong>On (default).</strong> The secret seed is saved so encrypted passwords can be restored after migration or disaster recovery.</p>
-      <p><strong>When to leave on.</strong> You may restore this backup onto new hardware and need stored passwords to work.</p>
-      <p><strong>When to turn off.</strong> You only need non-password config, or you deliberately avoid storing cryptographic secrets in backup files.</p>
-      <p><a href="/help/restore">See How to restore</a> for details on password recovery after migration.</p>
-      {% endcall %}
-    </dt><dd>{{ settings.include_secret_seed }}</dd>
-    <dt>{{ icon("key", 18) }} Include Pool Keys
-      {% call setting_help() %}
-      <p><strong>What it is.</strong> Whether TrueNAS includes pool encryption keys in the config backup.</p>
-      <p><strong>Off (default).</strong> Pool keys are not stored in the backup file.</p>
-      <p><strong>On.</strong> Encrypted pool keys are included — needed to unlock encrypted pools on new hardware after restore.</p>
-      <p><strong>Security.</strong> Treat backups with pool keys as highly sensitive.</p>
-      <p><a href="/help/restore">See How to restore</a> for migration guidance.</p>
-      {% endcall %}
-    </dt><dd>{{ settings.include_pool_keys }}</dd>
-    <dt>{{ icon("key", 18) }} Include Root Authorized Keys
-      {% call setting_help() %}
-      <p><strong>What it is.</strong> Whether the root user's SSH authorized keys are included in the backup.</p>
-      <p><strong>Off (default).</strong> Root SSH keys are not stored in the backup file.</p>
-      <p><strong>On.</strong> Root SSH keys are preserved for restore onto a new system.</p>
-      <p><a href="/help/restore">See How to restore</a> for details.</p>
-      {% endcall %}
-    </dt><dd>{{ settings.include_root_authorized_keys }}</dd>
-  </dl>
+  <div class="settings__header">
+    <h2>{{ icon("settings", 22) }} Configuration</h2>
+    <button type="submit" class="button" form="config-settings-form">
+      {{ icon("save", 16) }} Save Settings
+    </button>
+  </div>
+
+  <div class="config-section">
+    <h3 class="config-section__title">{{ icon("link", 20) }} Connection</h3>
+    <p class="config-section__hint"><strong>READ-ONLY</strong> — {{ connection_readonly_hint }}</p>
+    <div class="config-readonly-fields">
+      <div class="config-readonly-field">
+        <span class="config-readonly-field__label display-field-label">{{ icon("link", 18) }} TrueNAS URL</span>
+        {% call readonly_value(connection_readonly_hint, mono=true) %}
+        {{ settings.truenas_url }}
+        {% endcall %}
+      </div>
+      <div class="config-readonly-field">
+        <span class="config-readonly-field__label display-field-label">{{ icon("shield-check", 18) }} Verify SSL
+          {% call setting_help() %}
+          <p><strong>What it is.</strong> Whether the app validates TrueNAS's TLS certificate when connecting over HTTPS.</p>
+          <p><strong>Off (default).</strong> The connection is still encrypted, but the certificate is not checked. Backups work with self-signed certificates.</p>
+          <p><strong>On.</strong> The certificate must be trusted and match the hostname. Backups fail if the cert is self-signed, expired, or invalid.</p>
+          <p><strong>When to leave off.</strong> Home-lab setups with a self-signed TrueNAS certificate (most common).</p>
+          <p><strong>When to turn on.</strong> TrueNAS uses a valid certificate from a trusted CA (e.g. Let's Encrypt).</p>
+          {% endcall %}
+        </span>
+        {% call readonly_value(connection_readonly_hint) %}
+        {{ settings.verify_ssl }}
+        {% endcall %}
+      </div>
+    </div>
+  </div>
+
+  <form id="config-settings-form" class="config-settings-form">
+    <div class="config-section">
+      <h3 class="config-section__title">{{ icon("archive", 20) }} Backup</h3>
+      <label>
+        <span class="display-field-label">{{ icon("calendar-clock", 18) }} Cron Schedule</span>
+        <input id="config-cron-schedule" name="cron_schedule" type="text"
+               placeholder="empty for manual only (e.g. 0 3 * * 0)"
+               value="{{ settings.cron_schedule }}">
+      </label>
+
+      <div class="config-readonly-field">
+        <span class="config-readonly-field__label display-field-label">{{ icon("timer", 18) }} Next scheduled run</span>
+        {% call readonly_value("Calculated from the cron schedule; updates when you save settings.", value_id="config-next-run-value") %}
+        {% if next_run_iso %}
+        <span class="timestamp" data-iso="{{ next_run_iso }}">{{ next_run_iso | format_datetime }}</span>
+        {% else %}
+        not scheduled
+        {% endif %}
+        {% endcall %}
+      </div>
+
+      <label>
+        <span class="display-field-label">{{ icon("layers", 18) }} Retention Count</span>
+        <input id="config-retention-count" name="retention_count" type="number" min="0"
+               value="{{ settings.retention_count }}">
+      </label>
+
+      <label class="config-checkbox">
+        <input type="checkbox" name="include_secret_seed" {% if settings.include_secret_seed %}checked{% endif %}>
+        <span class="display-field-label">{{ icon("key", 18) }} Include Secret Seed</span>
+      </label>
+      <label class="config-checkbox">
+        <input type="checkbox" name="include_pool_keys" {% if settings.include_pool_keys %}checked{% endif %}>
+        <span class="display-field-label">{{ icon("key", 18) }} Include Pool Keys</span>
+      </label>
+      <label class="config-checkbox">
+        <input type="checkbox" name="include_root_authorized_keys"
+               {% if settings.include_root_authorized_keys %}checked{% endif %}>
+        <span class="display-field-label">{{ icon("key", 18) }} Include Root Authorized Keys</span>
+      </label>
+    </div>
+
+    <div class="config-section">
+      <h3 class="config-section__title">{{ icon("bell", 20) }} Notifications</h3>
+      <label>
+        <span class="display-field-label">{{ icon("bell", 18) }} Notification Webhook URL</span>
+        <input id="config-notify-webhook" name="notify_webhook_url" type="url"
+               placeholder="optional"
+               value="{{ settings.notify_webhook_url }}">
+      </label>
+
+      <label class="config-checkbox">
+        <input type="checkbox" name="notify_on_success" {% if settings.notify_on_success %}checked{% endif %}>
+        <span class="display-field-label">{{ icon("circle-check", 18) }} Notify on Success</span>
+      </label>
+    </div>
+  </form>
 </section>

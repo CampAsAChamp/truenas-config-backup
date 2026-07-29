@@ -7,7 +7,26 @@ const TOAST_MESSAGES = {
   "backup-delete-failed": (msg) => `Could not delete ${msg || "backup"}`,
   "run-deleted": () => "Run removed",
   "run-delete-failed": () => "Could not remove run",
+  "settings-saved": () => "Settings saved",
 };
+
+function toastVariantForKey(toastKey) {
+  return toastKey.includes("failure") || toastKey.includes("failed") ? "error" : "success";
+}
+
+function ensureToastContainer() {
+  let container = document.getElementById("toast-container");
+  if (container) {
+    return container;
+  }
+
+  container = document.createElement("div");
+  container.id = "toast-container";
+  container.setAttribute("aria-live", "polite");
+  container.setAttribute("aria-atomic", "true");
+  document.body.appendChild(container);
+  return container;
+}
 
 const TOAST_ICONS = {
   success: `
@@ -39,10 +58,7 @@ function createToastIcon(variant) {
 }
 
 export function showToast(message, variant) {
-  const container = document.getElementById("toast-container");
-  if (!container) {
-    return;
-  }
+  const container = ensureToastContainer();
 
   const toastVariant = variant || "info";
   const toast = document.createElement("div");
@@ -74,6 +90,17 @@ export function showToast(message, variant) {
   }, TOAST_DURATION_MS);
 }
 
+export function redirectWithToast(toastKey, msg = "") {
+  const url = new URL(window.location.href);
+  url.searchParams.set("toast", toastKey);
+  if (msg) {
+    url.searchParams.set("msg", msg);
+  } else {
+    url.searchParams.delete("msg");
+  }
+  window.location.assign(url);
+}
+
 export function initToastsFromUrl() {
   const params = new URLSearchParams(window.location.search);
   const toastKey = params.get("toast");
@@ -84,8 +111,7 @@ export function initToastsFromUrl() {
   const msg = params.get("msg") || "";
   const builder = TOAST_MESSAGES[toastKey];
   if (builder) {
-    const variant = toastKey.includes("failure") || toastKey.includes("failed") ? "error" : "success";
-    showToast(builder(msg), variant);
+    showToast(builder(msg), toastVariantForKey(toastKey));
   }
 
   params.delete("toast");

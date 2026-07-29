@@ -8,3 +8,13 @@
   </span>
 </span>
 {% endmacro %}
+
+{% macro readonly_value(hint, value_id='', mono=false) %}
+<div class="config-readonly-field__value config-readonly-field__value--tooltip{% if mono %} config-readonly-field__value--mono{% endif %}"
+     {% if value_id %}id="{{ value_id }}"{% endif %}
+     tabindex="0"
+     aria-label="{{ hint }}">
+  {{ caller() }}
+  <span class="tooltip tooltip--readonly" role="tooltip">{{ hint }}</span>
+</div>
+{% endmacro %}

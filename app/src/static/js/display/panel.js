@@ -1,7 +1,7 @@
 import { applyTimestamps, formatIso, formatTimezoneOffset, localTimeZoneName } from "./format.js";
 import { clearOverrides, effectiveSettings, readDefaults, saveOverride, STORAGE_KEYS } from "./storage.js";
 import { ensureTimezoneOption, populateTimezoneSelect, readDisplayConfig } from "./timezone-select.js";
-import { showToast } from "../ui/toast.js";
+import { showToast } from "/static/js/ui/toast.js";
 
 function updatePreview(settings) {
   const preview = document.getElementById("display-preview");
