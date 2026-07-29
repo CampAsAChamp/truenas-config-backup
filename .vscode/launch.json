@@ -58,6 +58,15 @@
       "justMyCode": true
     },
     {
+      "name": "Capture dashboard screenshot",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/capture-dashboard-screenshot.py",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "Install Playwright Chromium",
+      "justMyCode": true
+    },
+    {
       "name": "Debug all tests",
       "type": "debugpy",
       "request": "launch",

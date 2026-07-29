@@ -53,6 +53,37 @@ python scripts/seed-local-data.py --force  # replace existing seed data
 The seed data is fake — placeholder tar archives and a hand-written `history.jsonl` for
 exercising the dashboard.
 
+## Dashboard screenshot
+
+The README shows [`docs/dashboard.png`](dashboard.png). Regenerate it after UI changes.
+
+### Local capture
+
+One-time browser setup, then run the script:
+
+```bash
+source .venv/bin/activate
+pip install -r requirements.txt -r requirements-dev.txt
+playwright install chromium
+python scripts/capture-dashboard-screenshot.py
+```
+
+Or use **Run and Debug → Capture dashboard screenshot** in VS Code/Cursor (installs Chromium if needed, then overwrites `docs/dashboard.png`).
+
+The script seeds temp demo data, starts uvicorn without reload, logs in with Playwright,
+and overwrites `docs/dashboard.png`. Clock and timezone are pinned (`America/Los_Angeles`,
+fixed instant) so repeated runs produce identical PNGs except when the UI or `app/VERSION`
+changes.
+
+### CI auto-update
+
+Pushes to `main` that touch dashboard UI files (templates, static assets, `app/VERSION`,
+or the seed/capture scripts) run
+[`.github/workflows/dashboard-screenshot.yml`](../.github/workflows/dashboard-screenshot.yml).
+When the PNG changes, CI commits `docs: update dashboard screenshot` back to `main`.
+
+You can also refresh manually from **Actions → Dashboard screenshot → Run workflow**.
+
 ## Testing
 
 Use the project venv so pytest picks up `pytest-cov` (system `pip3`/`pytest` often won't):

@@ -1,0 +1,37 @@
+name: Dashboard screenshot
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "app/templates/**"
+      - "app/static/**"
+      - "app/VERSION"
+      - "scripts/seed-local-data.py"
+      - "scripts/capture-dashboard-screenshot.py"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - run: playwright install chromium --with-deps
+
+      - run: python scripts/capture-dashboard-screenshot.py
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: update dashboard screenshot"
+          file_pattern: docs/dashboard.png

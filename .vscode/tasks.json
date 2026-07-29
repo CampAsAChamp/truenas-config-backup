@@ -99,6 +99,36 @@
       "problemMatcher": []
     },
     {
+      "label": "Install Playwright Chromium",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/python -m playwright install chromium",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Capture dashboard screenshot",
+      "type": "shell",
+      "command": "${workspaceFolder}/.venv/bin/python scripts/capture-dashboard-screenshot.py",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": [
+        "Install Playwright Chromium"
+      ],
+      "dependsOrder": "sequence",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "Build container (local tag)",
       "type": "shell",
       "command": "podman build -t ghcr.io/campasachamp/truenas-config-backup:local .",
