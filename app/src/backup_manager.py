@@ -141,20 +141,24 @@ def backup_path(filename: str) -> str | None:
     return path if os.path.isfile(path) else None
 
 
-def _prune_old_backups() -> None:
+def _prune_old_backups() -> int:
     if config.RETENTION_COUNT <= 0:
-        return
+        return 0
     backups = list_backups()
+    pruned = 0
     for stale in backups[config.RETENTION_COUNT:]:
         try:
             os.remove(os.path.join(config.BACKUP_DIR, stale["filename"]))
+            pruned += 1
         except OSError:
             logger.warning("failed to prune old backup %s", stale["filename"])
+    return pruned
 
 
-def _execute_backup() -> tuple[bool, str]:
+def _execute_backup(*, source: str = "manual") -> tuple[bool, str]:
     os.makedirs(config.BACKUP_DIR, exist_ok=True)
     filename = _filename()
+    logger.info("%s backup started", source)
     try:
         content = fetch_config_backup(
             base_url=config.TRUENAS_URL,
@@ -192,9 +196,12 @@ def _execute_backup() -> tuple[bool, str]:
         notify_backup_result(success=False, message=message)
         return False, message
 
-    _prune_old_backups()
+    pruned = _prune_old_backups()
+    if pruned:
+        logger.info("pruned %d old backup(s)", pruned)
     history.append(success=True, message="backup completed", filename=filename)
     notify_backup_result(success=True, message="backup completed", filename=filename)
+    logger.info("backup completed: %s", filename)
     return True, filename
 
 
@@ -202,7 +209,7 @@ def run_backup() -> tuple[bool, str]:
     if not _backup_lock.acquire(blocking=False):
         return False, "backup already in progress"
     try:
-        return _execute_backup()
+        return _execute_backup(source="manual")
     finally:
         _backup_lock.release()
 
@@ -213,6 +220,6 @@ def run_scheduled_backup() -> None:
         history.append(success=False, message="skipped: backup already in progress")
         return
     try:
-        _execute_backup()
+        _execute_backup(source="scheduled")
     finally:
         _backup_lock.release()

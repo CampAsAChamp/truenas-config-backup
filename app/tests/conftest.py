@@ -26,6 +26,7 @@ def app_dirs(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "BACKUP_DIR", str(backup_dir))
     monkeypatch.setattr(config, "CONFIG_DIR", str(config_dir))
     monkeypatch.setattr(config, "HISTORY_FILE", str(config_dir / "history.jsonl"))
+    monkeypatch.setattr(config, "LOG_FILE", str(config_dir / "app.log"))
     monkeypatch.setattr(config, "RETENTION_COUNT", 8)
 
     return {"backup_dir": backup_dir, "config_dir": config_dir}

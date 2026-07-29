@@ -263,3 +263,33 @@ def test_dashboard_invalid_page_clamps_to_last_page(client, app_dirs, monkeypatc
 
     assert response.status_code == 200
     assert "Showing 6–7 of 7 runs" in response.text
+
+
+def test_api_logs_requires_auth(unauthenticated_client):
+    response = unauthenticated_client.get("/api/logs", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/login?next=%2Fapi%2Flogs"
+
+
+def test_api_logs_returns_entries(client, app_dirs):
+    log_file = app_dirs["config_dir"] / "app.log"
+    log_file.write_text(
+        "2026-07-29T10:45:00+0000 INFO truenas_config_backup: hello from logs\n",
+        encoding="utf-8",
+    )
+
+    response = client.get("/api/logs")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert len(payload["entries"]) == 1
+    assert payload["entries"][0]["message"] == "hello from logs"
+
+
+def test_dashboard_includes_logs_panel(client):
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert 'id="logs-panel"' in response.text
+    assert 'id="logs-list"' in response.text

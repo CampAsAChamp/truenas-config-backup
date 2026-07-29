@@ -39,4 +39,10 @@ HEALTH_CHECK_TRUENAS = _bool_env("HEALTH_CHECK_TRUENAS", False)
 
 DEV_MODE = _bool_env("DEV_MODE", False)
 
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").strip()
+LOG_FILE = os.environ.get("LOG_FILE", os.path.join(CONFIG_DIR, "app.log"))
+LOG_MAX_BYTES = int(os.environ.get("LOG_MAX_BYTES", "1048576"))
+LOG_BACKUP_COUNT = int(os.environ.get("LOG_BACKUP_COUNT", "3"))
+LOG_TAIL_LIMIT = int(os.environ.get("LOG_TAIL_LIMIT", "200"))
+
 HISTORY_FILE = os.path.join(CONFIG_DIR, "history.jsonl")

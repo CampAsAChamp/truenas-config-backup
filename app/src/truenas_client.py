@@ -8,6 +8,7 @@ download URL (``/_download/{job_id}?auth_token=...``) that can be fetched
 with a plain GET — no extra auth header needed, the token is in the URL.
 """
 import json
+import logging
 import ssl
 from urllib.parse import urlparse, urlunparse
 
@@ -16,6 +17,8 @@ from websockets.sync.client import connect as ws_connect
 
 WS_TIMEOUT = 30
 DOWNLOAD_TIMEOUT = 300
+
+logger = logging.getLogger("truenas_config_backup")
 
 
 class TrueNASClientError(RuntimeError):
@@ -73,6 +76,7 @@ def fetch_config_backup(
     include_root_authorized_keys: bool = False,
 ) -> bytes:
     """Trigger config.save via core.download and return the tar bytes."""
+    logger.info("connecting to TrueNAS at %s", base_url)
     ws_url = _ws_url(base_url)
     ssl_context = _ssl_context(verify_ssl) if ws_url.startswith("wss") else None
 
@@ -102,4 +106,6 @@ def fetch_config_backup(
     with httpx.Client(verify=verify_ssl, timeout=DOWNLOAD_TIMEOUT) as client:
         response = client.get(download_url)
         response.raise_for_status()
-        return response.content
+        content = response.content
+        logger.info("TrueNAS config download complete (%d bytes)", len(content))
+        return content

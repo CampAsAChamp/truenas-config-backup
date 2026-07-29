@@ -29,6 +29,7 @@ def start() -> None:
 def shutdown() -> None:
     if _scheduler.running:
         _scheduler.shutdown(wait=False)
+        logger.info("scheduler stopped")
 
 
 def next_run_time():

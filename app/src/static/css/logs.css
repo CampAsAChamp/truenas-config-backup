@@ -1,0 +1,138 @@
+.logs-panel {
+  margin-top: 1.5rem;
+}
+
+.logs-panel__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.logs-panel__header h2 {
+  margin-bottom: 0;
+}
+
+.logs-panel__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logs-panel__control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.logs-panel__control--checkbox {
+  cursor: pointer;
+}
+
+.logs-panel__control--checkbox input {
+  accent-color: var(--accent);
+}
+
+.logs-panel__select {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.9rem;
+}
+
+.logs-panel__viewport {
+  max-height: 20rem;
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.logs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+}
+
+.log-entry {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.25rem 0.75rem;
+  border-left: 3px solid transparent;
+}
+
+.log-entry:hover {
+  background: var(--surface-hover);
+}
+
+.log-entry__timestamp {
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.log-entry__level {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.log-entry--debug .log-entry__level,
+.log-entry--info .log-entry__level {
+  background: var(--info-bg);
+  color: var(--info-text);
+  border: 1px solid var(--info-border);
+}
+
+.log-entry--warning .log-entry__level {
+  background: #3d331a;
+  color: var(--field-label);
+  border: 1px solid #665c20;
+}
+
+.log-entry--error .log-entry__level,
+.log-entry--critical .log-entry__level {
+  background: var(--failure-bg);
+  color: var(--failure-text);
+  border: 1px solid var(--failure-border);
+}
+
+.log-entry--error,
+.log-entry--critical {
+  border-left-color: var(--failure-border);
+}
+
+.log-entry--warning {
+  border-left-color: #665c20;
+}
+
+.log-entry__message {
+  word-break: break-word;
+}
+
+.logs-panel__empty {
+  margin: 0;
+  padding: 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .log-entry {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}

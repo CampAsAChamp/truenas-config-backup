@@ -1,3 +1,4 @@
+import logging
 import os
 import secrets
 from contextlib import asynccontextmanager
@@ -20,7 +21,11 @@ from .auth import (
 from .config_validation import validate_config
 from .datetime_display import TIMEZONE_LABELS, TIMEZONE_OPTIONS, format_timestamp, to_iso
 from .health import readiness_status
+from .log_reader import tail_log_entries
+from .logging_setup import configure_logging
 from .version import get_version
+
+logger = logging.getLogger("truenas_config_backup")
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
@@ -132,6 +137,8 @@ def _clear_session_cookie(response: RedirectResponse) -> RedirectResponse:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    configure_logging()
+    logger.info("application starting")
     validate_config()
     scheduler.start()
     yield
@@ -296,3 +303,9 @@ def delete_run(timestamp: str = Form(...), page: int = Form(1)):
             redirect_page = max(1, redirect_page - 1)
         return _redirect_home("run-deleted", page=redirect_page if redirect_page > 1 else None)
     return _redirect_home("run-delete-failed", page=page if page > 1 else None)
+
+
+@app.get("/api/logs", dependencies=[Depends(require_dashboard_auth)])
+def api_logs(limit: int = config.LOG_TAIL_LIMIT):
+    clamped = max(1, min(limit, config.LOG_TAIL_LIMIT))
+    return {"entries": tail_log_entries(clamped)}

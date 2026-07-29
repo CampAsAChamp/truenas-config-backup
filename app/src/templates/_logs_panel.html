@@ -1,0 +1,28 @@
+{% from "_icons.html" import icon %}
+<section class="panel logs-panel" id="logs-panel">
+  <div class="logs-panel__header">
+    <h2>{{ icon("history", 22) }} Logs</h2>
+    <div class="logs-panel__controls">
+      <label class="logs-panel__control">
+        <span class="logs-panel__label">Level</span>
+        <select id="logs-level-filter" class="logs-panel__select">
+          <option value="all">All</option>
+          <option value="info">Info+</option>
+          <option value="warning">Warnings+</option>
+          <option value="error">Errors only</option>
+        </select>
+      </label>
+      <label class="logs-panel__control logs-panel__control--checkbox">
+        <input type="checkbox" id="logs-auto-scroll" checked>
+        <span>Auto-scroll</span>
+      </label>
+      <button type="button" class="button button--ghost" id="logs-refresh">
+        {{ icon("history", 16) }} Refresh
+      </button>
+    </div>
+  </div>
+  <div class="logs-panel__viewport" id="logs-viewport" aria-live="polite">
+    <ol class="logs-list" id="logs-list"></ol>
+    <p class="logs-panel__empty" id="logs-empty" hidden>No log entries yet.</p>
+  </div>
+</section>

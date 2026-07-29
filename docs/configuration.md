@@ -28,8 +28,15 @@ compose YAML, or your local shell when running the backend directly.
 | `NOTIFY_PROVIDER` | `generic` | Notification payload format: `generic` or `discord` |
 | `NOTIFY_ON_SUCCESS` | `false` | Also notify the webhook when backups succeed |
 | `HEALTH_CHECK_TRUENAS` | `false` | When true, `/readyz` probes TrueNAS connectivity (slower) |
+| `LOG_LEVEL` | `INFO` | Application log verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
+| `LOG_FILE` | `{CONFIG_DIR}/app.log` | Path to the rotating application log file |
+| `LOG_MAX_BYTES` | `1048576` | Maximum size of each log file before rotation |
+| `LOG_BACKUP_COUNT` | `3` | Number of rotated log files to keep |
+| `LOG_TAIL_LIMIT` | `200` | Maximum log lines returned to the dashboard log panel |
 
 The dashboard **Display settings** section lets each browser override date format and timezone; overrides are stored in `localStorage` and fall back to these env defaults when unset.
+
+The dashboard **Logs** panel at the bottom of the home page shows recent application log entries from `LOG_FILE`, with level filtering and automatic refresh every few seconds.
 
 ## Dashboard authentication
 
