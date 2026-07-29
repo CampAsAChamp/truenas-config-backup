@@ -1,3 +1,13 @@
+# [0.10.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.9.0...0.10.0) (2026-07-29)
+
+
+### Features
+
+* add clear logs button with second-precision timestamps ([b4c1df4](https://github.com/CampAsAChamp/truenas-config-backup/commit/b4c1df43b09b7cb842d88d208af0c876f7505d4b))
+* add dashboard settings and log clear APIs ([13e89c6](https://github.com/CampAsAChamp/truenas-config-backup/commit/13e89c66d0dc07352353a685a8656b7f317fe998))
+* add editable configuration panel on dashboard ([55d0c2d](https://github.com/CampAsAChamp/truenas-config-backup/commit/55d0c2ddbb07f0e575556cc6d177f7d083fbf05b))
+* reload browser on static asset changes in dev mode ([d08d01b](https://github.com/CampAsAChamp/truenas-config-backup/commit/d08d01bffbd3c6c71c539555dd64295eb577a26a))
+
 # [0.9.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.8.0...0.9.0) (2026-07-29)
 
 
