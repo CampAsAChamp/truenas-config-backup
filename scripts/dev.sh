@@ -47,11 +47,10 @@ run_dev_server() {
     --host 127.0.0.1 \
     --port "${WEB_PORT:-8080}" \
     --reload \
+    --timeout-graceful-shutdown 2 \
     --reload-dir app/src \
     --reload-include '*.py' \
-    --reload-include '*.html' \
-    --reload-include '*.css' \
-    --reload-include '*.js'
+    --reload-include '*.html'
 }
 
 main() {
