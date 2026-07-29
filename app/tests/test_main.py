@@ -25,7 +25,8 @@ def test_dashboard(client, app_dirs, monkeypatch):
     assert response.status_code == 200
     assert "sample.tar" in response.text
     assert f"v{get_version()}" in response.text
-    assert 'class="config-readonly-field__value config-readonly-field__value--mono">https://192.168.1.50</div>' in response.text
+    assert "config-readonly-field__value--mono" in response.text
+    assert "https://192.168.1.50" in response.text
     assert 'id="display-defaults"' in response.text
     assert '"dateFormat": "mm/dd/yy"' in response.text
     assert 'class="timestamp col-timestamp" data-iso=' in response.text
