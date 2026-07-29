@@ -49,6 +49,7 @@ def build_server_env(backup_dir: Path, config_dir: Path) -> dict[str, str]:
     env = os.environ.copy()
     env.update(
         {
+            "PYTHONPATH": str(REPO_ROOT / "app" / "src"),
             "DASHBOARD_PASSWORD": SCREENSHOT_PASSWORD,
             "TRUENAS_URL": "https://192.168.1.50",
             "TRUENAS_VERIFY_SSL": "false",

@@ -20,7 +20,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 COPY docs/logo.svg docs/logo.png ./docs/
 
-ENV BACKUP_DIR=/backups \
+ENV PYTHONPATH=/srv/app/src \
+    BACKUP_DIR=/backups \
     CONFIG_DIR=/config \
     WEB_PORT=8080
 

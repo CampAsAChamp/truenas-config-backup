@@ -14,7 +14,7 @@
         "8080",
         "--reload",
         "--reload-dir",
-        "app",
+        "app/src/app",
         "--reload-include",
         "*.py",
         "--reload-include",
@@ -27,6 +27,7 @@
       "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env.local",
       "env": {
+        "PYTHONPATH": "${workspaceFolder}/app/src",
         "DEV_MODE": "true",
         "BACKUP_DIR": "${workspaceFolder}/local-data/backups",
         "CONFIG_DIR": "${workspaceFolder}/local-data/config",
@@ -50,6 +51,7 @@
       "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env.local",
       "env": {
+        "PYTHONPATH": "${workspaceFolder}/app/src",
         "BACKUP_DIR": "${workspaceFolder}/local-data/backups",
         "CONFIG_DIR": "${workspaceFolder}/local-data/config",
         "TRUENAS_VERIFY_SSL": "false"
@@ -77,7 +79,7 @@
       ],
       "cwd": "${workspaceFolder}",
       "env": {
-        "PYTHONPATH": "${workspaceFolder}"
+        "PYTHONPATH": "${workspaceFolder}/app/src"
       },
       "justMyCode": true
     },
@@ -92,7 +94,7 @@
       ],
       "cwd": "${workspaceFolder}",
       "env": {
-        "PYTHONPATH": "${workspaceFolder}"
+        "PYTHONPATH": "${workspaceFolder}/app/src"
       },
       "justMyCode": true
     }

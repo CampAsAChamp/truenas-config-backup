@@ -11,15 +11,15 @@ select = ["E", "F", "I", "UP"]
 ignore = ["UP017"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["I001", "E501"]
+"app/tests/*" = ["I001", "E501"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = ["."]
+testpaths = ["app/tests"]
+pythonpath = ["app/src"]
 addopts = ["--strict-markers", "--tb=short"]
 
 [tool.coverage.run]
-source = ["app"]
+source = ["app/src/app"]
 
 [tool.coverage.report]
 show_missing = true

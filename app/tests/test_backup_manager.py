@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from app import backup_manager, config, history
 from app.truenas_client import TrueNASClientError
-from tests.tar_helpers import make_tar_bytes
+from tar_helpers import make_tar_bytes
 
 
 def _write_backup(app_dirs, name: str, content: bytes = b"tar") -> None:

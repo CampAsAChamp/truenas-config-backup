@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from tests.conftest import login_client
+from conftest import login_client
 
 from app import backup_manager, history
 from app.version import get_version
@@ -195,7 +195,7 @@ def test_run_now_failure(mock_run_backup, client):
 
 
 def test_run_now_executes_backup(client, app_dirs):
-    from tests.tar_helpers import make_tar_bytes
+    from tar_helpers import make_tar_bytes
 
     with patch("app.backup_manager.fetch_config_backup", return_value=make_tar_bytes(b"backup")):
         response = client.post("/run-now", follow_redirects=False)

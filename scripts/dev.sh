@@ -5,7 +5,7 @@
 # 1. Resolve repo root and ensure a virtualenv Python is available.
 # 2. Load .env.local when present and set local data directory defaults.
 # 3. Seed sample backups/history when local-data is empty.
-# 4. Run uvicorn with reload watching app/ source, templates, and static files.
+# 4. Run uvicorn with reload watching app/src/app source, templates, and static files.
 
 set -euo pipefail
 
@@ -43,11 +43,11 @@ seed_local_data() {
 
 run_dev_server() {
   # Inputs: none. Outputs: none. Side effects: starts uvicorn until interrupted.
-  exec "${PYTHON_BIN}" -m uvicorn app.main:app \
+  exec env PYTHONPATH="${REPO_ROOT}/app/src" "${PYTHON_BIN}" -m uvicorn app.main:app \
     --host 127.0.0.1 \
     --port "${WEB_PORT:-8080}" \
     --reload \
-    --reload-dir app \
+    --reload-dir app/src/app \
     --reload-include '*.py' \
     --reload-include '*.html' \
     --reload-include '*.css' \

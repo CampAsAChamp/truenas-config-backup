@@ -56,8 +56,9 @@ See [Installation](docs/installation.md) for the full wizard steps, compose YAML
 
 ```
 docs/                             Documentation and brand assets
-app/                              FastAPI backend (the container's application code)
-tests/                            pytest unit and integration tests for app/
+app/
+  src/app/                        FastAPI backend (Python package, templates, static)
+  tests/                          pytest unit and integration tests
 Dockerfile, requirements.txt      Container build
 ix-dev/community/truenas-config-backup/
                                   TrueNAS apps-format definition (app.yaml, questions.yaml,

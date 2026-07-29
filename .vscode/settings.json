@@ -5,7 +5,7 @@
   "python.testing.unittestEnabled": false,
   "python.testing.cwd": "${workspaceFolder}",
   "python.testing.pytestArgs": [
-    "tests"
+    "app/tests"
   ],
   "files.exclude": {
     "**/__pycache__": true,
