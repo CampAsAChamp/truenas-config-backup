@@ -16,22 +16,20 @@ def _build_payload(success: bool, message: str, filename: str | None) -> dict:
     timestamp = datetime.now(timezone.utc).isoformat()
 
     if config.NOTIFY_PROVIDER == "discord":
-        title = (
-            "TrueNAS Config Backup Succeeded"
-            if success
-            else "TrueNAS Config Backup Failed"
-        )
+        title = "TrueNAS Config Backup Succeeded" if success else "TrueNAS Config Backup Failed"
         return {
-            "embeds": [{
-                "title": title,
-                "description": message,
-                "color": _DISCORD_SUCCESS_COLOR if success else _DISCORD_FAILURE_COLOR,
-                "fields": [
-                    {"name": "TrueNAS", "value": config.TRUENAS_URL, "inline": True},
-                    {"name": "Filename", "value": filename or "—", "inline": True},
-                ],
-                "timestamp": timestamp,
-            }],
+            "embeds": [
+                {
+                    "title": title,
+                    "description": message,
+                    "color": _DISCORD_SUCCESS_COLOR if success else _DISCORD_FAILURE_COLOR,
+                    "fields": [
+                        {"name": "TrueNAS", "value": config.TRUENAS_URL, "inline": True},
+                        {"name": "Filename", "value": filename or "—", "inline": True},
+                    ],
+                    "timestamp": timestamp,
+                }
+            ],
         }
 
     return {

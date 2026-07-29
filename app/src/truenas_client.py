@@ -7,6 +7,7 @@ the job over the JSON-RPC websocket API and hands back a one-time HTTP(S)
 download URL (``/_download/{job_id}?auth_token=...``) that can be fetched
 with a plain GET — no extra auth header needed, the token is in the URL.
 """
+
 import json
 import logging
 import ssl
@@ -61,7 +62,10 @@ def check_truenas_connection(base_url: str, api_key: str, verify_ssl: bool) -> N
 
     with ws_connect(ws_url, ssl_context=ssl_context, open_timeout=WS_TIMEOUT) as ws:
         auth_result = _call(
-            ws, "auth.login_with_api_key", [api_key], request_id=1,
+            ws,
+            "auth.login_with_api_key",
+            [api_key],
+            request_id=1,
         )
         if not auth_result:
             raise TrueNASClientError("TrueNAS API key authentication failed")
@@ -82,7 +86,10 @@ def fetch_config_backup(
 
     with ws_connect(ws_url, ssl_context=ssl_context, open_timeout=WS_TIMEOUT) as ws:
         auth_result = _call(
-            ws, "auth.login_with_api_key", [api_key], request_id=1,
+            ws,
+            "auth.login_with_api_key",
+            [api_key],
+            request_id=1,
         )
         if not auth_result:
             raise TrueNASClientError("TrueNAS API key authentication failed")
@@ -92,11 +99,13 @@ def fetch_config_backup(
             "core.download",
             [
                 "config.save",
-                [{
-                    "secretseed": include_secret_seed,
-                    "root_authorized_keys": include_root_authorized_keys,
-                    "pool_keys": include_pool_keys,
-                }],
+                [
+                    {
+                        "secretseed": include_secret_seed,
+                        "root_authorized_keys": include_root_authorized_keys,
+                        "pool_keys": include_pool_keys,
+                    }
+                ],
                 "freenas-v1.db.tar",
             ],
             request_id=2,

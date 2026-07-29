@@ -33,11 +33,13 @@ def test_ssl_context_verify_false():
 
 def _mock_ws_messages(auth_ok: bool, download_path: str = "/_download/job-1?auth_token=abc"):
     auth_msg = json.dumps({"jsonrpc": "2.0", "id": 1, "result": auth_ok})
-    download_msg = json.dumps({
-        "jsonrpc": "2.0",
-        "id": 2,
-        "result": ["job-1", download_path],
-    })
+    download_msg = json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "id": 2,
+            "result": ["job-1", download_path],
+        }
+    )
     return [auth_msg, download_msg]
 
 
@@ -93,11 +95,13 @@ def test_fetch_config_backup_auth_failure(mock_ws_connect):
 @patch("src.truenas_client.ws_connect")
 def test_fetch_config_backup_rpc_error(mock_ws_connect):
     mock_ws = MagicMock()
-    mock_ws.recv.return_value = json.dumps({
-        "jsonrpc": "2.0",
-        "id": 1,
-        "error": {"code": -32600, "message": "invalid"},
-    })
+    mock_ws.recv.return_value = json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "error": {"code": -32600, "message": "invalid"},
+        }
+    )
     mock_ws_connect.return_value.__enter__.return_value = mock_ws
 
     with pytest.raises(TrueNASClientError, match="auth.login_with_api_key failed"):

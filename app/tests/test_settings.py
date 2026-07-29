@@ -14,13 +14,15 @@ def test_load_settings_defaults():
 
 
 def test_load_settings_from_env():
-    s = load_settings_from_env({
-        "TRUENAS_URL": "https://192.168.1.50/",
-        "TRUENAS_API_KEY": "secret-key",
-        "RETENTION_COUNT": "12",
-        "DASHBOARD_PASSWORD": "pw",
-        "NOTIFY_WEBHOOK_URL": "https://example.com/hook",
-    })
+    s = load_settings_from_env(
+        {
+            "TRUENAS_URL": "https://192.168.1.50/",
+            "TRUENAS_API_KEY": "secret-key",
+            "RETENTION_COUNT": "12",
+            "DASHBOARD_PASSWORD": "pw",
+            "NOTIFY_WEBHOOK_URL": "https://example.com/hook",
+        }
+    )
     assert s.truenas.url == "https://192.168.1.50"
     assert s.backup.retention_count == 12
     assert s.notify.webhook_url == "https://example.com/hook"
@@ -78,8 +80,10 @@ def test_resolve_notify_provider(url, explicit, expected):
 
 
 def test_notify_effective_provider_auto_detects_discord():
-    s = load_settings_from_env({
-        "DASHBOARD_PASSWORD": "pw",
-        "NOTIFY_WEBHOOK_URL": "https://discord.com/api/webhooks/123/abc",
-    })
+    s = load_settings_from_env(
+        {
+            "DASHBOARD_PASSWORD": "pw",
+            "NOTIFY_WEBHOOK_URL": "https://discord.com/api/webhooks/123/abc",
+        }
+    )
     assert s.notify.effective_provider == "discord"

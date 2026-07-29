@@ -127,9 +127,7 @@ def reset_for_tests() -> None:
     logger = logging.getLogger(LOGGER_NAME)
     logger.handlers.clear()
     access_logger = logging.getLogger("uvicorn.access")
-    access_logger.filters = [
-        filt for filt in access_logger.filters if not isinstance(filt, DevAccessLogFilter)
-    ]
+    access_logger.filters = [filt for filt in access_logger.filters if not isinstance(filt, DevAccessLogFilter)]
     _configured = False
     _dev_access_filter_installed = False
     _file_handler = None

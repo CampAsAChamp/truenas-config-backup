@@ -25,15 +25,10 @@ def validate_config() -> None:
         CronTrigger.from_crontab(config.CRON_SCHEDULE)
 
     if config.DASHBOARD_PAGE_SIZE < 1:
-        raise ValueError(
-            f"DASHBOARD_PAGE_SIZE must be >= 1, got {config.DASHBOARD_PAGE_SIZE}"
-        )
+        raise ValueError(f"DASHBOARD_PAGE_SIZE must be >= 1, got {config.DASHBOARD_PAGE_SIZE}")
 
     if config.settings.notify.provider not in ("generic", "discord"):
-        raise ValueError(
-            f"NOTIFY_PROVIDER must be 'generic' or 'discord', "
-            f"got {config.settings.notify.provider!r}"
-        )
+        raise ValueError(f"NOTIFY_PROVIDER must be 'generic' or 'discord', got {config.settings.notify.provider!r}")
 
 
 def validate_loaded_settings() -> None:

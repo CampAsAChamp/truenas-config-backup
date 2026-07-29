@@ -38,15 +38,19 @@ def tail_log_entries(limit: int | None = None) -> list[dict]:
             continue
         match = LOG_LINE_RE.match(text)
         if match:
-            entries.append({
-                "timestamp": _normalize_timestamp(match.group("timestamp")),
-                "level": match.group("level"),
-                "message": match.group("message"),
-            })
+            entries.append(
+                {
+                    "timestamp": _normalize_timestamp(match.group("timestamp")),
+                    "level": match.group("level"),
+                    "message": match.group("message"),
+                }
+            )
         else:
-            entries.append({
-                "timestamp": "",
-                "level": "INFO",
-                "message": text,
-            })
+            entries.append(
+                {
+                    "timestamp": "",
+                    "level": "INFO",
+                    "message": text,
+                }
+            )
     return entries

@@ -58,11 +58,7 @@ def test_seed_creates_backups_and_history(tmp_path):
     assert sum(1 for entry in entries if entry["success"]) == 5
     assert sum(1 for entry in entries if not entry["success"]) == 2
 
-    pruned = next(
-        entry
-        for entry in entries
-        if entry.get("filename") == "truenas-config-20250401-030000.tar"
-    )
+    pruned = next(entry for entry in entries if entry.get("filename") == "truenas-config-20250401-030000.tar")
     assert pruned["success"] is True
     assert not (backup_dir / pruned["filename"]).exists()
 
@@ -86,7 +82,9 @@ def test_seed_force_replaces_existing_data(tmp_path):
     backup_dir.mkdir(parents=True)
     config_dir.mkdir(parents=True)
     (backup_dir / "old.tar").write_bytes(b"old")
-    (config_dir / "history.jsonl").write_text('{"timestamp": "t", "success": true, "message": "old", "filename": null}\n')
+    (config_dir / "history.jsonl").write_text(
+        '{"timestamp": "t", "success": true, "message": "old", "filename": null}\n'
+    )
 
     result = _run_seed(tmp_path, extra_args=["--force"])
 

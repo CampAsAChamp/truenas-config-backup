@@ -27,11 +27,13 @@ def list_backups() -> list[dict]:
             continue
         path = os.path.join(config.BACKUP_DIR, name)
         stat = os.stat(path)
-        backups.append({
-            "filename": name,
-            "size_bytes": stat.st_size,
-            "modified": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
-        })
+        backups.append(
+            {
+                "filename": name,
+                "size_bytes": stat.st_size,
+                "modified": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
+            }
+        )
     backups.sort(key=lambda b: b["modified"], reverse=True)
     return backups
 
@@ -48,43 +50,51 @@ def _all_backup_runs() -> list[dict]:
         if success and filename and filename in backups_by_name:
             backup = backups_by_name[filename]
             claimed.add(filename)
-            runs.append({
-                "success": True,
-                "has_backup": True,
-                "timestamp": entry["timestamp"],
-                "filename": filename,
-                "size_bytes": backup["size_bytes"],
-                "message": entry.get("message", ""),
-            })
+            runs.append(
+                {
+                    "success": True,
+                    "has_backup": True,
+                    "timestamp": entry["timestamp"],
+                    "filename": filename,
+                    "size_bytes": backup["size_bytes"],
+                    "message": entry.get("message", ""),
+                }
+            )
         elif success and filename:
-            runs.append({
-                "success": True,
-                "has_backup": False,
-                "timestamp": entry["timestamp"],
-                "filename": filename,
-                "size_bytes": None,
-                "message": entry.get("message", ""),
-            })
+            runs.append(
+                {
+                    "success": True,
+                    "has_backup": False,
+                    "timestamp": entry["timestamp"],
+                    "filename": filename,
+                    "size_bytes": None,
+                    "message": entry.get("message", ""),
+                }
+            )
         elif not success:
-            runs.append({
-                "success": False,
-                "has_backup": False,
-                "timestamp": entry["timestamp"],
-                "filename": None,
-                "size_bytes": None,
-                "message": entry.get("message", ""),
-            })
+            runs.append(
+                {
+                    "success": False,
+                    "has_backup": False,
+                    "timestamp": entry["timestamp"],
+                    "filename": None,
+                    "size_bytes": None,
+                    "message": entry.get("message", ""),
+                }
+            )
 
     for backup in list_backups():
         if backup["filename"] not in claimed:
-            runs.append({
-                "success": True,
-                "has_backup": True,
-                "timestamp": backup["modified"],
-                "filename": backup["filename"],
-                "size_bytes": backup["size_bytes"],
-                "message": "",
-            })
+            runs.append(
+                {
+                    "success": True,
+                    "has_backup": True,
+                    "timestamp": backup["modified"],
+                    "filename": backup["filename"],
+                    "size_bytes": backup["size_bytes"],
+                    "message": "",
+                }
+            )
 
     runs.sort(key=lambda run: run["timestamp"], reverse=True)
     return runs
@@ -104,7 +114,7 @@ def list_backup_runs_page(offset: int = 0, limit: int | None = None) -> tuple[li
     if limit is None:
         return runs, total
     start = max(offset, 0)
-    return runs[start:start + limit], total
+    return runs[start : start + limit], total
 
 
 def delete_backup(filename: str) -> bool:
@@ -146,7 +156,7 @@ def _prune_old_backups() -> int:
         return 0
     backups = list_backups()
     pruned = 0
-    for stale in backups[config.RETENTION_COUNT:]:
+    for stale in backups[config.RETENTION_COUNT :]:
         try:
             os.remove(os.path.join(config.BACKUP_DIR, stale["filename"]))
             pruned += 1

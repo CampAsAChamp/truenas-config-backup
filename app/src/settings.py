@@ -93,14 +93,10 @@ def validate_settings(s: Settings) -> None:
         raise ValueError(f"RETENTION_COUNT must be >= 0, got {s.backup.retention_count}")
 
     if s.dashboard_page_size < 1:
-        raise ValueError(
-            f"DASHBOARD_PAGE_SIZE must be >= 1, got {s.dashboard_page_size}"
-        )
+        raise ValueError(f"DASHBOARD_PAGE_SIZE must be >= 1, got {s.dashboard_page_size}")
 
     if s.notify.provider not in ("generic", "discord"):
-        raise ValueError(
-            f"NOTIFY_PROVIDER must be 'generic' or 'discord', got {s.notify.provider!r}"
-        )
+        raise ValueError(f"NOTIFY_PROVIDER must be 'generic' or 'discord', got {s.notify.provider!r}")
 
     if s.backup.cron_schedule:
         CronTrigger.from_crontab(s.backup.cron_schedule)
@@ -133,9 +129,7 @@ def load_settings_from_env(environ: dict[str, str] | None = None) -> Settings:
             retention_count=int(env.get("RETENTION_COUNT", "8")),
             include_secret_seed=_bool_env_from("INCLUDE_SECRET_SEED", env, True),
             include_pool_keys=_bool_env_from("INCLUDE_POOL_KEYS", env, False),
-            include_root_authorized_keys=_bool_env_from(
-                "INCLUDE_ROOT_AUTHORIZED_KEYS", env, False
-            ),
+            include_root_authorized_keys=_bool_env_from("INCLUDE_ROOT_AUTHORIZED_KEYS", env, False),
         ),
         notify=NotifySettings(
             webhook_url=_str_env_from("NOTIFY_WEBHOOK_URL", env),
