@@ -123,7 +123,7 @@ The repo includes [`.githooks/pre-push`](../.githooks/pre-push), which runs the 
 [`.github/workflows/test-app.yml`](../.github/workflows/test-app.yml). To run them manually:
 
 ```bash
-.venv/bin/pre-commit run --hook-stage pre-push --all-files
+.githooks/pre-push
 ```
 
 Tests live under `app/tests/` and cover history logging, backup management, the TrueNAS
