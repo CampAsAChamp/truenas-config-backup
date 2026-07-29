@@ -12,8 +12,8 @@ later), third-party app catalogs are no longer supported — deploy it as a
    if you prefer fixed versions).
 3. Add host-path volumes for backup storage and run history, mounted at `/backups`
    and `/config` respectively (e.g. datasets under your apps pool).
-4. Set the environment variables from the [configuration reference](configuration.md)
-   — at minimum `TRUENAS_URL`, `TRUENAS_API_KEY`, and `DASHBOARD_PASSWORD`.
+4. Complete the install wizard — at minimum **TrueNAS URL**, **API Key**, and **Dashboard Password**
+   (see [configuration reference](configuration.md) for all options).
 5. Publish port **8080** (or match `WEB_PORT` if you change it) to reach the
    dashboard.
 

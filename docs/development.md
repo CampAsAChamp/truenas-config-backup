@@ -13,14 +13,17 @@ cp .env.local.example .env.local   # edit TRUENAS_API_KEY and DASHBOARD_PASSWORD
 ./scripts/dev.sh
 ```
 
-Then visit `http://127.0.0.1:8080`. Edits to Python, templates, CSS, or JS under `app/src/`
-restart the server automatically and refresh the browser.
+Then visit `http://127.0.0.1:8080`. Edits to Python or templates restart the server
+automatically; CSS/JS changes reload the browser without a server restart.
 
 You can also use **Run and Debug → Run app** in VS Code/Cursor — it uses the same
 reload settings and sets `DEV_MODE=true`.
 
 `DEV_MODE` enables dev-only behavior: mtime-based cache busting for static assets and
-a live-reload SSE endpoint. It is never set in the production container.
+a live-reload client (`dev-reload.js`) that listens for server restarts over SSE and
+polls a combined reload-state endpoint for static asset changes. High-frequency dev
+polling routes are hidden from uvicorn access logs. It is never set in the production
+container.
 
 ### Production-like run (no reload)
 
@@ -153,7 +156,7 @@ locally (requires a running container runtime — Docker or Podman):
 
 ```bash
 source .venv/bin/activate
-pip install pyyaml psutil pytest pytest-cov bcrypt pydantic
+pip install pyyaml psutil pytest pytest-cov bcrypt pydantic pydantic-settings
 
 python .github/scripts/ci.py --app truenas-config-backup --train community \
   --test-file basic-values.yaml --render-only=true
