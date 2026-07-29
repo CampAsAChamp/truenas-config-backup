@@ -83,7 +83,16 @@ or the seed/capture scripts) run
 [`.github/workflows/dashboard-screenshot.yml`](../.github/workflows/dashboard-screenshot.yml).
 When the PNG changes, CI commits `docs: update dashboard screenshot` back to `main`.
 
-You can also refresh manually from **Actions → Dashboard screenshot → Run workflow**.
+That auto-commit uses `GITHUB_TOKEN`, so it does not start another workflow on its own.
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) runs afterward via
+`workflow_run`, once the screenshot job finishes, so semantic-release always sees the final
+`main` tip (including any bot screenshot commit) before publishing.
+
+Pushes that only change UI files skip the push-triggered release job; other pushes to `main`
+still run release directly.
+
+You can also refresh manually from **Actions → Dashboard screenshot → Run workflow** (which
+also triggers release when the job completes).
 
 ## Testing
 

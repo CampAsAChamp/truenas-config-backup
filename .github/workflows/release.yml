@@ -4,6 +4,24 @@ on:
   push:
     branches:
       - main
+    # UI-only pushes run Dashboard screenshot first; release follows via workflow_run.
+    paths-ignore:
+      - "app/src/templates/**"
+      - "app/src/static/**"
+      - "app/src/VERSION"
+      - "scripts/seed-local-data.py"
+      - "scripts/capture-dashboard-screenshot.py"
+  workflow_run:
+    workflows:
+      - Dashboard screenshot
+    types:
+      - completed
+    branches:
+      - main
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -11,9 +29,14 @@ permissions:
 
 jobs:
   test:
+    if: >-
+      github.event_name == 'push' ||
+      github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -31,8 +54,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
-          persist-credentials: false
+          fetch-tags: true
+
+      - name: Sync to latest main
+        run: git pull --ff-only origin main
 
       - uses: actions/setup-node@v4
         with:
