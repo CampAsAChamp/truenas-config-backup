@@ -1,3 +1,16 @@
+# [0.9.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.8.0...0.9.0) (2026-07-29)
+
+
+### Bug Fixes
+
+* correct release flow with new screenshot ([c5264fb](https://github.com/CampAsAChamp/truenas-config-backup/commit/c5264fbb3f6f0386a30a6918c8e29247df925b6d))
+
+
+### Features
+
+* add logging ([a74c7a1](https://github.com/CampAsAChamp/truenas-config-backup/commit/a74c7a159f3530b8808517e9693d35ad4b5d2f16))
+* add readonly hint to configuration panel ([44d5c41](https://github.com/CampAsAChamp/truenas-config-backup/commit/44d5c4127ec614f89a261a17b196d464ae0a9ebb))
+
 # [0.8.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.7.2...0.8.0) (2026-07-28)
 
 
