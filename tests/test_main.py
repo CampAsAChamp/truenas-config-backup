@@ -209,6 +209,8 @@ def test_dashboard_shows_restore_help_link(client, app_dirs):
     response = client.get("/")
 
     assert response.status_code == 200
+    assert "These settings are read-only" in response.text
+    assert "TrueNAS app configuration" in response.text
     assert 'href="/help/restore"' in response.text
     assert "How to restore" in response.text
     assert 'href="https://github.com/CampAsAChamp/truenas-config-backup"' in response.text

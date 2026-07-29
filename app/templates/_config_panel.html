@@ -2,6 +2,11 @@
 {% from "_tooltips.html" import setting_help %}
 <section class="settings panel">
   <h2>{{ icon("settings", 22) }} Configuration</h2>
+  <p class="config-readonly-hint" role="note">
+    {{ icon("info", 16) }}
+    These settings are read-only. To change them, update the environment variables in the
+    TrueNAS app configuration and restart the container.
+  </p>
   <dl>
     <dt>{{ icon("link", 18) }} TrueNAS URL</dt><dd><code class="mono">{{ settings.truenas_url }}</code></dd>
     <dt>{{ icon("shield-check", 18) }} Verify SSL

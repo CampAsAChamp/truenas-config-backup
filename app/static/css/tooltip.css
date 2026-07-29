@@ -61,6 +61,22 @@
   font-weight: 600;
 }
 
+.settings .config-readonly-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin: -0.35rem 0 1rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.settings .config-readonly-hint .icon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: var(--accent);
+}
+
 .settings dt {
   display: flex;
   align-items: center;
