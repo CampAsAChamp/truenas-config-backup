@@ -3,6 +3,7 @@ import logging
 from apscheduler.triggers.cron import CronTrigger
 
 from . import config
+from .settings import validate_settings
 
 logger = logging.getLogger("truenas_config_backup")
 
@@ -28,7 +29,12 @@ def validate_config() -> None:
             f"DASHBOARD_PAGE_SIZE must be >= 1, got {config.DASHBOARD_PAGE_SIZE}"
         )
 
-    if config.NOTIFY_PROVIDER not in ("generic", "discord"):
+    if config.settings.notify.provider not in ("generic", "discord"):
         raise ValueError(
-            f"NOTIFY_PROVIDER must be 'generic' or 'discord', got {config.NOTIFY_PROVIDER!r}"
+            f"NOTIFY_PROVIDER must be 'generic' or 'discord', "
+            f"got {config.settings.notify.provider!r}"
         )
+
+
+def validate_loaded_settings() -> None:
+    validate_settings(config.settings)

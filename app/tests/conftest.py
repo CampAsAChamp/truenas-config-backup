@@ -2,6 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src import config
+from src.logging_setup import reset_for_tests
 
 TEST_DASHBOARD_PASSWORD = "test-password"
 
@@ -23,20 +24,20 @@ def app_dirs(tmp_path, monkeypatch):
     backup_dir.mkdir()
     config_dir.mkdir()
 
-    monkeypatch.setattr(config, "BACKUP_DIR", str(backup_dir))
-    monkeypatch.setattr(config, "CONFIG_DIR", str(config_dir))
-    monkeypatch.setattr(config, "HISTORY_FILE", str(config_dir / "history.jsonl"))
-    monkeypatch.setattr(config, "LOG_FILE", str(config_dir / "app.log"))
-    monkeypatch.setattr(config, "RETENTION_COUNT", 8)
+    monkeypatch.setenv("BACKUP_DIR", str(backup_dir))
+    monkeypatch.setenv("CONFIG_DIR", str(config_dir))
+    monkeypatch.setenv("DASHBOARD_PASSWORD", TEST_DASHBOARD_PASSWORD)
+    config.reload_settings()
 
     return {"backup_dir": backup_dir, "config_dir": config_dir}
 
 
 @pytest.fixture
 def client(app_dirs, monkeypatch):
+    reset_for_tests()
     monkeypatch.setattr("src.scheduler.start", lambda: None)
     monkeypatch.setattr("src.scheduler.shutdown", lambda: None)
-    monkeypatch.setattr("src.config.DASHBOARD_PASSWORD", TEST_DASHBOARD_PASSWORD)
+    monkeypatch.setattr("src.scheduler.reload", lambda: None)
 
     from src.main import app
 
@@ -47,9 +48,10 @@ def client(app_dirs, monkeypatch):
 
 @pytest.fixture
 def unauthenticated_client(app_dirs, monkeypatch):
+    reset_for_tests()
     monkeypatch.setattr("src.scheduler.start", lambda: None)
     monkeypatch.setattr("src.scheduler.shutdown", lambda: None)
-    monkeypatch.setattr("src.config.DASHBOARD_PASSWORD", TEST_DASHBOARD_PASSWORD)
+    monkeypatch.setattr("src.scheduler.reload", lambda: None)
 
     from src.main import app
 

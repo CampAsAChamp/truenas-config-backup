@@ -1,48 +1,69 @@
-import os
+from .settings import Settings
+from .settings_store import load_settings as _load_merged_settings
 
 
-def _bool_env(name: str, default: bool) -> bool:
-    value = os.environ.get(name)
-    if value is None:
-        return default
-    return value.strip().lower() in ("1", "true", "yes", "on")
+def load_settings(environ: dict[str, str] | None = None) -> Settings:
+    return _load_merged_settings(environ)
 
 
-TRUENAS_URL = os.environ.get("TRUENAS_URL", "https://127.0.0.1").rstrip("/")
-TRUENAS_API_KEY = os.environ.get("TRUENAS_API_KEY", "")
-TRUENAS_VERIFY_SSL = _bool_env("TRUENAS_VERIFY_SSL", False)
+settings: Settings = load_settings()
 
-BACKUP_DIR = os.environ.get("BACKUP_DIR", "/backups")
-CONFIG_DIR = os.environ.get("CONFIG_DIR", "/config")
 
-CRON_SCHEDULE = os.environ.get("CRON_SCHEDULE", "").strip()
-RETENTION_COUNT = int(os.environ.get("RETENTION_COUNT", "8"))
-INCLUDE_SECRET_SEED = _bool_env("INCLUDE_SECRET_SEED", True)
-INCLUDE_POOL_KEYS = _bool_env("INCLUDE_POOL_KEYS", False)
-INCLUDE_ROOT_AUTHORIZED_KEYS = _bool_env("INCLUDE_ROOT_AUTHORIZED_KEYS", False)
+def reload_settings(environ: dict[str, str] | None = None) -> Settings:
+    global settings
+    settings = load_settings(environ)
+    _sync_module_aliases(settings)
+    return settings
 
-WEB_PORT = int(os.environ.get("WEB_PORT", "8080"))
-DASHBOARD_PAGE_SIZE = int(os.environ.get("DASHBOARD_PAGE_SIZE", "20"))
 
-DISPLAY_DATE_FORMAT = os.environ.get("DISPLAY_DATE_FORMAT", "mm/dd/yy").strip()
-DISPLAY_CLOCK_FORMAT = os.environ.get("DISPLAY_CLOCK_FORMAT", "12h").strip().lower()
-DISPLAY_TIMEZONE_MODE = os.environ.get("DISPLAY_TIMEZONE_MODE", "local").strip().lower()
-DISPLAY_TIMEZONE = os.environ.get("DISPLAY_TIMEZONE", "").strip()
+def _sync_module_aliases(s: Settings) -> None:
+    global TRUENAS_URL, TRUENAS_API_KEY, TRUENAS_VERIFY_SSL
+    global BACKUP_DIR, CONFIG_DIR, CRON_SCHEDULE, RETENTION_COUNT
+    global INCLUDE_SECRET_SEED, INCLUDE_POOL_KEYS, INCLUDE_ROOT_AUTHORIZED_KEYS
+    global WEB_PORT, DASHBOARD_PAGE_SIZE
+    global DISPLAY_DATE_FORMAT, DISPLAY_CLOCK_FORMAT, DISPLAY_TIMEZONE_MODE, DISPLAY_TIMEZONE
+    global DASHBOARD_PASSWORD
+    global NOTIFY_WEBHOOK_URL, NOTIFY_PROVIDER, NOTIFY_ON_SUCCESS
+    global HEALTH_CHECK_TRUENAS, DEV_MODE
+    global LOG_LEVEL, LOG_FILE, LOG_MAX_BYTES, LOG_BACKUP_COUNT, LOG_TAIL_LIMIT
+    global HISTORY_FILE
 
-DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD", "").strip()
+    TRUENAS_URL = s.truenas.url
+    TRUENAS_API_KEY = s.truenas.api_key
+    TRUENAS_VERIFY_SSL = s.truenas.verify_ssl
 
-NOTIFY_WEBHOOK_URL = os.environ.get("NOTIFY_WEBHOOK_URL", "").strip()
-NOTIFY_PROVIDER = os.environ.get("NOTIFY_PROVIDER", "generic").strip().lower()
-NOTIFY_ON_SUCCESS = _bool_env("NOTIFY_ON_SUCCESS", False)
+    BACKUP_DIR = s.backup.dir
+    CRON_SCHEDULE = s.backup.cron_schedule
+    RETENTION_COUNT = s.backup.retention_count
+    INCLUDE_SECRET_SEED = s.backup.include_secret_seed
+    INCLUDE_POOL_KEYS = s.backup.include_pool_keys
+    INCLUDE_ROOT_AUTHORIZED_KEYS = s.backup.include_root_authorized_keys
 
-HEALTH_CHECK_TRUENAS = _bool_env("HEALTH_CHECK_TRUENAS", False)
+    WEB_PORT = s.web_port
+    DASHBOARD_PAGE_SIZE = s.dashboard_page_size
 
-DEV_MODE = _bool_env("DEV_MODE", False)
+    DISPLAY_DATE_FORMAT = s.display.date_format
+    DISPLAY_CLOCK_FORMAT = s.display.clock_format
+    DISPLAY_TIMEZONE_MODE = s.display.timezone_mode
+    DISPLAY_TIMEZONE = s.display.timezone
 
-LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").strip()
-LOG_FILE = os.environ.get("LOG_FILE", os.path.join(CONFIG_DIR, "app.log"))
-LOG_MAX_BYTES = int(os.environ.get("LOG_MAX_BYTES", "1048576"))
-LOG_BACKUP_COUNT = int(os.environ.get("LOG_BACKUP_COUNT", "3"))
-LOG_TAIL_LIMIT = int(os.environ.get("LOG_TAIL_LIMIT", "200"))
+    DASHBOARD_PASSWORD = s.dashboard_password
 
-HISTORY_FILE = os.path.join(CONFIG_DIR, "history.jsonl")
+    NOTIFY_WEBHOOK_URL = s.notify.webhook_url
+    NOTIFY_PROVIDER = s.notify.effective_provider
+    NOTIFY_ON_SUCCESS = s.notify.on_success
+
+    HEALTH_CHECK_TRUENAS = s.health_check_truenas
+    DEV_MODE = s.dev_mode
+
+    CONFIG_DIR = s.config_dir
+    LOG_LEVEL = s.logging.level
+    LOG_FILE = s.logging.file
+    LOG_MAX_BYTES = s.logging.max_bytes
+    LOG_BACKUP_COUNT = s.logging.backup_count
+    LOG_TAIL_LIMIT = s.logging.tail_limit
+
+    HISTORY_FILE = s.history_file
+
+
+_sync_module_aliases(settings)

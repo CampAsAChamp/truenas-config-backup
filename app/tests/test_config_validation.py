@@ -77,7 +77,12 @@ def test_validate_config_rejects_invalid_notify_provider(monkeypatch):
     monkeypatch.setattr(config, "CRON_SCHEDULE", "")
     monkeypatch.setattr(config, "RETENTION_COUNT", 8)
     monkeypatch.setattr(config, "DASHBOARD_PAGE_SIZE", 20)
-    monkeypatch.setattr(config, "NOTIFY_PROVIDER", "slack")
+    notify = config.settings.notify.model_copy(update={"provider": "slack"})
+    monkeypatch.setattr(
+        config,
+        "settings",
+        config.settings.model_copy(update={"notify": notify}),
+    )
 
     with pytest.raises(ValueError, match="NOTIFY_PROVIDER"):
         validate_config()
