@@ -35,7 +35,7 @@ function formatEntryTimestamp(iso, settings) {
   if (!iso) {
     return "";
   }
-  return formatIso(iso, settings);
+  return formatIso(iso, settings, { includeSeconds: true });
 }
 
 function renderEntries(entries, filter) {
@@ -63,6 +63,7 @@ function renderEntries(entries, filter) {
     timestamp.className = "log-entry__timestamp timestamp";
     if (entry.timestamp) {
       timestamp.dataset.iso = entry.timestamp;
+      timestamp.dataset.seconds = "true";
       timestamp.textContent = formatEntryTimestamp(entry.timestamp, settings);
     }
 
@@ -90,6 +91,14 @@ async function fetchLogs() {
   return data.entries || [];
 }
 
+async function clearLogs() {
+  if (!window.confirm("Clear all log entries? This cannot be undone.")) {
+    return false;
+  }
+  const response = await fetch("/api/logs/clear", { method: "POST" });
+  return response.ok;
+}
+
 function shouldPoll() {
   return document.visibilityState === "visible";
 }
@@ -97,6 +106,7 @@ function shouldPoll() {
 export function initLogsPanel() {
   const panel = document.getElementById("logs-panel");
   const refreshButton = document.getElementById("logs-refresh");
+  const clearButton = document.getElementById("logs-clear");
   const filterSelect = document.getElementById("logs-level-filter");
   const autoScrollCheckbox = document.getElementById("logs-auto-scroll");
   const viewport = document.getElementById("logs-viewport");
@@ -129,6 +139,11 @@ export function initLogsPanel() {
   }
 
   refreshButton?.addEventListener("click", refresh);
+  clearButton?.addEventListener("click", async () => {
+    if (await clearLogs()) {
+      await refresh();
+    }
+  });
   filterSelect?.addEventListener("change", refresh);
 
   document.addEventListener("visibilitychange", () => {

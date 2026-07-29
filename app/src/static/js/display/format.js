@@ -74,7 +74,7 @@ function formatDateTimeParts(parts, preset, hour12) {
   return `${date} ${time}`;
 }
 
-export function formatIso(iso, settings) {
+export function formatIso(iso, settings, { includeSeconds = false } = {}) {
   if (!iso) {
     return "";
   }
@@ -85,7 +85,11 @@ export function formatIso(iso, settings) {
   if (settings.dateFormat === "iso") {
     return date.toISOString().replace(".000Z", "+00:00").replace("Z", "+00:00");
   }
-  const preset = PRESETS[settings.dateFormat] || PRESETS["mm/dd/yy"];
+  const basePreset = PRESETS[settings.dateFormat] || PRESETS["mm/dd/yy"];
+  const preset =
+    includeSeconds && !basePreset.seconds
+      ? { ...basePreset, second: "2-digit", seconds: true }
+      : basePreset;
   const tz = resolveTimeZone(settings);
   const hour12 = uses12HourClock(settings);
   const fmt = new Intl.DateTimeFormat("en-GB", {
@@ -104,7 +108,8 @@ export function formatIso(iso, settings) {
 
 export function applyTimestamps(settings) {
   document.querySelectorAll(".timestamp[data-iso]").forEach((el) => {
-    el.textContent = formatIso(el.dataset.iso, settings);
+    const includeSeconds = el.dataset.seconds === "true";
+    el.textContent = formatIso(el.dataset.iso, settings, { includeSeconds });
   });
 }
 

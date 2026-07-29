@@ -14,10 +14,14 @@
       </label>
       <label class="logs-panel__control logs-panel__control--checkbox">
         <input type="checkbox" id="logs-auto-scroll" checked>
+        {{ icon("chevrons-down", 16) }}
         <span>Auto-scroll</span>
       </label>
       <button type="button" class="button button--ghost" id="logs-refresh">
         {{ icon("history", 16) }} Refresh
+      </button>
+      <button type="button" class="button button--ghost" id="logs-clear">
+        {{ icon("trash", 16) }} Clear
       </button>
     </div>
   </div>
