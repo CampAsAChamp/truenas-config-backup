@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,7 +30,9 @@
         <span class="login-form__label">Password</span>
         <input type="password" name="password" autocomplete="current-password" required autofocus>
       </label>
-      <button type="submit">Sign in</button>
+      <button type="submit">
+        {{ icon("log-in", 16) }} Sign in
+      </button>
     </form>
   </main>
 </body>

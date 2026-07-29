@@ -55,26 +55,34 @@
       </p>
       <div class="pagination__links">
         {% if pagination.has_prev %}
-        <a class="button button--ghost" href="/?page={{ pagination.page - 1 }}">Previous</a>
+        <a class="button button--ghost" href="/?page={{ pagination.page - 1 }}">
+          {{ icon("arrow-left", 16) }} Previous
+        </a>
         {% else %}
-        <span class="button button--ghost pagination__link--disabled">Previous</span>
+        <span class="button button--ghost pagination__link--disabled">
+          {{ icon("arrow-left", 16) }} Previous
+        </span>
         {% endif %}
         {% if pagination.has_next %}
-        <a class="button button--ghost" href="/?page={{ pagination.page + 1 }}">Next</a>
+        <a class="button button--ghost" href="/?page={{ pagination.page + 1 }}">
+          Next {{ icon("arrow-right", 16) }}
+        </a>
         {% else %}
-        <span class="button button--ghost pagination__link--disabled">Next</span>
+        <span class="button button--ghost pagination__link--disabled">
+          Next {{ icon("arrow-right", 16) }}
+        </span>
         {% endif %}
       </div>
     </nav>
     {% endif %}
   </section>
 
+  {% include "_logs_panel.html" %}
+
   <div class="two-col">
     {% include "_config_panel.html" %}
     {% include "_display_settings_panel.html" %}
   </div>
-
-  {% include "_logs_panel.html" %}
 
   {% include "_delete_confirm_modal.html" %}
 
@@ -82,23 +90,7 @@
   <script type="application/json" id="display-config">{{ display_config | tojson }}</script>
   <script type="module" src="{{ static_url('js/app.js') }}"></script>
   {% if dev_mode %}
-  <script>
-    (function () {
-      var lastBootId = null;
-      var source = new EventSource('/dev/reload-events');
-      source.onmessage = function (event) {
-        var bootId = JSON.parse(event.data).boot_id;
-        if (lastBootId !== null && bootId !== lastBootId) {
-          location.reload();
-          return;
-        }
-        lastBootId = bootId;
-      };
-      source.onerror = function () {
-        source.close();
-      };
-    })();
-  </script>
+  <script src="{{ static_url('js/dev-reload.js') }}"></script>
   {% endif %}
 </body>
 </html>

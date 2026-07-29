@@ -1,6 +1,11 @@
 {% from "_icons.html" import icon %}
 <section class="display-settings panel">
-  <h2>{{ icon("clock", 22) }} Display Settings</h2>
+  <div class="display-settings__header">
+    <h2>{{ icon("clock", 22) }} Display Settings</h2>
+    <button type="button" class="button button--ghost display-reset" id="display-reset">
+      {{ icon("rotate-ccw", 16) }} Reset To Defaults
+    </button>
+  </div>
   <form id="display-settings-form" onsubmit="return false;">
     <label>
       <span class="display-field-label">{{ icon("calendar", 18) }} Date Format</span>
@@ -34,7 +39,6 @@
         <option value="">Select region…</option>
       </select>
     </label>
-    <button type="button" class="display-reset" id="display-reset">Reset To Defaults</button>
     <div class="display-preview">
       <span class="display-preview-label display-field-label">{{ icon("eye", 18) }} Preview</span>
       <output id="display-preview" for="display-settings-form" aria-live="polite"></output>

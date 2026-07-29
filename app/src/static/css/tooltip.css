@@ -42,8 +42,32 @@
   transition: opacity 0.15s ease, visibility 0.15s ease;
 }
 
+.tooltip--readonly {
+  top: calc(100% + 0.35rem);
+  left: 0;
+  transform: none;
+  max-width: min(22rem, calc(100vw - 2rem));
+  padding: 0.55rem 0.7rem;
+  background: var(--info-bg);
+  border: 1px solid var(--info-border);
+  border-radius: 4px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.32);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.85rem;
+  color: var(--info-text);
+  line-height: 1.45;
+}
+
+.config-readonly-field:has(.config-readonly-field__value--tooltip:hover),
+.config-readonly-field:has(.config-readonly-field__value--tooltip:focus) {
+  position: relative;
+  z-index: 2;
+}
+
 .tooltip-trigger:hover .tooltip,
-.tooltip-trigger:focus .tooltip {
+.tooltip-trigger:focus .tooltip,
+.config-readonly-field__value--tooltip:hover > .tooltip--readonly,
+.config-readonly-field__value--tooltip:focus > .tooltip--readonly {
   opacity: 1;
   visibility: visible;
 }
@@ -61,35 +85,11 @@
   font-weight: 600;
 }
 
-.settings .config-readonly-hint {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.45rem;
-  margin: -0.35rem 0 1rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  line-height: 1.45;
+.settings .config-section__hint code.mono {
+  font-size: 0.9em;
 }
 
-.settings .config-readonly-hint .icon {
-  flex-shrink: 0;
-  margin-top: 0.1rem;
-  color: var(--accent);
-}
-
-.settings dt {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: var(--field-label-size);
-  font-weight: 600;
+.settings .config-section__hint strong {
   color: var(--field-label);
-}
-
-.settings dd {
-  margin: 0 0 1.5rem 0;
-}
-
-.settings dd:last-of-type {
-  margin-bottom: 0;
+  font-weight: 600;
 }

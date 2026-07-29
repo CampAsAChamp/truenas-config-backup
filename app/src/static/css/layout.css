@@ -42,7 +42,7 @@
   border-radius: 8px;
 }
 
-.panel + .panel {
+.two-col .panel + .panel {
   margin-top: 0;
 }
 

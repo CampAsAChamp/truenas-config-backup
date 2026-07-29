@@ -17,7 +17,6 @@
   padding: 0.75rem 1rem;
   border-radius: 6px;
   border: 1px solid var(--border);
-  border-left-width: 4px;
   background: var(--surface);
   color: var(--text);
   font-size: 0.9rem;
@@ -59,7 +58,6 @@
   background: var(--success-bg);
   color: var(--success-text);
   border-color: var(--success-border);
-  border-left-color: var(--success-text);
 }
 
 .toast--success .toast__icon {
@@ -70,7 +68,6 @@
   background: var(--failure-bg);
   color: var(--failure-text);
   border-color: var(--failure-border);
-  border-left-color: var(--failure-text);
 }
 
 .toast--error .toast__icon {
@@ -81,7 +78,6 @@
   background: var(--info-bg);
   color: var(--info-text);
   border-color: var(--info-border);
-  border-left-color: var(--accent);
 }
 
 .toast--info .toast__icon {

@@ -16,10 +16,14 @@
       {{ icon("github") }}
     </a>
     {% if back_href %}
-    <a class="button button--ghost" href="{{ back_href }}">Back to dashboard</a>
+    <a class="button button--ghost" href="{{ back_href }}">
+      {{ icon("arrow-left", 16) }} Back to dashboard
+    </a>
     {% endif %}
     <form class="logout-form" method="post" action="/logout">
-      <button type="submit" class="button button--ghost">Log out</button>
+      <button type="submit" class="button button--ghost">
+        {{ icon("log-out", 16) }} Log out
+      </button>
     </form>
   </div>
 </header>

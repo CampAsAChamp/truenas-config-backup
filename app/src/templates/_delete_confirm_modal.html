@@ -1,3 +1,4 @@
+{% from "_icons.html" import icon %}
 <dialog id="delete-confirm-modal" class="confirm-modal" aria-labelledby="delete-confirm-title">
   <div class="confirm-modal__content">
     <h3 id="delete-confirm-title" class="confirm-modal__title">Delete Backup?</h3>
@@ -11,8 +12,12 @@
       </span>
     </p>
     <div class="confirm-modal__actions">
-      <button type="button" class="button" id="delete-confirm-cancel">Cancel</button>
-      <button type="button" class="button button--danger" id="delete-confirm-submit">Delete</button>
+      <button type="button" class="button" id="delete-confirm-cancel">
+        {{ icon("x", 16) }} Cancel
+      </button>
+      <button type="button" class="button button--danger" id="delete-confirm-submit">
+        {{ icon("trash", 16) }} Delete
+      </button>
     </div>
   </div>
 </dialog>
