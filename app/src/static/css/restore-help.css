@@ -26,7 +26,7 @@
   margin-top: 1rem;
   padding: 0.75rem 1rem;
   border: 1px solid var(--failure-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--failure-bg);
   color: var(--failure-text);
 }

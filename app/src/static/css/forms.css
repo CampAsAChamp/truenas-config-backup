@@ -39,13 +39,19 @@
 
 .display-settings select {
   width: 100%;
-  padding: 0.3rem 0.5rem;
+  padding: var(--field-padding-block) var(--select-padding-inline-end) var(--field-padding-block)
+    var(--field-padding-inline);
   border: 1px solid var(--border);
-  border-radius: 4px;
-  background: var(--bg);
+  border-radius: var(--radius-pill);
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238fa3b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 0.85rem;
   color: var(--text);
-  font-size: 0.85rem;
-  font-family: inherit;
+  font: inherit;
+  appearance: none;
+  cursor: pointer;
 }
 
 .display-settings .manual-timezone {
@@ -112,7 +118,7 @@
   margin: 0 0 1rem;
   padding: 0.65rem 0.75rem;
   border: 1px solid var(--failure-border);
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   background: var(--failure-bg);
   color: var(--failure-text);
 }
@@ -136,9 +142,9 @@
 }
 
 .login-form input[type="password"] {
-  padding: 0.55rem 0.65rem;
+  padding: var(--field-padding-block) var(--field-padding-inline);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
   background: var(--bg);
   color: var(--text);
   font: inherit;
@@ -268,9 +274,9 @@
 }
 
 .config-readonly-field__value {
-  padding: 0.45rem 0.55rem;
+  padding: var(--field-padding-block) var(--field-padding-inline);
   border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--surface) 55%, var(--bg));
   color: var(--text-muted);
   font: inherit;
@@ -300,9 +306,9 @@
 .config-settings-form > .config-section input[type="text"],
 .config-settings-form > .config-section input[type="number"],
 .config-settings-form > .config-section input[type="url"] {
-  padding: 0.45rem 0.55rem;
+  padding: var(--field-padding-block) var(--field-padding-inline);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
   background: var(--bg);
   color: var(--text);
   font: inherit;

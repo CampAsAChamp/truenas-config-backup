@@ -65,8 +65,19 @@ td.filename {
   flex-shrink: 0;
 }
 
+.run-backup button {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.run-backup button:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
 .run-backup button .icon {
-  color: var(--success-text);
+  color: inherit;
 }
 
 .backup-table {
