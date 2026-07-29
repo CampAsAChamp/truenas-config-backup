@@ -7,7 +7,7 @@ alwaysApply: true
 
 This repo uses [Conventional Commits](https://www.conventionalcommits.org/) so
 [semantic-release](https://semantic-release.gitbook.io/) can bump on `main`. See
-[README — Releasing](README.md#releasing) for release behavior.
+[CONTRIBUTING — Releasing](CONTRIBUTING.md#releasing) for release behavior.
 
 **Agent commits:** always draft conventional subjects here — do not use plain imperative
 subjects, even though this repo is under `~/Documents/personal_repos/`.

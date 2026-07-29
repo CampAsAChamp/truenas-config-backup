@@ -8,7 +8,7 @@ API), with retention pruning, a run-history log, and a simple web dashboard.
 
 1. **Create an API key** on the TrueNAS system you want to back up
    (**My API Keys** in the TrueNAS UI). Paste it into the **API Key** field during install.
-   See the upstream [least-privilege API key guide](https://github.com/CampAsAChamp/truenas-config-backup#creating-a-least-privilege-api-key).
+   See the upstream [least-privilege API key guide](https://github.com/CampAsAChamp/truenas-config-backup/blob/main/docs/installation.md#creating-a-least-privilege-api-key).
 2. **Set TrueNAS URL** to the target system's base URL. Use `https://127.0.0.1` when the
    app runs on the same box, or the host's LAN IP (e.g. `https://192.168.1.50`) if the
    container cannot reach loopback.
@@ -28,7 +28,7 @@ API), with retention pruning, a run-history log, and a simple web dashboard.
   this backup onto a new system.
 - **Include Pool Keys** and **Include Root Authorized Keys** are off by default; enable
   them only when you need those secrets preserved for hardware migration.
-- **Restoring:** see the upstream [restore guide](https://github.com/CampAsAChamp/truenas-config-backup#restoring-a-backup) or the dashboard **How to restore** link.
+- **Restoring:** see the upstream [restore guide](https://github.com/CampAsAChamp/truenas-config-backup/blob/main/docs/restore.md) or the dashboard **How to restore** link.
 - **Retention Count** controls how many past backup files are kept; older files are pruned
   automatically after each successful run.
 
