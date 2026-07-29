@@ -22,7 +22,8 @@ def start() -> None:
         id="scheduled_backup",
         replace_existing=True,
     )
-    _scheduler.start()
+    if not _scheduler.running:
+        _scheduler.start()
     logger.info("scheduler started with cron '%s'", config.CRON_SCHEDULE)
 
 
@@ -30,6 +31,12 @@ def shutdown() -> None:
     if _scheduler.running:
         _scheduler.shutdown(wait=False)
         logger.info("scheduler stopped")
+
+
+def reload() -> None:
+    if _scheduler.running:
+        _scheduler.remove_all_jobs()
+    start()
 
 
 def next_run_time():

@@ -4,10 +4,11 @@ import secrets
 from contextlib import asynccontextmanager
 from urllib.parse import urlencode
 
-from fastapi import Depends, FastAPI, Form, Request
+from fastapi import Depends, FastAPI, Form, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel, Field
 
 from . import backup_manager, config, scheduler
 from .auth import (
@@ -22,7 +23,9 @@ from .config_validation import validate_config
 from .datetime_display import TIMEZONE_LABELS, TIMEZONE_OPTIONS, format_timestamp, to_iso
 from .health import readiness_status
 from .log_reader import tail_log_entries
-from .logging_setup import configure_logging
+from .logging_setup import clear_logs, configure_logging
+from .settings import validate_settings
+from .settings_store import PersistedSettings, seed_if_missing, update_persisted
 from .version import get_version
 
 logger = logging.getLogger("truenas_config_backup")
@@ -68,6 +71,16 @@ def _static_url(path: str) -> str:
 
 
 templates.env.globals["static_url"] = _static_url
+
+
+class SettingsUpdate(BaseModel):
+    cron_schedule: str = ""
+    retention_count: int = Field(ge=0)
+    include_secret_seed: bool = True
+    include_pool_keys: bool = False
+    include_root_authorized_keys: bool = False
+    notify_webhook_url: str = ""
+    notify_on_success: bool = False
 
 
 def _redirect_home(toast: str, msg: str = "", page: int | None = None) -> RedirectResponse:
@@ -140,6 +153,7 @@ async def lifespan(app: FastAPI):
     configure_logging()
     logger.info("application starting")
     validate_config()
+    seed_if_missing(config.CONFIG_DIR, config.settings)
     scheduler.start()
     yield
     scheduler.shutdown()
@@ -234,6 +248,8 @@ def dashboard(request: Request, page: int = 1):
                 "include_secret_seed": config.INCLUDE_SECRET_SEED,
                 "include_pool_keys": config.INCLUDE_POOL_KEYS,
                 "include_root_authorized_keys": config.INCLUDE_ROOT_AUTHORIZED_KEYS,
+                "notify_webhook_url": config.NOTIFY_WEBHOOK_URL,
+                "notify_on_success": config.NOTIFY_ON_SUCCESS,
             },
             "display_defaults": {
                 "dateFormat": config.DISPLAY_DATE_FORMAT,
@@ -309,3 +325,56 @@ def delete_run(timestamp: str = Form(...), page: int = Form(1)):
 def api_logs(limit: int = config.LOG_TAIL_LIMIT):
     clamped = max(1, min(limit, config.LOG_TAIL_LIMIT))
     return {"entries": tail_log_entries(clamped)}
+
+
+@app.post("/api/logs/clear", dependencies=[Depends(require_dashboard_auth)])
+def api_clear_logs():
+    clear_logs()
+    return {"ok": True}
+
+
+@app.post("/api/settings", dependencies=[Depends(require_dashboard_auth)])
+def api_update_settings(body: SettingsUpdate):
+    try:
+        persisted = PersistedSettings(
+            cron_schedule=body.cron_schedule,
+            retention_count=body.retention_count,
+            include_secret_seed=body.include_secret_seed,
+            include_pool_keys=body.include_pool_keys,
+            include_root_authorized_keys=body.include_root_authorized_keys,
+            notify_webhook_url=body.notify_webhook_url,
+            notify_on_success=body.notify_on_success,
+        )
+        validate_settings(
+            config.settings.model_copy(
+                update={
+                    "backup": config.settings.backup.model_copy(
+                        update={
+                            "cron_schedule": persisted.cron_schedule or "",
+                            "retention_count": persisted.retention_count or 8,
+                            "include_secret_seed": persisted.include_secret_seed
+                            if persisted.include_secret_seed is not None
+                            else True,
+                            "include_pool_keys": persisted.include_pool_keys or False,
+                            "include_root_authorized_keys": (
+                                persisted.include_root_authorized_keys or False
+                            ),
+                        }
+                    ),
+                    "notify": config.settings.notify.model_copy(
+                        update={
+                            "webhook_url": persisted.notify_webhook_url or "",
+                            "on_success": persisted.notify_on_success or False,
+                        }
+                    ),
+                }
+            )
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    update_persisted(config.CONFIG_DIR, body.model_dump())
+    config.reload_settings()
+    scheduler.reload()
+    next_run = scheduler.next_run_time()
+    return {"ok": True, "next_run_iso": to_iso(next_run) if next_run else ""}

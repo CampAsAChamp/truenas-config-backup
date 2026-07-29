@@ -25,7 +25,7 @@ def test_dashboard(client, app_dirs, monkeypatch):
     assert response.status_code == 200
     assert "sample.tar" in response.text
     assert f"v{get_version()}" in response.text
-    assert '<code class="mono">https://192.168.1.50</code>' in response.text
+    assert 'class="config-readonly-field__value config-readonly-field__value--mono">https://192.168.1.50</div>' in response.text
     assert 'id="display-defaults"' in response.text
     assert '"dateFormat": "mm/dd/yy"' in response.text
     assert 'class="timestamp col-timestamp" data-iso=' in response.text
@@ -209,8 +209,8 @@ def test_dashboard_shows_restore_help_link(client, app_dirs):
     response = client.get("/")
 
     assert response.status_code == 200
-    assert "These settings are read-only" in response.text
-    assert "TrueNAS app configuration" in response.text
+    assert "READ-ONLY" in response.text
+    assert "Set in the TrueNAS app environment" in response.text
     assert 'href="/help/restore"' in response.text
     assert "How to restore" in response.text
     assert 'href="https://github.com/CampAsAChamp/truenas-config-backup"' in response.text
@@ -293,3 +293,57 @@ def test_dashboard_includes_logs_panel(client):
     assert response.status_code == 200
     assert 'id="logs-panel"' in response.text
     assert 'id="logs-list"' in response.text
+    assert 'id="logs-clear"' in response.text
+
+
+def test_api_clear_logs_requires_auth(unauthenticated_client):
+    response = unauthenticated_client.post("/api/logs/clear", follow_redirects=False)
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/login?next=%2Fapi%2Flogs%2Fclear"
+
+
+def test_api_clear_logs_truncates_file(client, app_dirs):
+    log_file = app_dirs["config_dir"] / "app.log"
+    log_file.write_text(
+        "2026-07-29T10:45:00+0000 INFO truenas_config_backup: stale entry\n",
+        encoding="utf-8",
+    )
+
+    response = client.post("/api/logs/clear")
+
+    assert response.status_code == 200
+    assert response.json() == {"ok": True}
+
+    entries = client.get("/api/logs").json()["entries"]
+    assert all(entry["message"] != "stale entry" for entry in entries)
+
+
+def test_dashboard_includes_editable_config_form(client):
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert 'id="config-settings-form"' in response.text
+
+
+def test_api_settings_updates_persisted(client, app_dirs):
+    response = client.post(
+        "/api/settings",
+        json={
+            "cron_schedule": "0 5 * * 1",
+            "retention_count": 4,
+            "include_secret_seed": True,
+            "include_pool_keys": False,
+            "include_root_authorized_keys": False,
+            "notify_webhook_url": "",
+            "notify_on_success": False,
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["ok"] is True
+    assert "next_run_iso" in payload
+    settings_file = app_dirs["config_dir"] / "settings.json"
+    assert settings_file.exists()
+    assert '"retention_count": 4' in settings_file.read_text()
