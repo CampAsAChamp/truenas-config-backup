@@ -9,10 +9,10 @@
   --tn-navy-elevated: #111d2b;
   --tn-navy-hover: #182636;
 
-  --bg: var(--tn-navy);
   --text: #e8eaed;
   --text-muted: #8fa3b3;
   --border: #1e3348;
+  --bg: var(--tn-navy);
   --surface: var(--tn-navy-elevated);
   --surface-hover: var(--tn-navy-hover);
   --accent: var(--tn-blue);
@@ -29,6 +29,14 @@
   --info-bg: #0f2438;
   --info-text: #a8d4e8;
   --info-border: #2a6a8a;
+  --heading-color: var(--accent);
+  --panel-heading-color: var(--accent);
+  --body-background:
+    radial-gradient(ellipse 90% 45% at 50% -10%, rgba(0, 144, 206, 0.09), transparent 70%),
+    linear-gradient(180deg, #0c1622 0%, var(--bg) 35%);
+  --header-border: color-mix(in srgb, var(--accent) 22%, var(--border));
+  --panel-border: color-mix(in srgb, var(--accent) 14%, var(--border));
+  --panel-shadow: 0 1px 0 color-mix(in srgb, var(--accent-muted) 5%, transparent);
   --radius-sm: 8px;
   --radius-md: 10px;
   --radius-lg: 12px;
@@ -44,9 +52,7 @@ body {
   margin: 0 auto;
   padding: 2rem 1rem;
   color: var(--text);
-  background:
-    radial-gradient(ellipse 90% 45% at 50% -10%, rgba(0, 144, 206, 0.09), transparent 70%),
-    linear-gradient(180deg, #0c1622 0%, var(--bg) 35%);
+  background: var(--body-background);
   min-height: 100vh;
   line-height: 1.5;
 }
@@ -55,7 +61,7 @@ h1 {
   font-size: 2rem;
   font-weight: 600;
   margin: 0;
-  color: var(--accent);
+  color: var(--heading-color);
 }
 
 .version {
@@ -73,7 +79,7 @@ h2 {
 }
 
 .panel h2 {
-  color: var(--accent);
+  color: var(--panel-heading-color);
   font-size: 1.35rem;
   margin-bottom: 1rem;
 }
