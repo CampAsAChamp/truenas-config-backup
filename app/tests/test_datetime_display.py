@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
-from app.datetime_display import format_timestamp, to_iso
+from src.datetime_display import format_timestamp, to_iso
 
 
 FIXED_UTC = datetime(2025, 5, 4, 2, 58, 12, tzinfo=timezone.utc)

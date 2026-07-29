@@ -1,8 +1,8 @@
 import pytest
 from apscheduler.triggers.cron import CronTrigger
 
-from app import config
-from app.config_validation import validate_config
+from src import config
+from src.config_validation import validate_config
 
 
 def test_validate_config_rejects_missing_dashboard_password(monkeypatch):

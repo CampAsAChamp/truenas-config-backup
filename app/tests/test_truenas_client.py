@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from app.truenas_client import (
+from src.truenas_client import (
     TrueNASClientError,
     _ssl_context,
     _ws_url,
@@ -41,8 +41,8 @@ def _mock_ws_messages(auth_ok: bool, download_path: str = "/_download/job-1?auth
     return [auth_msg, download_msg]
 
 
-@patch("app.truenas_client.httpx.Client")
-@patch("app.truenas_client.ws_connect")
+@patch("src.truenas_client.httpx.Client")
+@patch("src.truenas_client.ws_connect")
 def test_fetch_config_backup_success(mock_ws_connect, mock_client_cls):
     mock_ws = MagicMock()
     mock_ws.recv.side_effect = _mock_ws_messages(auth_ok=True)
@@ -75,7 +75,7 @@ def test_fetch_config_backup_success(mock_ws_connect, mock_client_cls):
     mock_client.get.assert_called_once_with("https://truenas.local/_download/job-1?auth_token=abc")
 
 
-@patch("app.truenas_client.ws_connect")
+@patch("src.truenas_client.ws_connect")
 def test_fetch_config_backup_auth_failure(mock_ws_connect):
     mock_ws = MagicMock()
     mock_ws.recv.return_value = json.dumps({"jsonrpc": "2.0", "id": 1, "result": False})
@@ -90,7 +90,7 @@ def test_fetch_config_backup_auth_failure(mock_ws_connect):
         )
 
 
-@patch("app.truenas_client.ws_connect")
+@patch("src.truenas_client.ws_connect")
 def test_fetch_config_backup_rpc_error(mock_ws_connect):
     mock_ws = MagicMock()
     mock_ws.recv.return_value = json.dumps({

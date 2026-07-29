@@ -2,8 +2,8 @@ from unittest.mock import patch
 
 from conftest import login_client
 
-from app import backup_manager, history
-from app.version import get_version
+from src import backup_manager, history
+from src.version import get_version
 
 
 def test_healthz(client):
@@ -14,11 +14,11 @@ def test_healthz(client):
 
 def test_dashboard(client, app_dirs, monkeypatch):
     (app_dirs["backup_dir"] / "sample.tar").write_bytes(b"data")
-    monkeypatch.setattr("app.config.TRUENAS_URL", "https://192.168.1.50")
-    monkeypatch.setattr("app.config.DISPLAY_DATE_FORMAT", "mm/dd/yy")
-    monkeypatch.setattr("app.config.DISPLAY_CLOCK_FORMAT", "12h")
-    monkeypatch.setattr("app.config.DISPLAY_TIMEZONE_MODE", "utc")
-    monkeypatch.setattr("app.config.DISPLAY_TIMEZONE", "")
+    monkeypatch.setattr("src.config.TRUENAS_URL", "https://192.168.1.50")
+    monkeypatch.setattr("src.config.DISPLAY_DATE_FORMAT", "mm/dd/yy")
+    monkeypatch.setattr("src.config.DISPLAY_CLOCK_FORMAT", "12h")
+    monkeypatch.setattr("src.config.DISPLAY_TIMEZONE_MODE", "utc")
+    monkeypatch.setattr("src.config.DISPLAY_TIMEZONE", "")
 
     response = client.get("/")
 
@@ -173,7 +173,7 @@ def test_readyz_returns_json(client, app_dirs):
     assert payload["backup_dir_writable"] is True
 
 
-@patch("app.main.backup_manager.run_backup", return_value=(True, "truenas-config-20260101-120000.tar"))
+@patch("src.main.backup_manager.run_backup", return_value=(True, "truenas-config-20260101-120000.tar"))
 def test_run_now(mock_run_backup, client):
     response = client.post("/run-now", follow_redirects=False)
 
@@ -185,7 +185,7 @@ def test_run_now(mock_run_backup, client):
     mock_run_backup.assert_called_once()
 
 
-@patch("app.main.backup_manager.run_backup", return_value=(False, "connection refused"))
+@patch("src.main.backup_manager.run_backup", return_value=(False, "connection refused"))
 def test_run_now_failure(mock_run_backup, client):
     response = client.post("/run-now", follow_redirects=False)
 
@@ -197,7 +197,7 @@ def test_run_now_failure(mock_run_backup, client):
 def test_run_now_executes_backup(client, app_dirs):
     from tar_helpers import make_tar_bytes
 
-    with patch("app.backup_manager.fetch_config_backup", return_value=make_tar_bytes(b"backup")):
+    with patch("src.backup_manager.fetch_config_backup", return_value=make_tar_bytes(b"backup")):
         response = client.post("/run-now", follow_redirects=False)
 
     assert response.status_code == 303
@@ -235,7 +235,7 @@ def test_restore_help_page(client):
 
 
 def test_dashboard_pagination(client, app_dirs, monkeypatch):
-    monkeypatch.setattr("app.config.DASHBOARD_PAGE_SIZE", 5)
+    monkeypatch.setattr("src.config.DASHBOARD_PAGE_SIZE", 5)
 
     for index in range(7):
         history.append(success=False, message=f"failure {index}")
@@ -254,7 +254,7 @@ def test_dashboard_pagination(client, app_dirs, monkeypatch):
 
 
 def test_dashboard_invalid_page_clamps_to_last_page(client, app_dirs, monkeypatch):
-    monkeypatch.setattr("app.config.DASHBOARD_PAGE_SIZE", 5)
+    monkeypatch.setattr("src.config.DASHBOARD_PAGE_SIZE", 5)
 
     for index in range(7):
         history.append(success=False, message=f"failure {index}")

@@ -1,10 +1,10 @@
 from unittest.mock import MagicMock
 
-from app import scheduler
+from src import scheduler
 
 
 def test_start_skips_when_no_schedule(monkeypatch):
-    monkeypatch.setattr("app.config.CRON_SCHEDULE", "")
+    monkeypatch.setattr("src.config.CRON_SCHEDULE", "")
     add_job = MagicMock()
     start = MagicMock()
     monkeypatch.setattr(scheduler._scheduler, "add_job", add_job)
@@ -17,7 +17,7 @@ def test_start_skips_when_no_schedule(monkeypatch):
 
 
 def test_start_registers_job_when_schedule_set(monkeypatch):
-    monkeypatch.setattr("app.config.CRON_SCHEDULE", "0 3 * * 0")
+    monkeypatch.setattr("src.config.CRON_SCHEDULE", "0 3 * * 0")
     add_job = MagicMock()
     start = MagicMock()
     monkeypatch.setattr(scheduler._scheduler, "add_job", add_job)

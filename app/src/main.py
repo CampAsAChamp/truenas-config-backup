@@ -24,7 +24,7 @@ from .version import get_version
 
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "templates")
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
-DOCS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "docs")
+DOCS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "docs")
 BRAND_ASSETS = {"logo.svg", "logo.png"}
 
 templates = Jinja2Templates(directory=TEMPLATES_DIR)

@@ -1,5 +1,5 @@
-from app import config
-from app.auth import session_cookie_value, verify_session
+from src import config
+from src.auth import session_cookie_value, verify_session
 
 
 def test_session_cookie_matches_configured_password(monkeypatch):

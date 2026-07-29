@@ -1,6 +1,6 @@
 import json
 
-from app import history
+from src import history
 
 
 def test_append_and_read_all_round_trip(app_dirs):

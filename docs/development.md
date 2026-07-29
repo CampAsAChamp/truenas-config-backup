@@ -13,7 +13,7 @@ cp .env.local.example .env.local   # edit TRUENAS_API_KEY and DASHBOARD_PASSWORD
 ./scripts/dev.sh
 ```
 
-Then visit `http://127.0.0.1:8080`. Edits to Python, templates, CSS, or JS under `app/src/app/`
+Then visit `http://127.0.0.1:8080`. Edits to Python, templates, CSS, or JS under `app/src/`
 restart the server automatically and refresh the browser.
 
 You can also use **Run and Debug → Run app** in VS Code/Cursor — it uses the same
@@ -31,8 +31,8 @@ pip install -r requirements.txt
 
 BACKUP_DIR=/tmp/backups CONFIG_DIR=/tmp/config \
 TRUENAS_URL=https://127.0.0.1 TRUENAS_API_KEY=your-api-key \
-PYTHONPATH=app/src \
-  uvicorn app.main:app --host 0.0.0.0 --port 8080
+PYTHONPATH=app \
+  uvicorn src.main:app --host 0.0.0.0 --port 8080
 ```
 
 Then visit `http://localhost:8080`.
@@ -73,12 +73,12 @@ Or use **Run and Debug → Capture dashboard screenshot** in VS Code/Cursor (ins
 
 The script seeds temp demo data, starts uvicorn without reload, logs in with Playwright,
 and overwrites `docs/dashboard.png`. Clock and timezone are pinned (`America/Los_Angeles`,
-fixed instant) so repeated runs produce identical PNGs except when the UI or `app/src/app/VERSION`
+fixed instant) so repeated runs produce identical PNGs except when the UI or `app/src/VERSION`
 changes.
 
 ### CI auto-update
 
-Pushes to `main` that touch dashboard UI files (templates, static assets, `app/src/app/VERSION`,
+Pushes to `main` that touch dashboard UI files (templates, static assets, `app/src/VERSION`,
 or the seed/capture scripts) run
 [`.github/workflows/dashboard-screenshot.yml`](../.github/workflows/dashboard-screenshot.yml).
 When the PNG changes, CI commits `docs: update dashboard screenshot` back to `main`.

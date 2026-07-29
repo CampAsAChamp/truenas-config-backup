@@ -49,7 +49,7 @@ def build_server_env(backup_dir: Path, config_dir: Path) -> dict[str, str]:
     env = os.environ.copy()
     env.update(
         {
-            "PYTHONPATH": str(REPO_ROOT / "app" / "src"),
+            "PYTHONPATH": str(REPO_ROOT / "app"),
             "DASHBOARD_PASSWORD": SCREENSHOT_PASSWORD,
             "TRUENAS_URL": "https://192.168.1.50",
             "TRUENAS_VERIFY_SSL": "false",
@@ -80,7 +80,7 @@ def start_server(env: dict[str, str], port: int) -> subprocess.Popen[bytes]:
             sys.executable,
             "-m",
             "uvicorn",
-            "app.main:app",
+            "src.main:app",
             "--host",
             "127.0.0.1",
             "--port",

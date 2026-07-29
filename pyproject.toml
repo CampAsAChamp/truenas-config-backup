@@ -15,11 +15,11 @@ ignore = ["UP017"]
 
 [tool.pytest.ini_options]
 testpaths = ["app/tests"]
-pythonpath = ["app/src"]
+pythonpath = ["app"]
 addopts = ["--strict-markers", "--tb=short"]
 
 [tool.coverage.run]
-source = ["app/src/app"]
+source = ["app/src"]
 
 [tool.coverage.report]
 show_missing = true

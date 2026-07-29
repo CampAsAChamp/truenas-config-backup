@@ -20,11 +20,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app ./app
 COPY docs/logo.svg docs/logo.png ./docs/
 
-ENV PYTHONPATH=/srv/app/src \
+ENV PYTHONPATH=/srv/app \
     BACKUP_DIR=/backups \
     CONFIG_DIR=/config \
     WEB_PORT=8080
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${WEB_PORT}"]
+CMD ["sh", "-c", "uvicorn src.main:app --host 0.0.0.0 --port ${WEB_PORT}"]

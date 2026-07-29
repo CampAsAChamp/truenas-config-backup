@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
-from app import config, history
-from app.health import readiness_status
+from src import config, history
+from src.health import readiness_status
 
 
 def test_readiness_ready_when_dirs_writable_and_no_history(app_dirs):
@@ -27,7 +27,7 @@ def test_readiness_checks_truenas_when_enabled(app_dirs, monkeypatch):
     monkeypatch.setattr(config, "HEALTH_CHECK_TRUENAS", True)
     monkeypatch.setattr(config, "TRUENAS_API_KEY", "test-key")
 
-    with patch("app.health.check_truenas_connection") as mock_check:
+    with patch("src.health.check_truenas_connection") as mock_check:
         status = readiness_status()
 
     mock_check.assert_called_once()
@@ -38,7 +38,7 @@ def test_readiness_checks_truenas_when_enabled(app_dirs, monkeypatch):
 def test_readiness_marks_not_ready_when_truenas_unreachable(app_dirs, monkeypatch):
     monkeypatch.setattr(config, "HEALTH_CHECK_TRUENAS", True)
 
-    with patch("app.health.check_truenas_connection", side_effect=OSError("down")):
+    with patch("src.health.check_truenas_connection", side_effect=OSError("down")):
         status = readiness_status()
 
     assert status["truenas_reachable"] is False

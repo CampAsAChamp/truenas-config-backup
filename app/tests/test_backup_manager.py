@@ -2,8 +2,8 @@ import time
 import threading
 from unittest.mock import patch
 
-from app import backup_manager, config, history
-from app.truenas_client import TrueNASClientError
+from src import backup_manager, config, history
+from src.truenas_client import TrueNASClientError
 from tar_helpers import make_tar_bytes
 
 
@@ -55,7 +55,7 @@ def test_delete_backup_blocks_path_traversal(app_dirs):
     assert (app_dirs["backup_dir"] / "safe.tar").exists()
 
 
-@patch("app.backup_manager.fetch_config_backup", return_value=make_tar_bytes())
+@patch("src.backup_manager.fetch_config_backup", return_value=make_tar_bytes())
 def test_run_backup_success(mock_fetch, app_dirs):
     ok, result = backup_manager.run_backup()
 
@@ -127,7 +127,7 @@ def test_delete_run_unknown_timestamp(app_dirs):
     assert backup_manager.delete_run("2026-01-01T00:00:00+00:00") is False
 
 
-@patch("app.backup_manager.fetch_config_backup", side_effect=TrueNASClientError("api down"))
+@patch("src.backup_manager.fetch_config_backup", side_effect=TrueNASClientError("api down"))
 def test_run_backup_truenas_error(mock_fetch, app_dirs):
     ok, message = backup_manager.run_backup()
 
@@ -141,7 +141,7 @@ def test_run_backup_truenas_error(mock_fetch, app_dirs):
     assert entries[0]["message"] == "api down"
 
 
-@patch("app.backup_manager.fetch_config_backup", side_effect=RuntimeError("boom"))
+@patch("src.backup_manager.fetch_config_backup", side_effect=RuntimeError("boom"))
 def test_run_backup_unexpected_error(mock_fetch, app_dirs):
     ok, message = backup_manager.run_backup()
 
@@ -159,7 +159,7 @@ def test_prune_old_backups(app_dirs, monkeypatch):
         _write_backup(app_dirs, name)
         time.sleep(0.01)
 
-    with patch("app.backup_manager.fetch_config_backup", return_value=make_tar_bytes(b"x")):
+    with patch("src.backup_manager.fetch_config_backup", return_value=make_tar_bytes(b"x")):
         backup_manager.run_backup()
 
     names = {b["filename"] for b in backup_manager.list_backups()}
@@ -225,7 +225,7 @@ def test_list_backup_runs_page_returns_slice_and_total(app_dirs):
     assert len(page_runs) == 5
 
 
-@patch("app.backup_manager.fetch_config_backup", return_value=b"not-a-tar")
+@patch("src.backup_manager.fetch_config_backup", return_value=b"not-a-tar")
 def test_run_backup_rejects_invalid_tar(mock_fetch, app_dirs):
     ok, message = backup_manager.run_backup()
 
@@ -234,7 +234,7 @@ def test_run_backup_rejects_invalid_tar(mock_fetch, app_dirs):
     assert backup_manager.list_backups() == []
 
 
-@patch("app.backup_manager.fetch_config_backup", return_value=make_tar_bytes())
+@patch("src.backup_manager.fetch_config_backup", return_value=make_tar_bytes())
 def test_run_backup_blocks_concurrent_runs(mock_fetch, app_dirs):
     started = threading.Event()
     release = threading.Event()
@@ -263,7 +263,7 @@ def test_run_backup_blocks_concurrent_runs(mock_fetch, app_dirs):
     assert results[1][0] is True
 
 
-@patch("app.backup_manager._execute_backup", return_value=(True, "backup.tar"))
+@patch("src.backup_manager._execute_backup", return_value=(True, "backup.tar"))
 def test_run_scheduled_backup_skips_when_busy(mock_execute, app_dirs):
     backup_manager._backup_lock.acquire()
     try:

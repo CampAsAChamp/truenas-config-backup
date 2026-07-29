@@ -5,9 +5,9 @@ on:
     branches:
       - main
     paths:
-      - "app/src/app/templates/**"
-      - "app/src/app/static/**"
-      - "app/src/app/VERSION"
+      - "app/src/templates/**"
+      - "app/src/static/**"
+      - "app/src/VERSION"
       - "scripts/seed-local-data.py"
       - "scripts/capture-dashboard-screenshot.py"
   workflow_dispatch:

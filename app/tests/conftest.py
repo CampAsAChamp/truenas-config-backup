@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from app import config
+from src import config
 
 TEST_DASHBOARD_PASSWORD = "test-password"
 
@@ -33,11 +33,11 @@ def app_dirs(tmp_path, monkeypatch):
 
 @pytest.fixture
 def client(app_dirs, monkeypatch):
-    monkeypatch.setattr("app.scheduler.start", lambda: None)
-    monkeypatch.setattr("app.scheduler.shutdown", lambda: None)
-    monkeypatch.setattr("app.config.DASHBOARD_PASSWORD", TEST_DASHBOARD_PASSWORD)
+    monkeypatch.setattr("src.scheduler.start", lambda: None)
+    monkeypatch.setattr("src.scheduler.shutdown", lambda: None)
+    monkeypatch.setattr("src.config.DASHBOARD_PASSWORD", TEST_DASHBOARD_PASSWORD)
 
-    from app.main import app
+    from src.main import app
 
     with TestClient(app) as test_client:
         login_client(test_client)
@@ -46,11 +46,11 @@ def client(app_dirs, monkeypatch):
 
 @pytest.fixture
 def unauthenticated_client(app_dirs, monkeypatch):
-    monkeypatch.setattr("app.scheduler.start", lambda: None)
-    monkeypatch.setattr("app.scheduler.shutdown", lambda: None)
-    monkeypatch.setattr("app.config.DASHBOARD_PASSWORD", TEST_DASHBOARD_PASSWORD)
+    monkeypatch.setattr("src.scheduler.start", lambda: None)
+    monkeypatch.setattr("src.scheduler.shutdown", lambda: None)
+    monkeypatch.setattr("src.config.DASHBOARD_PASSWORD", TEST_DASHBOARD_PASSWORD)
 
-    from app.main import app
+    from src.main import app
 
     with TestClient(app) as test_client:
         yield test_client

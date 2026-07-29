@@ -7,14 +7,14 @@
       "request": "launch",
       "module": "uvicorn",
       "args": [
-        "app.main:app",
+        "src.main:app",
         "--host",
         "127.0.0.1",
         "--port",
         "8080",
         "--reload",
         "--reload-dir",
-        "app/src/app",
+        "app/src",
         "--reload-include",
         "*.py",
         "--reload-include",
@@ -27,7 +27,7 @@
       "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env.local",
       "env": {
-        "PYTHONPATH": "${workspaceFolder}/app/src",
+        "PYTHONPATH": "${workspaceFolder}/app",
         "DEV_MODE": "true",
         "BACKUP_DIR": "${workspaceFolder}/local-data/backups",
         "CONFIG_DIR": "${workspaceFolder}/local-data/config",
@@ -42,7 +42,7 @@
       "request": "launch",
       "module": "uvicorn",
       "args": [
-        "app.main:app",
+        "src.main:app",
         "--host",
         "127.0.0.1",
         "--port",
@@ -51,7 +51,7 @@
       "cwd": "${workspaceFolder}",
       "envFile": "${workspaceFolder}/.env.local",
       "env": {
-        "PYTHONPATH": "${workspaceFolder}/app/src",
+        "PYTHONPATH": "${workspaceFolder}/app",
         "BACKUP_DIR": "${workspaceFolder}/local-data/backups",
         "CONFIG_DIR": "${workspaceFolder}/local-data/config",
         "TRUENAS_VERIFY_SSL": "false"
@@ -79,7 +79,7 @@
       ],
       "cwd": "${workspaceFolder}",
       "env": {
-        "PYTHONPATH": "${workspaceFolder}/app/src"
+        "PYTHONPATH": "${workspaceFolder}/app"
       },
       "justMyCode": true
     },
@@ -94,7 +94,7 @@
       ],
       "cwd": "${workspaceFolder}",
       "env": {
-        "PYTHONPATH": "${workspaceFolder}/app/src"
+        "PYTHONPATH": "${workspaceFolder}/app"
       },
       "justMyCode": true
     }

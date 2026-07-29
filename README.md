@@ -57,7 +57,7 @@ See [Installation](docs/installation.md) for the full wizard steps, compose YAML
 ```
 docs/                             Documentation and brand assets
 app/
-  src/app/                        FastAPI backend (Python package, templates, static)
+  src/                            FastAPI backend (Python package, templates, static)
   tests/                          pytest unit and integration tests
 Dockerfile, requirements.txt      Container build
 ix-dev/community/truenas-config-backup/

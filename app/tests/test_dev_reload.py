@@ -2,9 +2,9 @@ import os
 
 import pytest
 
-from app import config
-from app.main import DOCS_DIR, STATIC_DIR, _static_url
-from app.version import get_version
+from src import config
+from src.main import DOCS_DIR, STATIC_DIR, _static_url
+from src.version import get_version
 
 
 def test_static_url_uses_version_in_production_mode(monkeypatch):
@@ -44,7 +44,7 @@ def test_reload_events_disabled_without_dev_mode(client):
 
 @pytest.mark.anyio
 async def test_reload_events_available_in_dev_mode():
-    from app.dev_reload import BOOT_ID, reload_events
+    from src.dev_reload import BOOT_ID, reload_events
 
     response = await reload_events()
 
