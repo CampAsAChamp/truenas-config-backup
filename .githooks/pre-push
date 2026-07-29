@@ -30,15 +30,15 @@ run_step() {
   local output
   printf 'pre-push: %s ... ' "$label" >&2
   if output=$("$@" 2>&1); then
-    printf '%bpassed%b\n' "$GREEN" "$RESET" >&2
+    printf '%bPassed%b\n' "$GREEN" "$RESET" >&2
   else
-    printf '%bfailed%b\n' "$RED" "$RESET" >&2
+    printf '%bFailed%b\n' "$RED" "$RESET" >&2
     printf '%s\n' "$output" >&2
     exit 1
   fi
 }
 
-run_step "ruff check app" "$RUFF" check app
-run_step "pytest" "$PYTHON" -m pytest --cov --tb=short -q
+run_step "Ruff Check App" "$RUFF" check app
+run_step "Pytest" "$PYTHON" -m pytest --cov --tb=short -q
 
-printf 'pre-push: %ball checks passed%b\n' "$GREEN" "$RESET" >&2
+printf 'pre-push: %bAll Checks Passed%b\n' "$GREEN" "$RESET" >&2
