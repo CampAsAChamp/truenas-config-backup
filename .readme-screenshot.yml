@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/CampAsAChamp/readme-screenshot/v1.1.0/schema/readme-screenshot.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/CampAsAChamp/readme-screenshot/main/schema/readme-screenshot.schema.json
 version: 1
 
 output: docs/dashboard.png
