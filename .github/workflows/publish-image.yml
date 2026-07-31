@@ -1,8 +1,19 @@
-# Manual re-publish only. Automated releases build and push from release.yml because
-# tag pushes created by GITHUB_TOKEN do not trigger other workflows.
+# Manual re-publish via workflow_dispatch or tag push. Automated releases call this
+# workflow from release.yml because tag pushes created by GITHUB_TOKEN do not trigger
+# other workflows on GitHub.
 name: Publish Docker image
 
 on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Git ref to checkout
+        required: true
+        type: string
+      tag:
+        description: Semver tag for catalog checks and image tag
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       version:
@@ -18,31 +29,17 @@ permissions:
   packages: write
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: pip install -r requirements.txt -r requirements-dev.txt
-      - run: pytest --cov
-
   publish:
     name: Publish Docker image
-    needs: test
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+    env:
+      TAG: ${{ inputs.tag || inputs.version || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.version) || github.ref }}
+          ref: ${{ inputs.ref || format('refs/tags/{0}', inputs.version) || github.ref }}
 
-      - name: Verify catalog versions match git tag
-        env:
-          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+      - name: Verify catalog versions match tag
         run: |
           set -euo pipefail
           version_file=$(tr -d '[:space:]' < VERSION)
@@ -77,5 +74,5 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ghcr.io/campasachamp/truenas-config-backup:${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
+            ghcr.io/campasachamp/truenas-config-backup:${{ env.TAG }}
             ghcr.io/campasachamp/truenas-config-backup:latest

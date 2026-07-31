@@ -118,16 +118,15 @@ git config core.hooksPath .githooks
 ```
 
 The repo includes [`.githooks/pre-push`](../.githooks/pre-push), which runs the same checks as
-[`.github/workflows/test-app.yml`](../.github/workflows/test-app.yml). To run them manually:
+CI. To run them manually:
 
 ```bash
 .githooks/pre-push
 ```
 
 Tests live under `app/tests/` and cover history logging, backup management, the TrueNAS
-WebSocket client (mocked), and FastAPI routes. Pull requests run ruff and pytest via
-[`.github/workflows/test-app.yml`](../.github/workflows/test-app.yml); pushes to `main` run the
-same checks in [`.github/workflows/release.yml`](../.github/workflows/release.yml) before release.
+WebSocket client (mocked), and FastAPI routes. Pushes to `main` run ruff and pytest via
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) before semantic-release.
 
 ## Building the container
 

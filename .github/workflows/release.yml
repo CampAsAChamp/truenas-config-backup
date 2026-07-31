@@ -32,17 +32,9 @@ jobs:
     if: >-
       github.event_name == 'push' ||
       github.event.workflow_run.conclusion == 'success'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: main
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: pip install -r requirements.txt -r requirements-dev.txt
-      - run: ruff check app
-      - run: pytest --cov
+    uses: ./.github/workflows/test.yml
+    with:
+      ref: main
 
   release:
     name: Release new version
@@ -74,54 +66,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish:
-    name: Publish Docker image
     needs: release
     if: needs.release.outputs.new_release_published == 'true'
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/publish-image.yml
+    with:
+      ref: refs/tags/${{ needs.release.outputs.new_release_version }}
+      tag: ${{ needs.release.outputs.new_release_version }}
     permissions:
       contents: read
       packages: write
-    env:
-      TAG: ${{ needs.release.outputs.new_release_version }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: refs/tags/${{ needs.release.outputs.new_release_version }}
-
-      - name: Verify catalog versions match release
-        run: |
-          set -euo pipefail
-          version_file=$(tr -d '[:space:]' < VERSION)
-          app_version=$(grep '^app_version:' ix-dev/community/truenas-config-backup/app.yaml | awk '{print $2}')
-          image_tag=$(grep 'tag:' ix-dev/community/truenas-config-backup/ix_values.yaml | head -1 | awk '{print $2}')
-          if [ "$version_file" != "$TAG" ]; then
-            echo "VERSION ($version_file) does not match release ($TAG)"
-            exit 1
-          fi
-          if [ "$app_version" != "$TAG" ]; then
-            echo "app.yaml app_version ($app_version) does not match release ($TAG)"
-            exit 1
-          fi
-          if [ "$image_tag" != "$TAG" ]; then
-            echo "ix_values.yaml image tag ($image_tag) does not match release ($TAG)"
-            exit 1
-          fi
-          echo "Catalog versions match release $TAG"
-
-      - uses: docker/setup-buildx-action@v3
-
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          platforms: linux/amd64
-          push: true
-          provenance: false
-          tags: |
-            ghcr.io/campasachamp/truenas-config-backup:${{ env.TAG }}
-            ghcr.io/campasachamp/truenas-config-backup:latest
