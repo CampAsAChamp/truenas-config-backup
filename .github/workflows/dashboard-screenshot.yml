@@ -19,7 +19,7 @@ concurrency:
 jobs:
   screenshot:
     # v1.1.4 fixes Linux CI hangs after capture (uvicorn process group shutdown).
-    # Local workflow adds rebase-before-push to avoid races with semantic-release.
+    # Local workflow checks out main tip so commit/push stays fast-forward after release.
     uses: ./.github/workflows/capture-and-commit.yml
     with:
       config: .readme-screenshot.yml

@@ -49,6 +49,8 @@ jobs:
     steps:
       - name: Checkout consumer repository
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -101,10 +103,6 @@ jobs:
 
       - name: Capture screenshot
         run: readme-screenshot capture --config "${{ inputs.config }}"
-
-      - name: Sync with latest main
-        if: github.ref == 'refs/heads/main'
-        run: git pull --rebase origin main
 
       - name: Resolve commit message
         id: commit
