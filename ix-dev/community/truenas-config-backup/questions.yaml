@@ -71,6 +71,10 @@ questions:
             enum:
               - value: manual
                 description: Manual only (no schedule)
+              - value: every_minute
+                description: Every minute
+              - value: every_hour
+                description: Every hour
               - value: daily
                 description: Daily at the configured time
               - value: weekly
@@ -83,7 +87,7 @@ questions:
           label: Schedule Time
           description: |
             Time of day for daily, weekly, or monthly schedules (24-hour HH:MM).
-            Ignored when schedule mode is Manual or Custom.
+            Ignored when schedule mode is Manual, Every minute, Every hour, or Custom.
           schema:
             type: string
             default: "03:00"

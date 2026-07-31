@@ -16,7 +16,11 @@
 {% set time_parts = schedule_time.split(":") %}
 {% set cron_hour = time_parts[0] | int %}
 {% set cron_min = time_parts[1] | int if time_parts | length > 1 else 0 %}
-{% if schedule_mode == "daily" %}
+{% if schedule_mode == "every_minute" %}
+{% do c1.environment.add_env("CRON_SCHEDULE", "* * * * *") %}
+{% elif schedule_mode == "every_hour" %}
+{% do c1.environment.add_env("CRON_SCHEDULE", "0 * * * *") %}
+{% elif schedule_mode == "daily" %}
 {% do c1.environment.add_env("CRON_SCHEDULE", cron_min ~ " " ~ cron_hour ~ " * * *") %}
 {% elif schedule_mode == "weekly" %}
 {% do c1.environment.add_env("CRON_SCHEDULE", cron_min ~ " " ~ cron_hour ~ " * * " ~ values.backup_config.schedule_dow) %}
