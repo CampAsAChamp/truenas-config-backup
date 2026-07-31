@@ -14,13 +14,15 @@ on:
 
 jobs:
   screenshot:
-    uses: CampAsAChamp/readme-screenshot/.github/workflows/capture-and-commit.yml@main
+    # v1.1.4 fixes Linux CI hangs after capture (uvicorn process group shutdown).
+    uses: CampAsAChamp/readme-screenshot/.github/workflows/capture-and-commit.yml@v1.1.4
+    timeout-minutes: 30
     with:
       config: .readme-screenshot.yml
       commit_message: "docs: update dashboard screenshot"
       file_pattern: docs/dashboard.png
       install_consumer_deps: false
       pip_requirements: "requirements.txt requirements-dev.txt"
-      readme_screenshot_ref: main
+      readme_screenshot_ref: v1.1.4
     permissions:
       contents: write

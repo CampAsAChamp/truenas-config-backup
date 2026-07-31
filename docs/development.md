@@ -68,7 +68,7 @@ One-time setup, then run capture:
 ```bash
 source .venv/bin/activate
 pip install -r requirements.txt -r requirements-dev.txt
-npm install -g github:CampAsAChamp/readme-screenshot#main
+npm install -g github:CampAsAChamp/readme-screenshot#v1.1.4
 npx playwright install chromium
 readme-screenshot capture
 ```
