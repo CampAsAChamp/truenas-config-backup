@@ -333,6 +333,18 @@ def api_clear_logs():
     return {"ok": True}
 
 
+@app.get("/api/settings/next-run", dependencies=[Depends(require_dashboard_auth)])
+def api_next_run(cron_schedule: str = ""):
+    cron_schedule = cron_schedule.strip()
+    if not cron_schedule:
+        return {"next_run_iso": ""}
+    try:
+        next_run = scheduler.next_run_for_cron(cron_schedule)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"next_run_iso": to_iso(next_run) if next_run else ""}
+
+
 @app.post("/api/settings", dependencies=[Depends(require_dashboard_auth)])
 def api_update_settings(body: SettingsUpdate):
     try:

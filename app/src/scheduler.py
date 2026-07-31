@@ -42,3 +42,13 @@ def reload() -> None:
 def next_run_time():
     job = _scheduler.get_job("scheduled_backup")
     return job.next_run_time if job else None
+
+
+def next_run_for_cron(cron_schedule: str):
+    cron_schedule = cron_schedule.strip()
+    if not cron_schedule:
+        return None
+    from datetime import datetime, timezone
+
+    trigger = CronTrigger.from_crontab(cron_schedule)
+    return trigger.get_next_fire_time(None, datetime.now(timezone.utc))

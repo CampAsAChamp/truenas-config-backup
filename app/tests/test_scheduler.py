@@ -27,3 +27,21 @@ def test_start_registers_job_when_schedule_set(monkeypatch):
 
     add_job.assert_called_once()
     start.assert_called_once()
+
+
+def test_next_run_for_cron_returns_none_for_empty_schedule():
+    assert scheduler.next_run_for_cron("") is None
+    assert scheduler.next_run_for_cron("   ") is None
+
+
+def test_next_run_for_cron_returns_aware_datetime():
+    next_run = scheduler.next_run_for_cron("0 3 * * 0")
+    assert next_run is not None
+    assert next_run.tzinfo is not None
+
+
+def test_next_run_for_cron_rejects_invalid_schedule():
+    import pytest
+
+    with pytest.raises(ValueError):
+        scheduler.next_run_for_cron("not-a-cron")
