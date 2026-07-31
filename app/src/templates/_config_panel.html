@@ -19,7 +19,7 @@
     <p class="config-section__hint"><strong>READ-ONLY</strong> — {{ connection_readonly_hint }}</p>
     <div class="config-fields">
       <div class="config-field config-field--readonly">
-        <span class="display-field-label">{{ icon("link", 18) }} TrueNAS URL</span>
+        <span class="display-field-label">{{ icon("globe", 18) }} TrueNAS URL</span>
         {% call readonly_value(connection_readonly_hint, mono=true) %}
         {{ settings.truenas_url }}
         {% endcall %}
@@ -109,7 +109,7 @@
     <div class="config-section">
       <h3 class="config-section__title">{{ icon("bell", 20) }} Notifications</h3>
       <label class="config-field">
-        <span class="display-field-label">{{ icon("bell", 18) }} Notification Webhook URL</span>
+        <span class="display-field-label">{{ icon("globe", 18) }} Notification Webhook URL</span>
         <input id="config-notify-webhook" name="notify_webhook_url" type="url"
                placeholder="optional"
                value="{{ settings.notify_webhook_url }}">
