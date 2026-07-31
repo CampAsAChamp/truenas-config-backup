@@ -10,7 +10,8 @@
 {% endmacro %}
 
 {% macro readonly_value(hint, value_id='', mono=false) %}
-<div class="config-readonly-field__value config-readonly-field__value--tooltip{% if mono %} config-readonly-field__value--mono{% endif %}"
+<div
+  class="config-field__value config-field__value--readonly config-field__value--tooltip{% if mono %} config-field__value--mono{% endif %}"
      {% if value_id %}id="{{ value_id }}"{% endif %}
      tabindex="0"
      aria-label="{{ hint }}">

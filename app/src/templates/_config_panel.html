@@ -4,23 +4,28 @@
 <section class="settings panel">
   <div class="settings__header">
     <h2>{{ icon("settings", 22) }} Configuration</h2>
-    <button type="submit" class="button" form="config-settings-form">
-      {{ icon("save", 16) }} Save Settings
-    </button>
+    <div class="settings__header-actions">
+      <p id="config-unsaved-hint" class="settings__unsaved-hint" aria-hidden="true">
+        {{ icon("info", 16) }} Unsaved changes
+      </p>
+      <button type="submit" id="config-save-settings" class="button" form="config-settings-form">
+        {{ icon("save", 16) }} Save Settings
+      </button>
+    </div>
   </div>
 
   <div class="config-section">
     <h3 class="config-section__title">{{ icon("link", 20) }} Connection</h3>
     <p class="config-section__hint"><strong>READ-ONLY</strong> — {{ connection_readonly_hint }}</p>
-    <div class="config-readonly-fields">
-      <div class="config-readonly-field">
-        <span class="config-readonly-field__label display-field-label">{{ icon("link", 18) }} TrueNAS URL</span>
+    <div class="config-fields">
+      <div class="config-field config-field--readonly">
+        <span class="display-field-label">{{ icon("link", 18) }} TrueNAS URL</span>
         {% call readonly_value(connection_readonly_hint, mono=true) %}
         {{ settings.truenas_url }}
         {% endcall %}
       </div>
-      <div class="config-readonly-field">
-        <span class="config-readonly-field__label display-field-label">{{ icon("shield-check", 18) }} Verify SSL
+      <div class="config-field config-field--readonly">
+        <span class="display-field-label">{{ icon("shield-check", 18) }} Verify SSL
           {% call setting_help() %}
           <p><strong>What it is.</strong> Whether the app validates TrueNAS's TLS certificate when connecting over HTTPS.</p>
           <p><strong>Off (default).</strong> The connection is still encrypted, but the certificate is not checked. Backups work with self-signed certificates.</p>
@@ -39,39 +44,62 @@
   <form id="config-settings-form" class="config-settings-form">
     <div class="config-section">
       <h3 class="config-section__title">{{ icon("archive", 20) }} Backup</h3>
-      <label>
-        <span class="display-field-label">{{ icon("calendar-clock", 18) }} Cron Schedule</span>
-        <input id="config-cron-schedule" name="cron_schedule" type="text"
-               placeholder="empty for manual only (e.g. 0 3 * * 0)"
-               value="{{ settings.cron_schedule }}">
+      <label class="config-field">
+        <span class="display-field-label">{{ icon("calendar-clock", 18) }} Backup Schedule</span>
+        <select id="config-cron-preset" name="cron_preset" aria-controls="config-cron-schedule">
+          <option value="manual">Manual only (no schedule)</option>
+          <option value="every_minute">Every minute</option>
+          <option value="every_hour">Every hour</option>
+          <option value="daily">Daily at 03:00</option>
+          <option value="weekly">Weekly on Sunday at 03:00</option>
+          <option value="custom">Custom expression</option>
+        </select>
       </label>
-
-      <div class="config-readonly-field">
-        <span class="config-readonly-field__label display-field-label">{{ icon("timer", 18) }} Next scheduled run</span>
-        {% call readonly_value("Calculated from the cron schedule; updates when you save settings.", value_id="config-next-run-value") %}
-        {% if next_run_iso %}
-        <span class="timestamp" data-iso="{{ next_run_iso }}">{{ next_run_iso | format_datetime }}</span>
-        {% else %}
-        not scheduled
-        {% endif %}
-        {% endcall %}
+      
+      <div id="config-cron-schedule-field"
+        class="config-field{% if not settings.cron_schedule %} is-schedule-hidden{% endif %}" {% if not settings.cron_schedule
+        %}hidden{% endif %}>
+        <span id="config-cron-schedule-label" class="display-field-label">{{ icon("calendar-clock", 18) }} Cron
+          Expression</span>
+        <div id="config-cron-schedule-display"
+          class="config-field__value config-field__value--readonly config-field__value--mono" hidden></div>
+        <input id="config-cron-schedule" name="cron_schedule" type="text"
+               placeholder="e.g. 0 3 * * 0"
+               value="{{ settings.cron_schedule }}">
       </div>
 
-      <label>
+      <div id="config-next-run-field" class="config-field{% if not settings.cron_schedule %} is-schedule-hidden{% endif %}" {%
+        if not settings.cron_schedule %}hidden{% endif %}>
+        <span class="display-field-label">{{ icon("timer", 18) }} Next scheduled run
+          {% call setting_help() %}
+          <p>Preview of when the next backup will run based on the schedule above. Updates as you change the schedule.</p>
+          {% endcall %}
+        </span>
+        <output id="config-next-run-value"
+          class="config-field__preview{% if not next_run_iso %} config-field__preview--muted{% endif %}" aria-live="polite">
+          {% if next_run_iso %}
+          <span class="timestamp" data-iso="{{ next_run_iso }}">{{ next_run_iso | format_datetime }}</span>
+          {% else %}
+          not scheduled
+          {% endif %}
+        </output>
+      </div>
+
+      <label class="config-field">
         <span class="display-field-label">{{ icon("layers", 18) }} Retention Count</span>
         <input id="config-retention-count" name="retention_count" type="number" min="0"
                value="{{ settings.retention_count }}">
       </label>
 
-      <label class="config-checkbox">
+      <label class="config-field config-checkbox">
         <input type="checkbox" name="include_secret_seed" {% if settings.include_secret_seed %}checked{% endif %}>
         <span class="display-field-label">{{ icon("key", 18) }} Include Secret Seed</span>
       </label>
-      <label class="config-checkbox">
+      <label class="config-field config-checkbox">
         <input type="checkbox" name="include_pool_keys" {% if settings.include_pool_keys %}checked{% endif %}>
         <span class="display-field-label">{{ icon("key", 18) }} Include Pool Keys</span>
       </label>
-      <label class="config-checkbox">
+      <label class="config-field config-checkbox">
         <input type="checkbox" name="include_root_authorized_keys"
                {% if settings.include_root_authorized_keys %}checked{% endif %}>
         <span class="display-field-label">{{ icon("key", 18) }} Include Root Authorized Keys</span>
@@ -80,14 +108,14 @@
 
     <div class="config-section">
       <h3 class="config-section__title">{{ icon("bell", 20) }} Notifications</h3>
-      <label>
+      <label class="config-field">
         <span class="display-field-label">{{ icon("bell", 18) }} Notification Webhook URL</span>
         <input id="config-notify-webhook" name="notify_webhook_url" type="url"
                placeholder="optional"
                value="{{ settings.notify_webhook_url }}">
       </label>
 
-      <label class="config-checkbox">
+      <label class="config-field config-checkbox">
         <input type="checkbox" name="notify_on_success" {% if settings.notify_on_success %}checked{% endif %}>
         <span class="display-field-label">{{ icon("circle-check", 18) }} Notify on Success</span>
       </label>

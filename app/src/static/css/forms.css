@@ -35,6 +35,9 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  font-size: var(--field-label-size);
+    font-weight: 600;
+    color: var(--field-label);
 }
 
 .display-settings select {
@@ -169,6 +172,7 @@
 
 .settings {
   margin-top: 0;
+  min-width: 0;
 }
 
 .settings__header {
@@ -183,15 +187,77 @@
   margin-bottom: 0;
 }
 
+.settings__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.settings__unsaved-hint {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--field-label);
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-0.35rem);
+  transition:
+    max-width 0.25s ease,
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0s linear 0.25s;
+}
+
+.settings__unsaved-hint.is-visible {
+  max-width: 12rem;
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+  transition:
+    max-width 0.25s ease,
+    opacity 0.2s ease 0.05s,
+    transform 0.2s ease 0.05s,
+    visibility 0s;
+}
+
+.settings__unsaved-hint .icon {
+  flex-shrink: 0;
+}
+
+#config-save-settings {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+#config-save-settings.button--primary {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings__unsaved-hint,
+  #config-save-settings {
+    transition: none;
+  }
+}
 .config-settings-form {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .config-settings-form > .config-section {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  min-width: 0;
 }
 
 .settings > .config-section + .config-settings-form > .config-section:first-child,
@@ -207,6 +273,9 @@
   border-top: 1px solid var(--border);
 }
 
+.config-section {
+  min-width: 0;
+}
 .config-section__title {
   display: flex;
   align-items: center;
@@ -229,51 +298,57 @@
   line-height: 1.45;
 }
 
-.config-section__hint + .config-readonly-fields {
+.config-section__hint+.config-fields {
   margin-top: 0;
 }
 
-.config-readonly-fields {
+.config-fields {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.config-readonly-field {
+.config-field {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  min-width: 0;
+    width: 100%;
 }
 
-.config-readonly-field__value--tooltip {
+.config-field[hidden],
+.config-field.is-schedule-hidden {
+  display: none !important;
+}
+
+.config-field--readonly .display-field-label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.config-field__value--tooltip {
   position: relative;
   cursor: help;
   outline: none;
 }
 
-.config-readonly-field__value--tooltip:focus-visible {
+.config-field__value--tooltip:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-.config-readonly-field__value--tooltip:hover,
-.config-readonly-field__value--tooltip:focus {
+.config-field__value--tooltip:hover,
+.config-field__value--tooltip:focus {
   border-color: var(--info-border);
   background: color-mix(in srgb, var(--info-bg) 40%, var(--surface));
   color: var(--text);
 }
 
-.config-readonly-field__label {
-  font-size: var(--field-label-size);
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.config-readonly-field__label .icon {
-  opacity: 0.65;
-}
-
-.config-readonly-field__value {
+.config-field__value--readonly {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding: var(--field-padding-block) var(--field-padding-inline);
   border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
   border-radius: var(--radius-pill);
@@ -285,27 +360,19 @@
   user-select: text;
 }
 
-.config-readonly-field__value--mono {
+.config-field__value--mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 0.9em;
 }
 
-.config-settings-form label,
-.config-settings-form > .config-section label {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  font-size: var(--field-label-size);
-  font-weight: 600;
-  color: var(--field-label);
-}
-
-.config-settings-form input[type="text"],
-.config-settings-form input[type="number"],
-.config-settings-form input[type="url"],
-.config-settings-form > .config-section input[type="text"],
-.config-settings-form > .config-section input[type="number"],
-.config-settings-form > .config-section input[type="url"] {
+.config-field select,
+.config-field input[type="text"],
+.config-field input[type="number"],
+.config-field input[type="url"] {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding: var(--field-padding-block) var(--field-padding-inline);
   border: 1px solid var(--border);
   border-radius: var(--radius-pill);
@@ -314,6 +381,41 @@
   font: inherit;
 }
 
+.config-field select {
+  padding: var(--field-padding-block) var(--select-padding-inline-end) var(--field-padding-block) var(--field-padding-inline);
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238fa3b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 0.85rem;
+  appearance: none;
+  cursor: pointer;
+}
+
+.config-field select:focus,
+.config-field input[type="text"]:focus,
+.config-field input[type="number"]:focus,
+.config-field input[type="url"]:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.config-field__preview {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.config-field__preview--muted {
+  font-family: inherit;
+  color: var(--text-muted);
+}
+
+.config-field__preview--invalid {
+  font-family: inherit;
+  color: var(--failure-text);
+}
 .config-checkbox {
   flex-direction: row !important;
   align-items: center;

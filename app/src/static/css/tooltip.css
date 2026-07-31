@@ -58,16 +58,16 @@
   line-height: 1.45;
 }
 
-.config-readonly-field:has(.config-readonly-field__value--tooltip:hover),
-.config-readonly-field:has(.config-readonly-field__value--tooltip:focus) {
+.config-field:has(.config-field__value--tooltip:hover),
+.config-field:has(.config-field__value--tooltip:focus) {
   position: relative;
   z-index: 2;
 }
 
 .tooltip-trigger:hover .tooltip,
 .tooltip-trigger:focus .tooltip,
-.config-readonly-field__value--tooltip:hover > .tooltip--readonly,
-.config-readonly-field__value--tooltip:focus > .tooltip--readonly {
+.config-field__value--tooltip:hover>.tooltip--readonly,
+.config-field__value--tooltip:focus>.tooltip--readonly {
   opacity: 1;
   visibility: visible;
 }

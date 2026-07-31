@@ -25,7 +25,7 @@ def test_dashboard(client, app_dirs, monkeypatch):
     assert response.status_code == 200
     assert "sample.tar" in response.text
     assert get_display_version() in response.text
-    assert "config-readonly-field__value--mono" in response.text
+    assert "config-field__value--mono" in response.text
     assert "https://192.168.1.50" in response.text
     assert 'id="display-defaults"' in response.text
     assert '"dateFormat": "mm/dd/yy"' in response.text
@@ -332,6 +332,12 @@ def test_dashboard_includes_editable_config_form(client):
 
     assert response.status_code == 200
     assert 'id="config-settings-form"' in response.text
+    assert 'id="config-cron-preset"' in response.text
+    assert 'id="config-cron-schedule"' in response.text
+    assert 'id="config-cron-schedule-display"' in response.text
+    assert 'id="config-next-run-field"' in response.text
+    assert 'id="config-unsaved-hint"' in response.text
+    assert 'id="config-save-settings"' in response.text
 
 
 def test_api_settings_updates_persisted(client, app_dirs):
@@ -355,3 +361,26 @@ def test_api_settings_updates_persisted(client, app_dirs):
     settings_file = app_dirs["config_dir"] / "settings.json"
     assert settings_file.exists()
     assert '"retention_count": 4' in settings_file.read_text()
+
+
+def test_api_next_run_preview(client):
+    response = client.get("/api/settings/next-run",
+                          params={"cron_schedule": "0 3 * * 0"})
+
+    assert response.status_code == 200
+    assert response.json()["next_run_iso"]
+
+
+def test_api_next_run_preview_empty_for_manual(client):
+    response = client.get("/api/settings/next-run",
+                          params={"cron_schedule": ""})
+
+    assert response.status_code == 200
+    assert response.json() == {"next_run_iso": ""}
+
+
+def test_api_next_run_preview_rejects_invalid_cron(client):
+    response = client.get("/api/settings/next-run",
+                          params={"cron_schedule": "bad"})
+
+    assert response.status_code == 400
