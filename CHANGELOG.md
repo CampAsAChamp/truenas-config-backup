@@ -1,3 +1,12 @@
+# [0.12.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.11.1...0.12.0) (2026-07-31)
+
+
+### Features
+
+* add cron presets and live schedule preview to config panel ([3bf3bd4](https://github.com/CampAsAChamp/truenas-config-backup/commit/3bf3bd482d0383b8b448f782caf9022bce6fc22a))
+* add every minute and every hour schedule modes to Scale app ([d917bda](https://github.com/CampAsAChamp/truenas-config-backup/commit/d917bda87503731edaaa9418ca80d6b07dfa67dc))
+* add next-run preview API and scheduler helper ([0dff072](https://github.com/CampAsAChamp/truenas-config-backup/commit/0dff072f95efb32d2be777f3e584dc3ac435b9d0))
+
 ## [0.11.1](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.11.0...0.11.1) (2026-07-31)
 
 
