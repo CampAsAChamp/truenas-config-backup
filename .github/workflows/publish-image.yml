@@ -37,7 +37,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref || format('refs/tags/{0}', inputs.version) || github.ref }}
+          # workflow_call inputs are empty strings on tag push; guard before format().
+          ref: ${{ inputs.ref || (inputs.version && format('refs/tags/{0}', inputs.version)) || github.ref }}
 
       - name: Verify catalog versions match tag
         run: |
