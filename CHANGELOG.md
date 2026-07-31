@@ -1,3 +1,10 @@
+## [0.11.1](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.11.0...0.11.1) (2026-07-31)
+
+
+### Bug Fixes
+
+* **ci:** repair publish workflow checkout on tag push ([3458e7e](https://github.com/CampAsAChamp/truenas-config-backup/commit/3458e7eebcab50d336ad9c8fc5151679ee0d5289))
+
 # [0.11.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.10.0...0.11.0) (2026-07-29)
 
 
