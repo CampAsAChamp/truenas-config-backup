@@ -12,10 +12,15 @@ on:
       - ".readme-screenshot.yml"
   workflow_dispatch:
 
+concurrency:
+  group: main-line
+  cancel-in-progress: false
+
 jobs:
   screenshot:
     # v1.1.4 fixes Linux CI hangs after capture (uvicorn process group shutdown).
-    uses: CampAsAChamp/readme-screenshot/.github/workflows/capture-and-commit.yml@v1.1.4
+    # Local workflow adds rebase-before-push to avoid races with semantic-release.
+    uses: ./.github/workflows/capture-and-commit.yml
     with:
       config: .readme-screenshot.yml
       commit_message: "docs: update dashboard screenshot"

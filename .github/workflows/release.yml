@@ -20,7 +20,7 @@ on:
       - main
 
 concurrency:
-  group: release-main
+  group: main-line
   cancel-in-progress: false
 
 permissions:

@@ -1,0 +1,122 @@
+name: Capture and commit
+
+on:
+  workflow_call:
+    inputs:
+      config:
+        description: Path to readme-screenshot config file
+        type: string
+        default: .readme-screenshot.yml
+      commit_message:
+        description: Commit message when the screenshot changes (empty uses commit.message from config)
+        type: string
+        default: ""
+      file_pattern:
+        description: File path to commit (output from config)
+        type: string
+        required: true
+      readme_screenshot_ref:
+        description: Git ref of readme-screenshot to install
+        type: string
+        default: main
+      diagonal_blend_ref:
+        description: Git ref of DiagonalBlend to install
+        type: string
+        default: main
+      install_consumer_deps:
+        description: Run npm ci / yarn install in the consumer repo before capture
+        type: boolean
+        default: true
+      node_version:
+        description: Node.js version for capture
+        type: string
+        default: "22"
+      python_version:
+        description: Python version for diag_blend
+        type: string
+        default: "3.12"
+      pip_requirements:
+        description: Space-separated requirements files to pip install before capture
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout consumer repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+
+      - name: Install consumer dependencies
+        if: inputs.install_consumer_deps
+        run: |
+          if [ -f yarn.lock ]; then
+            corepack enable
+            yarn install --immutable
+          elif [ -f package-lock.json ]; then
+            npm ci
+          else
+            echo "No lockfile found; skipping consumer dependency install"
+          fi
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+
+      - name: Install Python requirements
+        if: inputs.pip_requirements != ''
+        run: |
+          set -euo pipefail
+          args=()
+          for file in ${{ inputs.pip_requirements }}; do
+            args+=(-r "$file")
+          done
+          pip install "${args[@]}"
+
+      - name: Install readme-screenshot CLI
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch "${{ inputs.readme_screenshot_ref }}" \
+            https://github.com/CampAsAChamp/readme-screenshot.git /tmp/readme-screenshot
+          cd /tmp/readme-screenshot
+          npm ci
+          npm link
+
+      - name: Install DiagonalBlend CLI
+        # Matches DIAGONAL_BLEND_REPO_URL in src/config.ts
+        run: pip install "diagonal-blend @ git+https://github.com/CampAsAChamp/DiagonalBlend.git@${{ inputs.diagonal_blend_ref }}"
+
+      - name: Install Playwright Chromium
+        working-directory: /tmp/readme-screenshot
+        run: npx playwright install chromium --with-deps
+
+      - name: Capture screenshot
+        run: readme-screenshot capture --config "${{ inputs.config }}"
+
+      - name: Sync with latest main
+        if: github.ref == 'refs/heads/main'
+        run: git pull --rebase origin main
+
+      - name: Resolve commit message
+        id: commit
+        run: |
+          if [ -n "${{ inputs.commit_message }}" ]; then
+            echo "message=${{ inputs.commit_message }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "message=$(readme-screenshot commit-message --config "${{ inputs.config }}")" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit screenshot
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: ${{ steps.commit.outputs.message }}
+          file_pattern: ${{ inputs.file_pattern }}
