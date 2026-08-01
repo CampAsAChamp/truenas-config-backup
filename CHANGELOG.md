@@ -1,3 +1,10 @@
+## [0.12.1](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.12.0...0.12.1) (2026-08-01)
+
+
+### Bug Fixes
+
+* align app definition with truenas/apps PR ([d6ca18c](https://github.com/CampAsAChamp/truenas-config-backup/commit/d6ca18c08558a122f00e7556a018335408949792))
+
 # [0.12.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.11.1...0.12.0) (2026-07-31)
 
 
