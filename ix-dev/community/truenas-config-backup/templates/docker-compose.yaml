@@ -5,7 +5,7 @@
 {% set perms_config = {"uid": 568, "gid": 568, "mode": "check"} %}
 
 {% do c1.set_user(568, 568) %}
-{% do c1.healthcheck.set_test("curl", {"port": values.network.web_port.port_number, "path": "/healthz"}) %}
+{% do c1.healthcheck.set_test("http", {"port": values.network.web_port.port_number, "path": "/healthz"}) %}
 
 {% do c1.environment.add_env("TRUENAS_URL", values.connection_config.truenas_url) %}
 {% do c1.environment.add_env("TRUENAS_API_KEY", values.connection_config.api_key) %}

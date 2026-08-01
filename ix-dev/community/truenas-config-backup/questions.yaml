@@ -91,6 +91,11 @@ questions:
           schema:
             type: string
             default: "03:00"
+            show_if:
+              - ["schedule_mode", "!=", "manual"]
+              - ["schedule_mode", "!=", "every_minute"]
+              - ["schedule_mode", "!=", "every_hour"]
+              - ["schedule_mode", "!=", "custom"]
         - variable: schedule_dow
           label: Schedule Day of Week
           description: |
@@ -101,6 +106,7 @@ questions:
             default: 0
             min: 0
             max: 6
+            show_if: [["schedule_mode", "=", "weekly"]]
         - variable: schedule_dom
           label: Schedule Day of Month
           description: |
@@ -111,6 +117,7 @@ questions:
             default: 1
             min: 1
             max: 28
+            show_if: [["schedule_mode", "=", "monthly"]]
         - variable: cron_schedule
           label: Custom Cron Expression
           description: |
@@ -120,6 +127,7 @@ questions:
             type: string
             required: false
             default: ""
+            show_if: [["schedule_mode", "=", "custom"]]
         - variable: retention_count
           label: Retention Count
           description: Number of past backups to keep before pruning the oldest.
@@ -168,6 +176,7 @@ questions:
             type: string
             required: false
             default: ""
+            private: true
 
   - variable: advanced_config
     label: ""
@@ -233,7 +242,7 @@ questions:
                 label: Port Number
                 schema:
                   type: int
-                  default: 30330
+                  default: 30461
                   min: 1
                   max: 65535
                   required: true

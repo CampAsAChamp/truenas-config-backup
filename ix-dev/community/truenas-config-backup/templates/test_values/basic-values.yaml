@@ -31,7 +31,7 @@ advanced_config:
 network:
   web_port:
     bind_mode: published
-    port_number: 30330
+    port_number: 30461
 
 ix_volumes:
   backups: /opt/tests/mnt/truenas-config-backup/backups

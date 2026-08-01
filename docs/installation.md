@@ -45,7 +45,9 @@ services:
     ports:
       - "8080:8080"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      test:
+        - CMD-SHELL
+        - /bin/bash -c '{ printf "GET /healthz HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n" >&0; grep "HTTP" | grep -q "200"; } 0<>/dev/tcp/127.0.0.1/8080'
       interval: 30s
       timeout: 5s
       retries: 3

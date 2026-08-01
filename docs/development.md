@@ -167,6 +167,14 @@ pip install pyyaml psutil pytest pytest-cov bcrypt pydantic pydantic-settings
 
 python .github/scripts/ci.py --app truenas-config-backup --train community \
   --test-file basic-values.yaml --render-only=true
+
+# Additional test scenario (host_path storage, daily schedule):
+python .github/scripts/ci.py --app truenas-config-backup --train community \
+  --test-file host-path-values.yaml --render-only=true
+
+# Full container validation (requires /opt/tests on Linux, or sudo mkdir on macOS):
+python .github/scripts/ci.py --app truenas-config-backup --train community \
+  --test-file basic-values.yaml
 ```
 
 ## Related guides

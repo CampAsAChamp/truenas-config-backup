@@ -2,6 +2,7 @@ app_version: 0.12.0
 capabilities: []
 categories:
 - backup
+changelog_url: https://github.com/CampAsAChamp/truenas-config-backup/blob/main/CHANGELOG.md
 date_added: '2026-07-27'
 description: Scheduled backups of your TrueNAS system configuration, downloaded via
   the API.
@@ -13,7 +14,7 @@ keywords:
 - config
 - truenas
 lib_version: 2.3.8
-lib_version_hash: cd75c897a1e8fef54b5bd00d0d8849f240bc50db2ef650eccc0ee74f3b2b2dc1
+lib_version_hash: d21ab532cc602478624ae2d278538de12eb19f637e305f7c0ec53542979e9d14
 maintainers:
 - email: nickschneider101@gmail.com
   name: CampAsAChamp
@@ -29,6 +30,7 @@ run_as_context:
 screenshots: []
 sources:
 - https://github.com/CampAsAChamp/truenas-config-backup
+- https://github.com/CampAsAChamp/truenas-config-backup/pkgs/container/truenas-config-backup
 title: TrueNAS Config Backup
 train: community
 version: 1.0.0
