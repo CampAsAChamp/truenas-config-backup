@@ -10,7 +10,8 @@
     {% endif %}
   </td>
   <td class="filename col-filename">{% if run.filename %}{{ run.filename }}{% else %}<span class="cell-empty">—</span>{% endif %}</td>
-  <td class="col-size">{% if run.size_bytes is not none %}{{ (run.size_bytes / 1024 / 1024) | round(2) }} MB{% else %}<span class="cell-empty">—</span>{% endif %}</td>
+  <td class="col-size">{% if run.size_bytes is not none %}{{ run.size_bytes | format_bytes }}{% else %}<span
+      class="cell-empty">—</span>{% endif %}</td>
   <td class="col-message">{{ run.message or "—" }}</td>
   <td class="col-actions">
     <div class="actions">

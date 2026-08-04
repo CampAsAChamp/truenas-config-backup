@@ -21,6 +21,7 @@ from .auth import (
 )
 from .config_validation import validate_config
 from .datetime_display import TIMEZONE_LABELS, TIMEZONE_OPTIONS, format_timestamp, to_iso
+from .format_bytes import format_bytes
 from .health import readiness_status
 from .log_reader import tail_log_entries
 from .logging_setup import clear_logs, configure_logging
@@ -49,6 +50,7 @@ def _format_datetime(value):
 
 
 templates.env.filters["format_datetime"] = _format_datetime
+templates.env.filters["format_bytes"] = format_bytes
 
 
 def _asset_location(rel_path: str) -> tuple[str, str]:
