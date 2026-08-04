@@ -1,3 +1,10 @@
+# [0.13.0](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.12.1...0.13.0) (2026-08-04)
+
+
+### Features
+
+* display backup size in natural units instead of MB ([1930e5b](https://github.com/CampAsAChamp/truenas-config-backup/commit/1930e5bfb41913b3e819718ff5c97a64d6f3888e))
+
 ## [0.12.1](https://github.com/CampAsAChamp/truenas-config-backup/compare/0.12.0...0.12.1) (2026-08-01)
 
 

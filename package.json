@@ -1,6 +1,6 @@
 {
   "name": "truenas-config-backup",
-  "version": "0.12.1",
+  "version": "0.13.0",
   "private": true,
   "description": "Scheduled TrueNAS config backups with a web dashboard",
   "license": "MIT",
